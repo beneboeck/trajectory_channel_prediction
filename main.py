@@ -113,3 +113,5 @@ if DATASET_TYPE == 'Quadriga':
     y_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/Quadriga_Valentina/y_val.npy','r')
 
 print(label_train.shape)
+print(label_train[:10])
+print(label_train[label_train = 1].shape)
