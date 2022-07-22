@@ -14,12 +14,6 @@ import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 import h5py
 
-import my_import_f as mif
-import my_training_f as mtf
-import my_evaluation_f as mef
-import my_g_models_normal as mg
-import my_classifier_classes as mc
-import my_dataset_classes as md
 import datetime
 import tqdm
 from scipy import linalg as la
@@ -102,10 +96,8 @@ glob_var_file.write('LOCAL_ARCHITECTURE: ' + LOCAL_ARCHITECTURE + '\n')
 if GLOBAL_ARCHITECTURE == 'kalmanVAE':
     glob_var_file.write('DIM_VEC: ' + str(DIM_VEC) + '\n')
 glob_var_file.write('RISK_TYPE: ' +RISK_TYPE +'\n')
-glob_var_file.write('EVAL_TECHNIQUE: ' +EVAL_TECHNIQUE +'\n')
 glob_var_file.write('BATCHSIZE: ' + str(BATCHSIZE) +'\n')
 glob_var_file.write('G_EPOCHS: ' +str(G_EPOCHS) +'\n')
-
 log_file.write('Date: ' +date +'\n')
 log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n')
