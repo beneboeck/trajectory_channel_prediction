@@ -13,7 +13,6 @@ from torch.utils.data import Dataset, DataLoader
 import math
 from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
-import network_architecture_search as nas
 import networks as n
 
 
