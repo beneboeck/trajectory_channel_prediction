@@ -118,5 +118,6 @@ x_train = x_train[label_train == VELOCITY]
 y_train = y_train[label_train == VELOCITY]
 
 print(x_train.shape)
-print(y_train)
+#print(y_train)
 print(label_train[label_train == VELOCITY][:10])
+print(x_train[0,-1,0] == y_train[0,0,0])
