@@ -114,4 +114,4 @@ if DATASET_TYPE == 'Quadriga':
 
 print(label_train.shape)
 print(label_train[:10])
-print(label_train[label_train = 1].shape)
+print(label_train[label_train == 1].shape)
