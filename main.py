@@ -42,6 +42,7 @@ STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 32 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'Quadriga'
+VELOCITY = 2
 
 ARCHITECTURE_FAMILY = 'toeplitz'
 # options: 'toeplitz' - 'unitary' - 'diagonal' - 'cholesky'
@@ -112,6 +113,10 @@ if DATASET_TYPE == 'Quadriga':
     y_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/Quadriga_Valentina/y_train.npy','r')
     y_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/Quadriga_Valentina/y_val.npy','r')
 
-print(label_train.shape)
-print(label_train[:10])
-print(label_train[label_train == 1].shape)
+
+x_train = x_train[label_train == VELOCITY]
+y_train = y_train[label_train == VELOCITY]
+
+print(x_train.shape)
+print(y_train)
+print(label_train[label_train == VELOCITY][:10])
