@@ -116,6 +116,12 @@ if DATASET_TYPE == 'Quadriga':
 
 x_train = x_train[label_train == VELOCITY]
 y_train = y_train[label_train == VELOCITY]
+y_train = y_train[:,1:,:]
+
+data = np.concatenate((x_train,y_train),axis=1)
+print(data.shape)
+print(np.mean(data[:,0,0]))
+print(np.std(data[:,0,0]))
 
 print(x_train.shape)
 #print(y_train)
