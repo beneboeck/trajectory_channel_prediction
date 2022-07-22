@@ -4,11 +4,7 @@ import os
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
-#import matplotlib.image as mpimg
 from torch.utils.data import Dataset, DataLoader
-#import torchvision
-#from torchvision import datasets
-#from torchvision import transforms
 from skimage.metrics import structural_similarity as ssim
 import torch.nn.functional as F
 from torch.nn.utils import weight_norm
@@ -107,13 +103,13 @@ print('global variables successfully defined')
 
 if DATASET_TYPE == 'Quadriga':
     label_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/label_test.npy','r')
-    label_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/label_train.npy','r')
-    label_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/label_val.npy','r')
-    x_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/x_test.npy','r')
-    x_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/x_train.npy','r')
-    x_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/x_val.npy','r')
-    y_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/y_test.npy','r')
-    y_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/y_train.npy','r')
-    y_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/trajectory_dataset/y_val.npy','r')
+    label_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/label_train.npy','r')
+    label_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/label_val.npy','r')
+    x_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/x_test.npy','r')
+    x_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/x_train.npy','r')
+    x_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/x_val.npy','r')
+    y_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/y_test.npy','r')
+    y_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/y_train.npy','r')
+    y_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/trajectory_dataset/Quadriga_Valentina/y_val.npy','r')
 
 print(label_train.shape)
