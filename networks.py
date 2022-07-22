@@ -9,6 +9,24 @@ from scipy import linalg as la
 import math
 import time
 
+class Reshape(nn.Module):
+    def __init__(self,channels,x_size,y_size):
+        super(Reshape, self).__init__()
+        self.channels = channels
+        self.x_size = x_size
+        self.y_size = y_size
+    def forward(self, x):
+        return x.view(-1, self.channels, self.x_size, self.y_size)
+
+class ReshapeDouble(nn.Module):
+    def __init__(self,channel1,channel2,x_size,y_size):
+        super(ReshapeDouble, self).__init__()
+        self.channel1 = channel1
+        self.channel2 = channel2
+        self.x_size = x_size
+        self.y_size = y_size
+    def forward(self, x):
+        return x.view(-1, self.channel1,self.channel2, self.x_size, self.y_size)
 
 class kalmanEncUnit_toeplitz(nn.Module):
     def __init__(self,z_dim,x_dim):

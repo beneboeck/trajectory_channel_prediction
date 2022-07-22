@@ -145,8 +145,6 @@ if GLOBAL_ARCHITECTURE == 'kalmanVAE':
 
     iterations = DIM_VEC
 
-
-
 if GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE':
     if LOCAL_ARCHITECTURE == 'diagonal':
         model = mg.kMemoryHiddenMarkovVAE_diagonal
@@ -163,13 +161,13 @@ if GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE':
 
 iteration = iterations[0]
 
-if (GLOBAL_ARCHITECTURE == 'kalmanVAE') | (GLOBAL_ARCHITECTURE == 'WN_kalmanVAE'):
+if (GLOBAL_ARCHITECTURE == 'kalmanVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3]).to(device)
 
-if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_kMemoryHiddenMarkovVAE'):
+if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
-if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_ApproxKMemoryHiddenMarkovVAE'):
+if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
 tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, torch.tensor(1),
