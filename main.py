@@ -8,18 +8,17 @@ from torch.utils.data import Dataset, DataLoader
 from skimage.metrics import structural_similarity as ssim
 import torch.nn.functional as F
 from torch.nn.utils import weight_norm
-import h5py
-
 import datetime
-import tqdm
 from scipy import linalg as la
 from sklearn.svm import SVC
 import random
-import umap
 
+import dataset as ds
+import training as tr
+import networks as mg
 
-GLOBAL_ARCHITECTURE = 'Masked_HM_VAE'
-# options: - 'genericVAE' - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
+GLOBAL_ARCHITECTURE = 'kalmanVAE'
+# options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
 #             'markovVanillaVAE' -'kMemoryHiddenMarkovVAE' - 'ApproxKMemoryHiddenMarkovVAE' -'kMemoryMarkovVAE' - 'WN_kMemoryHiddenMarkovVAE'
 #             'WN_ModelBasedKMemoryHiddenMarkovVAE' , 'LSTM_HM_VAE', 'Masked_HM_VAE'
 
@@ -44,9 +43,9 @@ SNAPSHOTS = 32 # 96 / 192 should be taken for all models expect the modelbased o
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 
-ARCHITECTURE_FAMILY = 'toeplitz'
+ARCHITECTURE_FAMILY = 'diagonal'
 # options: 'toeplitz' - 'unitary' - 'diagonal' - 'cholesky'
-LOCAL_ARCHITECTURE = 'toeplitz'
+LOCAL_ARCHITECTURE = 'diagonal'
 # options for genericVAE: - 'toeplitz' - 'toeplitz_same_pre' - 'unitary' - 'unitary_same_pre' - 'diagonal' - 'diagonal_same_pre' - 'cholesky'
 # options for kalmanVAE: - 'toeplitz' - 'toeplitz_same_dec' - 'toeplitz_same_all' - 'unitary' - 'unitary_same_dec' - 'unitary_same_all' - 'diagonal' - 'diagonal_same_dec' - 'diagonal_same_all'
 # options for Glow: - ''
@@ -119,11 +118,60 @@ y_train = y_train[label_train == VELOCITY]
 y_train = y_train[:,1:,:]
 
 data = np.concatenate((x_train,y_train),axis=1)
-print(data.shape)
-print(np.mean(data[:,0,0]))
-print(np.std(data[:,0,0]))
+dataset = ds.dataset(data)
+dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
 
-print(x_train.shape)
-#print(y_train)
-print(label_train[label_train == VELOCITY][:10])
-print(x_train[0,-1,0] == y_train[0,0,0])
+if GLOBAL_ARCHITECTURE == 'kalmanVAE':
+    if LOCAL_ARCHITECTURE == 'toeplitz':
+        model = mg.KalmanVAE_toeplitz
+    if LOCAL_ARCHITECTURE == 'toeplitz_same_dec':
+        model = mg.KalmanVAE_toeplitz_same_dec
+    if LOCAL_ARCHITECTURE == 'toeplitz_same_all':
+        model = mg.KalmanVAE_toeplitz_same_all
+    if LOCAL_ARCHITECTURE == 'unitary':
+        model = mg.KalmanVAE_unitary
+    if LOCAL_ARCHITECTURE == 'unitary_same_dec':
+        model = mg.KalmanVAE_unitary_same_dec
+    if LOCAL_ARCHITECTURE == 'unitary_same_all':
+        model = mg.KalmanVAE_unitary_same_all
+    if LOCAL_ARCHITECTURE == 'diagonal':
+        model = mg.KalmanVAE_diagonal
+    if LOCAL_ARCHITECTURE == 'diagonal_same_dec':
+        model = mg.KalmanVAE_diagonal_same_dec
+    if LOCAL_ARCHITECTURE == 'diagonal_same_all':
+        model = mg.KalmanVAE_diagonal_same_all
+    if LOCAL_ARCHITECTURE == 'diagonal_IF':
+        model = mg.KalmanVAE_diagonal_IF
+
+    iterations = DIM_VEC
+
+
+
+if GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE':
+    if LOCAL_ARCHITECTURE == 'diagonal':
+        model = mg.kMemoryHiddenMarkovVAE_diagonal
+    if LOCAL_ARCHITECTURE == 'toeplitz':
+        model = mg.kMemoryHiddenMarkovVAE_toeplitz
+
+    iterations = DIM_VEC
+
+if GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE':
+    if LOCAL_ARCHITECTURE == 'diagonal':
+        model = mg.ApproxKMemoryHiddenMarkovVAE_diagonal
+
+    iterations = DIM_VEC
+
+iteration = iterations[0]
+
+if (GLOBAL_ARCHITECTURE == 'kalmanVAE') | (GLOBAL_ARCHITECTURE == 'WN_kalmanVAE'):
+    model = model(iteration[0],iteration[1],iteration[2],iteration[3]).to(device)
+
+if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_kMemoryHiddenMarkovVAE'):
+    model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
+
+if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_ApproxKMemoryHiddenMarkovVAE'):
+    model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
+
+tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, torch.tensor(1),
+                      device, log_file, dataset)
+

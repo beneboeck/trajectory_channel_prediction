@@ -60,28 +60,26 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
     log_file.write('\n\nStart Training\n')
 
     for i in range(epochs):
+        print('epoch')
+        print(i)
         for ind, sample in enumerate(loader):
-            sample1 = sample[0]
-            sample1 = sample1.to(device)
-
+            sample = sample
+            sample = sample.to(device)
 
             if (risk_type == 'kalmanVAE_toeplitz'):
                 mu_out, B_out, C_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)
-                Risk1, RR1, KL1 = risk_kalman_VAE_toeplitz(sample, z, log_var, mu_out, B_out, C_out, mu_prior,logpre_prior, eps)
-
+                Risk, RR, KL = risk_kalman_VAE_toeplitz(sample, z, log_var, mu_out, B_out, C_out, mu_prior,logpre_prior, eps)
 
             if (risk_type == 'kalmanVAE_toeplitz_free_bits'):
                 mu_out, B_out, C_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
-
             if (risk_type == 'kalmanVAE_diagonal'):
                 mu_out, logpre_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_diagonal(sample, z, log_var, mu_out, logpre_out, mu_prior,logpre_prior, eps)
-
 
             if (risk_type == 'kalmanVAE_diagonal_free_bits'):
                 mu_out, logpre_out, z, eps, mu_inf, log_var = model(sample)
@@ -94,18 +92,15 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_diagonal(sample, z, log_var, mu_out, logpre_out, mu_prior,logpre_prior, eps)
 
-
             if risk_type == 'kMemoryHiddenMarkovVAE_toeplitz_free_bits':
                 mu_out, B_out, C_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
-
             if (risk_type == 'kMemoryHiddenMarkovVAE_diagonal_free_bits'):
                 mu_out, logpre_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
-
 
             if risk_type == 'ApproxKMemoryHiddenMarkovVAE_diagonal':
                 mu_out, logpre_out, z, eps, mu_inf, log_var = model(sample)
@@ -118,10 +113,6 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
 
-            # first = time.time()
             optimizer.zero_grad()
             Risk.backward()
             optimizer.step()
-
-
-    return output_list
