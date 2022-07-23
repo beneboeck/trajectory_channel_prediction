@@ -113,27 +113,27 @@ if DATASET_TYPE == 'Quadriga':
     y_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/Quadriga_Valentina/y_val.npy','r')
 
 
-x_train_n = np.zeros(x_train.shape[0],2,int(x_train.shape[2]/2),x_train.shape[1])
+x_train_n = np.zeros((x_train.shape[0],2,int(x_train.shape[2]/2),x_train.shape[1]))
 x_train_n[:,0,:,:] = x_train[:,:32,:].permute(0,2,1)
 x_train_n[:,1,:,:] = x_train[:,32:,:].permute(0,2,1)
 
-y_train_n = np.zeros(y_train.shape[0],2,int(y_train.shape[2]/2),y_train.shape[1])
+y_train_n = np.zeros((y_train.shape[0],2,int(y_train.shape[2]/2),y_train.shape[1]))
 y_train_n[:,0,:,:] = y_train[:,:32,:].permute(0,2,1)
 y_train_n[:,1,:,:] = y_train[:,32:,:].permute(0,2,1)
 
-x_val_n = np.zeros(x_val.shape[0],2,int(x_val.shape[2]/2),x_val.shape[1])
+x_val_n = np.zeros((x_val.shape[0],2,int(x_val.shape[2]/2),x_val.shape[1]))
 x_val_n[:,0,:,:] = x_val[:,:32,:].permute(0,2,1)
 x_val_n[:,1,:,:] = x_val[:,32:,:].permute(0,2,1)
 
-y_val_n = np.zeros(y_val.shape[0],2,int(y_val.shape[2]/2),y_val.shape[1])
+y_val_n = np.zeros((y_val.shape[0],2,int(y_val.shape[2]/2),y_val.shape[1]))
 y_val_n[:,0,:,:] = y_val[:,:32,:].permute(0,2,1)
 y_val_n[:,1,:,:] = y_val[:,32:,:].permute(0,2,1)
 
-x_test_n = np.zeros(x_test.shape[0],2,int(x_test.shape[2]/2),x_test.shape[1])
+x_test_n = np.zeros((x_test.shape[0],2,int(x_test.shape[2]/2),x_test.shape[1]))
 x_test_n[:,0,:,:] = x_test[:,:32,:].permute(0,2,1)
 x_test_n[:,1,:,:] = x_test[:,32:,:].permute(0,2,1)
 
-y_test_n = np.zeros(y_test.shape[0],2,int(y_test.shape[2]/2),y_train.shape[1])
+y_test_n = np.zeros((y_test.shape[0],2,int(y_test.shape[2]/2),y_train.shape[1]))
 y_test_n[:,0,:,:] = y_test[:,:32,:].permute(0,2,1)
 y_test_n[:,1,:,:] = y_test[:,32:,:].permute(0,2,1)
 
