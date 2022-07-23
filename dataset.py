@@ -25,4 +25,4 @@ class dataset(Dataset):
         return self.h.size(0)
 
     def __getitem__(self,idx):
-        return self.h[idx,:,:]
+        return self.h[idx,:,:,:]
