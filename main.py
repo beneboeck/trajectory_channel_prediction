@@ -115,8 +115,9 @@ if DATASET_TYPE == 'Quadriga':
 print('test')
 print(np.swapaxes(x_train,1,2)[:,:32,:].shape)
 x_train_n = np.zeros((x_train.shape[0],2,32,x_train.shape[1]))
-a = np.copy(np.swapaxes(x_train,1,2))
-x_train_n[:,0,:,:] = a[:,:,:32]
+a = np.copy(np.swapaxes(x_train,1,2)[:,:,:32])
+print(a.shape)
+x_train_n[:,0,:,:] = a
 x_train_n[:,1,:,:] = np.swapaxes(x_train,1,2)[:,:,32:]
 
 y_train_n = np.zeros((y_train.shape[0],2,32,y_train.shape[1]))
