@@ -201,8 +201,11 @@ if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE'):
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
-risk_list,KL_list,RR_list = tr.training_gen_NN(GLOBAL_ARCHITECTURE, iteration, LEARNING_RATE, model, dataloader,dataloader_val, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file, dataset)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(GLOBAL_ARCHITECTURE, iteration, LEARNING_RATE, model, dataloader,dataloader_val, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file, dataset)
 
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
+
+save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
+save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE')
 
 torch.save(model.state_dict(),dir_path + '/model_dict')

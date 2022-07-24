@@ -18,7 +18,13 @@ def save_risk(risk_list,RR_list,KL_list,model_path,title):
     plt.savefig(model_path + '/' + title,dpi = 300)
     plt.close()
 
-
+def save_risk_single(risk_list,model_path,title):
+    risk = np.array(risk_list)
+    np.save(model_path + '/risk_numpy',risk)
+    plt.plot(risk,linewidth=1)
+    plt.title(title)
+    plt.savefig(model_path + '/' + title,dpi = 300)
+    plt.close()
 
 def compute_interpolator(sigma_grid_list = None,coords=None):
     if (sigma_grid_list is None) & (coords is None):

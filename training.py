@@ -44,6 +44,9 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
     risk_list= []
     KL_list = []
     RR_list = []
+    eval_risk = []
+    eval_NMSE = []
+    slope = -1.
 
     optimizer = torch.optim.Adam(lr=lr, params=model.parameters())
 
@@ -108,14 +111,31 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
             Risk.backward()
             optimizer.step()
 
-        print(f'Risk: {Risk}, epoch: {i}')
+        print(f'Risk: {Risk:.4f}, epoch: {i}')
+        log_file.write(f'Risk: {Risk}, epoch: {i}\n')
         risk_list.append(Risk.detach().to('cpu'))
         KL_list.append(KL.detach().to('cpu'))
         RR_list.append(RR.detach().to('cpu'))
         with torch.no_grad():
             model.eval()
             NMSE, Risk = ev.eval_val(GLOBAL_ARCHITECTURE, iteration, model, dataloader_val, risk_type, lamba, device, log_file)
-            print('Evaluation')
-            print(NMSE,Risk)
+            eval_risk.append(Risk.detach().to('cpu'))
+            eval_NMSE.append(NMSE.detach().to('cpu'))
+            print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')
+            log_file.write(f'Evaluation - NMSE: {NMSE},Risk: {Risk}\n')
+            if step > 30:
+                x_range = torch.arange(16)
+                x = torch.ones(16, 2)
+                x[:, 0] = x_range
+                beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_NMSE[-16:])[:, None]
+                slope = beta[0]
+                print('slope')
+                print(slope)
+                log_file.write(f'slope of NMSE: {slope}\n')
 
-    return risk_list,KL_list,RR_list
+        if slope > 0:
+            log_file.write('BREAKING CONDITION, slope negativ\n')
+            log_file.write(f'number epochs: {i}')
+            break
+
+    return risk_list,KL_list,RR_list,eval_risk,eval_NMSE

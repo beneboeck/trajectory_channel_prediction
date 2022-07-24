@@ -116,7 +116,7 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             predicted_samples = samples[:,:,:,idx_upper_limit_encoder*time_stamps_per_unit:]
             complete_x_list = torch.cat((samples[:,:,:,:idx_upper_limit_encoder*time_stamps_per_unit],x_list),dim=3)
 
-            NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2,dim=(1,2,3))/torch.sum(x_list**2,dim=(1,2,3))).detach().to('cpu'))
+            NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2,dim=(1,2,3))/torch.sum(predicted_samples**2,dim=(1,2,3))).detach().to('cpu'))
 
 
         if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_kMemoryHiddenMarkovVAE'):
