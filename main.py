@@ -112,8 +112,9 @@ if DATASET_TYPE == 'Quadriga':
     y_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/Quadriga_Valentina/y_train.npy','r')
     y_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/Quadriga_Valentina/y_val.npy','r')
 
-print(np.transpose(x_train[:,:32,:],axes = (1,2)))
-print(np.transpose(x_train[:,:32,:],axes = (1,2)).shape)
+
+print(np.swapaxes(x_train[:,:32,:],1,2))
+print(np.swapaxes(x_train[:,:32,:],1,2).shape)
 x_train_n = np.zeros((x_train.shape[0],2,32,x_train.shape[1]))
 x_train_n[:,0,:,:] = np.transpose(x_train[:,:32,:],axes = (1,2))
 x_train_n[:,1,:,:] = np.transpose(x_train[:,32:,:],axes = (1,2))
