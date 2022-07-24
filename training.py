@@ -120,7 +120,7 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
             model.eval()
             NMSE, Risk = ev.eval_val(GLOBAL_ARCHITECTURE, iteration, model, dataloader_val, risk_type, lamba, device, log_file)
             eval_risk.append(Risk.detach().to('cpu'))
-            eval_NMSE.append(NMSE.detach().to('cpu'))
+            eval_NMSE.append(NMSE)
             print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')
             log_file.write(f'Evaluation - NMSE: {NMSE},Risk: {Risk}\n')
             if i > 4:
@@ -134,7 +134,7 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
                 log_file.write(f'slope of NMSE: {slope}\n')
 
         if slope > 0:
-            log_file.write('BREAKING CONDITION, slope negativ\n')
+            log_file.write('BREAKING CONDITION, slope positive\n')
             log_file.write(f'number epochs: {i}')
             break
 
