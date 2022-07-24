@@ -72,8 +72,6 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             # encoding
             idx_upper_limit_encoder = int(math.floor(knowledge/time_stamps_per_unit))
             z_init = torch.ones(samples.size(0),iteration[0][0]).to(device)
-            print('here')
-            print(z_init.size())
             z_inf = torch.zeros(samples.size(0),iteration[0][0],idx_upper_limit_encoder).to(device)
             mu_z = model.encoder[0](samples[:,:,:,:time_stamps_per_unit],z_init)[0]
             z_inf[:,:,0] = mu_z
