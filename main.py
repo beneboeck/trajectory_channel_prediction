@@ -145,7 +145,7 @@ y_test_n[:,1,:,:] = np.transpose(y_test,axes=(0,2,1))[:,32:,:]
 
 x_train_n = x_train_n[label_train == VELOCITY]
 y_train_n = y_train_n[label_train == VELOCITY]
-y_train_n = y_train_n[:,:,1:,:]
+y_train_n = y_train_n[:,:,:,1:]
 
 print(y_train.shape)
 print(x_val.shape)
