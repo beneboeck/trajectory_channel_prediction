@@ -123,11 +123,11 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
             eval_NMSE.append(NMSE)
             print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')
             log_file.write(f'Evaluation - NMSE: {NMSE},Risk: {Risk}\n')
-            if i > 30:
-                x_range = torch.arange(20)
-                x = torch.ones(20, 2)
+            if i > 2:
+                x_range = torch.arange(2)
+                x = torch.ones(2, 2)
                 x[:, 0] = x_range
-                beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-20:])[:, None]
+                beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-2:])[:, None]
                 slope = beta[0]
                 print('slope')
                 print(slope)

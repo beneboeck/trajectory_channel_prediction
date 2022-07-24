@@ -25,10 +25,10 @@ glob_var_file = open(dir_path + '/glob_var_file.txt','w')
 log_file = open(dir_path + '/log_file.txt','w')
 m_file = open(dir_path + '/m_file.txt','w')
 
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 300
+G_EPOCHS = 3
 LEARNING_RATE = 3e-5
 STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg_s: path gain standardization)
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
