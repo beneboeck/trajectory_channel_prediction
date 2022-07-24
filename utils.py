@@ -5,6 +5,20 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn import linear_model
 import scipy
 
+
+def save_risk(risk_list,RR_list,KL_list,model_path,title):
+    risk = np.array(risk_list)
+    np.save(model_path + '/risk_numpy',risk)
+    plt.plot(risk,linewidth=1,label = 'Risk')
+    plt.plot(np.array(RR_list), linewidth=1, label = 'RR')
+    plt.plot(np.array(KL_list), linewidth=1, label = 'KL')
+    plt.title(title)
+    plt.legend()
+    plt.savefig(model_path + '/' + title,dpi = 300)
+    plt.close()
+
+
+
 def compute_interpolator(sigma_grid_list = None,coords=None):
     if (sigma_grid_list is None) & (coords is None):
         DoA_grid = np.linspace(-np.pi, np.pi, 4)

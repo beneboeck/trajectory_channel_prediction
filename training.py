@@ -31,7 +31,7 @@ def risk_kalman_VAE_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_p
     RR = torch.mean( torch.sum( - log_pre_out + log_pre_out.exp() * torch.abs(x_compl - mu_compl)**2 ,dim=(1,2)))
     #IR_term = - 0.5 * eps**2 - 0.5 * log_var
     IR_term = -0.5 * (log_var + 1)
-    PR_term = 0.5 *  (- logpre_prior + logpre_prior.exp() * (z - mu_prior)**2)
+    PR_term = 0.5 * (- logpre_prior + logpre_prior.exp() * (z - mu_prior)**2)
     KL = torch.mean(torch.sum(torch.max(lamba,IR_term + PR_term),dim=(1,2)))
 
     return RR + KL,RR,KL
@@ -39,6 +39,10 @@ def risk_kalman_VAE_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_p
 
 def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, lamba,
                       device, log_file, dataset):
+
+    risk_list= []
+    KL_list = []
+    RR_list = []
 
     optimizer = torch.optim.Adam(lr=lr, params=model.parameters())
 
@@ -104,3 +108,8 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
             optimizer.step()
 
         print(f'Risk: {Risk}, epoch: {i}')
+        risk_list.append(Risk.detach().to('cpu'))
+        KL_list.append(KL.detach().to('cpu'))
+        RR_list.append(RR.detach().to('cpu'))
+
+    return risk_list,KL_list,RR_list

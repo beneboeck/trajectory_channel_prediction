@@ -1,18 +1,11 @@
 import torch
-import sys
 import os
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
-from torch.utils.data import Dataset, DataLoader
-from skimage.metrics import structural_similarity as ssim
-import torch.nn.functional as F
-from torch.nn.utils import weight_norm
+from torch.utils.data import DataLoader
 import datetime
-from scipy import linalg as la
-from sklearn.svm import SVC
-import random
-
+from utils import *
 import dataset as ds
 import training as tr
 import networks as mg
@@ -35,7 +28,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 10
+G_EPOCHS = 2
 LEARNING_RATE = 3e-5
 STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg_s: path gain standardization)
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
@@ -203,6 +196,8 @@ if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE'):
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
-tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,
-                      device, log_file, dataset)
+risk_list,KL_list,RR_list = tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file, dataset)
 
+save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
+
+torch.save(model.state_dict(),dir_path + '/model_dict')
