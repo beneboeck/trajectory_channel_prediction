@@ -1,5 +1,6 @@
 import math
 import torch
+import evaluation as ev
 
 def risk_kalman_VAE_toeplitz_free_bits(lamba,x,z,log_var,mu_out,B,C,mu_prior,logpre_prior,eps):
     x_compl = torch.complex(x[:,0,:,:],x[:,1,:,:]).permute(0,2,1)
@@ -37,7 +38,7 @@ def risk_kalman_VAE_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_p
     return RR + KL,RR,KL
 
 
-def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, lamba,
+def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader_val, epochs, risk_type, lamba,
                       device, log_file, dataset):
 
     risk_list= []
@@ -111,5 +112,10 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
         risk_list.append(Risk.detach().to('cpu'))
         KL_list.append(KL.detach().to('cpu'))
         RR_list.append(RR.detach().to('cpu'))
+        with torch.no_grad:
+            model.eval()
+            NMSE, Risk = ev.eval_val(GLOBAL_ARCHITECTURE, iteration, model, dataloader_val, risk_type, lamba, device, log_file)
+            print('Evaluation')
+            print(NMSE,Risk)
 
     return risk_list,KL_list,RR_list

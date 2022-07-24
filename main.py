@@ -140,12 +140,17 @@ x_train_n = x_train_n[label_train == VELOCITY]
 y_train_n = y_train_n[label_train == VELOCITY]
 y_train_n = y_train_n[:,:,:,1:]
 
-print(y_train.shape)
-print(x_val.shape)
-print(np.concatenate((x_train_n,y_train_n),axis=3).shape)
+x_val_n = x_val_n[label_val == VELOCITY]
+y_val_n = y_val_n[label_val == VELOCITY]
+y_val_n = y_val_n[:,:,:,1:]
+
 data = np.concatenate((x_train_n,y_train_n),axis=3)
 dataset = ds.dataset(data)
 dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
+
+data_val = np.concatenate((x_val_n,y_val_n),axis=3)
+dataset_val = ds.dataset(data_val)
+dataloader_val = DataLoader(dataset_val,batch_size=y_val.shape[0],shuffle=True)
 
 if GLOBAL_ARCHITECTURE == 'kalmanVAE':
     if LOCAL_ARCHITECTURE == 'toeplitz':
@@ -196,7 +201,7 @@ if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE'):
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
-risk_list,KL_list,RR_list = tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file, dataset)
+risk_list,KL_list,RR_list = tr.training_gen_NN(GLOBAL_ARCHITECTURE, iteration, LEARNING_RATE, model, dataloader,dataloader_val, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file, dataset)
 
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
