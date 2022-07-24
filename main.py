@@ -203,6 +203,6 @@ if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE'):
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
-tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, torch.tensor(1),
+tr.training_gen_NN(GLOBAL_ARCHITECTURE, LEARNING_RATE, model, dataloader, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,
                       device, log_file, dataset)
 

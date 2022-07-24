@@ -49,6 +49,8 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
         print('epoch')
         print(i)
         for ind, sample in enumerate(loader):
+            print('batch')
+            print(ind)
             sample = sample
             sample = sample.to(device)
 
@@ -102,3 +104,5 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, lr, model, loader, epochs, risk_type, l
             optimizer.zero_grad()
             Risk.backward()
             optimizer.step()
+
+        print(f'Risk: {Risk}, epoch: {i}')
