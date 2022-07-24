@@ -64,7 +64,7 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
 
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
-        samples = samples.to(device)
+        samples = sample.to(device)
         time_stamps_per_unit = iteration[2]
         n_units = int(iteration[1][2]/time_stamps_per_unit)
 
