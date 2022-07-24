@@ -149,8 +149,8 @@ y_train_n = y_train_n[:,:,1:,:]
 
 print(y_train.shape)
 print(x_val.shape)
-
-data = np.concatenate((x_train,y_train),axis=1)
+print(np.concatenate((x_train_n,y_train_n),axis=3).shape)
+data = np.concatenate((x_train_n,y_train_n),axis=3)
 dataset = ds.dataset(data)
 dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
 
