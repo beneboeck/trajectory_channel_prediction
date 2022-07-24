@@ -39,7 +39,7 @@ G_EPOCHS = 700
 LEARNING_RATE = 3e-5
 STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg_s: path gain standardization)
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
-SNAPSHOTS = 32 # 96 / 192 should be taken for all models expect the modelbased one
+SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 
