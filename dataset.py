@@ -19,7 +19,7 @@ import networks as n
 class dataset(Dataset):
     def __init__(self,h):
         super().__init__()
-        self.h = torch.tensor(h)
+        self.h = torch.tensor(h).float()
 
     def __len__(self):
         return self.h.size(0)
