@@ -36,9 +36,9 @@ SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased o
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 
-ARCHITECTURE_FAMILY = 'diagonal'
+ARCHITECTURE_FAMILY = 'toeplitz'
 # options: 'toeplitz' - 'unitary' - 'diagonal' - 'cholesky'
-LOCAL_ARCHITECTURE = 'diagonal'
+LOCAL_ARCHITECTURE = 'toeplitz'
 # options for genericVAE: - 'toeplitz' - 'toeplitz_same_pre' - 'unitary' - 'unitary_same_pre' - 'diagonal' - 'diagonal_same_pre' - 'cholesky'
 # options for kalmanVAE: - 'toeplitz' - 'toeplitz_same_dec' - 'toeplitz_same_all' - 'unitary' - 'unitary_same_dec' - 'unitary_same_all' - 'diagonal' - 'diagonal_same_dec' - 'diagonal_same_all'
 # options for Glow: - ''
