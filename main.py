@@ -116,28 +116,28 @@ if DATASET_TYPE == 'Quadriga':
 print(np.swapaxes(x_train[:,:32,:],1,2))
 print(np.swapaxes(x_train[:,:32,:],1,2).shape)
 x_train_n = np.zeros((x_train.shape[0],2,32,x_train.shape[1]))
-x_train_n[:,0,:,:] = np.transpose(x_train[:,:32,:],axes = (1,2))
-x_train_n[:,1,:,:] = np.transpose(x_train[:,32:,:],axes = (1,2))
+x_train_n[:,0,:,:] = np.swapaxes(x_train[:,:32,:],1,2)
+x_train_n[:,1,:,:] = np.swapaxes(x_train[:,32:,:],1,2)
 
 y_train_n = np.zeros((y_train.shape[0],2,32,y_train.shape[1]))
-y_train_n[:,0,:,:] = np.transpose(y_train[:,:32,:],axes = (1,2))
-y_train_n[:,1,:,:] = np.transpose(y_train[:,32:,:],axes = (1,2))
+y_train_n[:,0,:,:] = np.swapaxes(y_train[:,:32,:],1,2)
+y_train_n[:,1,:,:] = np.swapaxes(y_train[:,32:,:],1,2)
 
 x_val_n = np.zeros((x_val.shape[0],2,32,x_val.shape[1]))
-x_val_n[:,0,:,:] = np.transpose(x_val[:,:32,:],axes = (1,2))
-x_val_n[:,1,:,:] = np.transpose(x_val[:,32:,:],axes = (1,2))
+x_val_n[:,0,:,:] = np.swapaxes(x_val[:,:32,:],1,2)
+x_val_n[:,1,:,:] = np.swapaxes(x_val[:,32:,:],1,2)
 
 y_val_n = np.zeros((y_val.shape[0],2,32,y_val.shape[1]))
-y_val_n[:,0,:,:] = np.transpose(y_val[:,:32,:],axes = (1,2))
-y_val_n[:,1,:,:] = np.transpose(y_val[:,32:,:],axes = (1,2))
+y_val_n[:,0,:,:] = np.swapaxes(y_val[:,:32,:],1,2)
+y_val_n[:,1,:,:] = np.swapaxes(y_val[:,32:,:],1,2)
 
 x_test_n = np.zeros((x_test.shape[0],2,32,x_test.shape[1]))
-x_test_n[:,0,:,:] = np.transpose(x_test[:,:32,:],axes = (1,2))
-x_test_n[:,1,:,:] = np.transpose(x_test[:,32:,:],axes = (1,2))
+x_test_n[:,0,:,:] = np.swapaxes(x_test[:,:32,:],1,2)
+x_test_n[:,1,:,:] = np.swapaxes(x_test[:,32:,:],1,2)
 
 y_test_n = np.zeros((y_test.shape[0],2,32,y_train.shape[1]))
-y_test_n[:,0,:,:] = np.transpose(y_test[:,:32,:],axes = (1,2))
-y_test_n[:,1,:,:] = np.transpose(y_test[:,32:,:],axes = (1,2))
+y_test_n[:,0,:,:] = np.swapaxes(y_test[:,:32,:],1,2)
+y_test_n[:,1,:,:] = np.swapaxes(y_test[:,32:,:],1,2)
 
 x_train_n = x_train_n[label_train == VELOCITY]
 y_train_n = y_train_n[label_train == VELOCITY]
