@@ -149,7 +149,7 @@ dataset = ds.dataset(data)
 dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
 
 data_val = np.concatenate((x_val_n,y_val_n),axis=3)
-dataset_val = ds.dataset(data_val)
+dataset_val = ds.dataset(data_val[:100,:,:,:])
 dataloader_val = DataLoader(dataset_val,batch_size=y_val.shape[0],shuffle=True)
 
 if GLOBAL_ARCHITECTURE == 'kalmanVAE':
