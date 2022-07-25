@@ -154,12 +154,13 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
                     z_list[:, :, idx - idx_first_prior] = z_local
                     z_input = z_local.clone()
             # prediction
+            z_total = torch.cat((z_inf,z_list),dim=2)
             x_list = torch.zeros(samples.size(0), iteration[1][0], iteration[1][1],(n_units - int(math.floor(knowledge / time_stamps_per_unit))) * time_stamps_per_unit).to(device)
             if len(model.decoder) > 1:
                 print('ja')
 
                 for idx in range(knowledge,n_units):
-                    z_input = z_list[:,:,knowledge-memory:knowledge+1]
+                    z_input = z_total[:,:,idx-memory:idx+1]
                     print('test')
                     print(z_input.size())
                     x_local = model.decoder[idx](z_input)[0]
