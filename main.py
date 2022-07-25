@@ -28,7 +28,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 3
+G_EPOCHS = 10
 LEARNING_RATE = 3e-5
 STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg_s: path gain standardization)
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
