@@ -943,7 +943,8 @@ class causal_kMemoryHMVAE_diagonal(nn.Module):
         mu_inf = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
         logvar_inf = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
         eps = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
-
+        print('hier')
+        print(x.size())
         x_input = torch.cat((x_start,x[:,:,:,0][:,:,:,None]),dim=2)
         mu_z, logvar_z = self.encoder[0](x_input, z_init)
         z_local, eps_local = self.reparameterize(logvar_z, mu_z)
