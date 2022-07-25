@@ -146,6 +146,10 @@ x_val_n = x_val_n[label_val == VELOCITY]
 y_val_n = y_val_n[label_val == VELOCITY]
 y_val_n = y_val_n[:,:,:,1:]
 
+x_test_n = x_test_n[label_test == VELOCITY]
+y_test_n = y_test_n[label_test == VELOCITY]
+y_test_n = y_test_n[:,:,:,1:]
+
 data = np.concatenate((x_train_n,y_train_n),axis=3)
 dataset = ds.dataset(data)
 dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
