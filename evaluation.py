@@ -131,7 +131,7 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
 
             for idx in range(1,iteration[3]):
                 z_input = z_inf[:,:,idx-1].clone()
-                x_input = torch.cat((x_init[:,:,:,iteration[3]-idx], samples[:, :, :, :idx+1]), dim=3)
+                x_input = torch.cat((x_init[:,:,:,:iteration[3]-idx], samples[:, :, :, :idx+1]), dim=3)
                 z_local = model.encoder[idx](x_input,z_input)[0]
                 z_inf[:, :, idx] = z_local
 
