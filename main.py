@@ -9,6 +9,7 @@ from utils import *
 import dataset as ds
 import training as tr
 import networks as mg
+import evaluation as ev
 
 GLOBAL_ARCHITECTURE = 'causal_kMemoryHMVAE'
 # options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
@@ -153,6 +154,10 @@ data_val = np.concatenate((x_val_n,y_val_n),axis=3)
 dataset_val = ds.dataset(data_val)
 dataloader_val = DataLoader(dataset_val,batch_size=4 * BATCHSIZE,shuffle=True)
 
+data_test = np.concatenate((x_test_n,y_test_n),axis=3)
+dataset_test = ds.dataset(data_test)
+dataloader_test = DataLoader(dataset_test,batch_size=4 * BATCHSIZE,shuffle=True)
+
 if GLOBAL_ARCHITECTURE == 'kalmanVAE':
     if LOCAL_ARCHITECTURE == 'toeplitz':
         model = mg.KalmanVAE_toeplitz
@@ -210,3 +215,8 @@ save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
 save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE')
 
 torch.save(model.state_dict(),dir_path + '/model_dict')
+log_file.write('\nTESTING\n')
+print('testing')
+NMSE_test = ev.channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_test,16,iteration,dir_path,device,'testing')
+print(f'NMSE test: {NMSE_test}')
+log_file.write(f'NMSE test: {NMSE_test}\n')

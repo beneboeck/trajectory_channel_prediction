@@ -57,11 +57,11 @@ def eval_val(GLOBAL_ARCHITECTURE, iteration, model,dataloader_val,risk_type, lam
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_kalman_VAE_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
 
-    NMSE = channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,16,iteration,dir_path,device)
+    NMSE = channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,16,iteration,dir_path,device,'evaluation')
     return NMSE, Risk
 
 
-def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iteration,dir_path,device):
+def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iteration,dir_path,device,PHASE):
 
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
@@ -167,8 +167,8 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             complete_x_list = torch.cat((samples[:, :, :, :int(math.floor(knowledge / time_stamps_per_unit)) * time_stamps_per_unit], x_list), dim=3)
             NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2, dim=(1, 2, 3)) / torch.sum(predicted_samples ** 2,dim=(1, 2, 3))).detach().to('cpu'))
 
-
-    prediction_visualization(samples,complete_x_list,dir_path)
+    if PHASE == 'testing':
+        prediction_visualization(samples,complete_x_list,dir_path)
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
 
