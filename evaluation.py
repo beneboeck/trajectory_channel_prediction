@@ -124,7 +124,7 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             # encoding
             z_init = torch.ones(samples.size(0), iteration[0][0]).to(device)
             z_inf = torch.zeros(samples.size(0), iteration[0][0], math.floor(knowledge/time_stamps_per_unit)).to(device)
-            x_init = torch.ones(samples.size(0),2,iteration[1][1],iteration[3])
+            x_init = torch.ones(samples.size(0),2,iteration[1][1],iteration[3]).to(device)
             x_input = torch.cat((x_init,samples[:,:,:,0][:,:,:,None]),dim=3)
             z_0 = model.encoder[0](x_input, z_init)[0]
             z_inf[:, :, 0] = z_0
