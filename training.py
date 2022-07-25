@@ -86,7 +86,7 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_diagonal(sample, z, log_var, mu_out, logpre_out, mu_prior,logpre_prior, eps)
 
-            if risk_type == 'kMemoryHiddenMarkovVAE_toeplitz_free_bits':
+            if risk_type == 'causal_kMemoryHMVAE_toeplitz_free_bits':
                 mu_out, B_out, C_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)

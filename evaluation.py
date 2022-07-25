@@ -35,7 +35,7 @@ def eval_val(GLOBAL_ARCHITECTURE, iteration, model,dataloader_val,risk_type, lam
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_kalman_VAE_diagonal(sample, z, log_var, mu_out, logpre_out, mu_prior,logpre_prior, eps)
 
-    if risk_type == 'kMemoryHiddenMarkovVAE_toeplitz_free_bits':
+    if risk_type == 'causal_kMemoryHMVAE_toeplitz_free_bits':
         mu_out, B_out, C_out, z, eps, mu_inf, log_var = model(sample)
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_kalman_VAE_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
@@ -156,20 +156,13 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             # prediction
             z_total = torch.cat((z_inf,z_list),dim=2)
             x_list = torch.zeros(samples.size(0), iteration[1][0], iteration[1][1],(n_units - int(math.floor(knowledge / time_stamps_per_unit))) * time_stamps_per_unit).to(device)
-            if len(model.decoder) > 1:
-                print('ja')
 
                 for idx in range(knowledge,n_units):
                     z_input = z_total[:,:,idx-memory:idx+1]
-                    print('test')
-                    print(z_input.size())
                     x_local = model.decoder[idx](z_input)[0]
                     x_list[:, :, :, (idx-knowledge) :(idx-knowledge + 1)] = x_local
 
             predicted_samples = samples[:, :, :,  int(math.floor(knowledge / time_stamps_per_unit)) * time_stamps_per_unit:]
-            print('joo')
-            print(predicted_samples.size())
-            print(x_list.size())
             complete_x_list = torch.cat((samples[:, :, :, :int(math.floor(knowledge / time_stamps_per_unit)) * time_stamps_per_unit], x_list), dim=3)
             NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2, dim=(1, 2, 3)) / torch.sum(predicted_samples ** 2,dim=(1, 2, 3))).detach().to('cpu'))
 
