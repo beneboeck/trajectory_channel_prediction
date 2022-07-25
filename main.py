@@ -11,7 +11,7 @@ import training as tr
 import networks as mg
 import evaluation as ev
 
-GLOBAL_ARCHITECTURE = 'kalmanVAE'
+GLOBAL_ARCHITECTURE = 'causal_kMemoryHMVAE'
 # options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
 #             'markovVanillaVAE' - 'causal_kMemoryHMVAE' -'kMemoryHiddenMarkovVAE' - 'ApproxKMemoryHiddenMarkovVAE' -'kMemoryMarkovVAE' - 'WN_kMemoryHiddenMarkovVAE'
 #             'WN_ModelBasedKMemoryHiddenMarkovVAE' , 'LSTM_HM_VAE', 'Masked_HM_VAE'
@@ -26,7 +26,7 @@ glob_var_file = open(dir_path + '/glob_var_file.txt','w')
 log_file = open(dir_path + '/log_file.txt','w')
 m_file = open(dir_path + '/m_file.txt','w')
 
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
 G_EPOCHS = 300
@@ -37,9 +37,9 @@ SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased o
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 
-ARCHITECTURE_FAMILY = 'toeplitz'
+ARCHITECTURE_FAMILY = 'diagonal'
 # options: 'toeplitz' - 'unitary' - 'diagonal' - 'cholesky'
-LOCAL_ARCHITECTURE = 'toeplitz'
+LOCAL_ARCHITECTURE = 'diagonal'
 # options for genericVAE: - 'toeplitz' - 'toeplitz_same_pre' - 'unitary' - 'unitary_same_pre' - 'diagonal' - 'diagonal_same_pre' - 'cholesky'
 # options for kalmanVAE: - 'toeplitz' - 'toeplitz_same_dec' - 'toeplitz_same_all' - 'unitary' - 'unitary_same_dec' - 'unitary_same_all' - 'diagonal' - 'diagonal_same_dec' - 'diagonal_same_all'
 # options for Glow: - ''
