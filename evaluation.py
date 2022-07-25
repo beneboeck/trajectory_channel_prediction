@@ -119,26 +119,29 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2,dim=(1,2,3))/torch.sum(predicted_samples**2,dim=(1,2,3))).detach().to('cpu'))
 
 
-        if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_kMemoryHiddenMarkovVAE'):
+        if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE'):
             memory = iteration[3]
             # encoding
-            z_init = torch.ones(batchsize, iteration[0][0]).to(device)
-            z_inf = torch.zeros(batchsize, iteration[0][0], math.floor(knowledge/time_stamps_per_unit)).to(device)
-            z_0 = model.encoder[0](samples[:, :, :, :time_stamps_per_unit*(memory+1)], z_init)[0]
+            z_init = torch.ones(samples.size(0), iteration[0][0]).to(device)
+            z_inf = torch.zeros(samples.size(0), iteration[0][0], math.floor(knowledge/time_stamps_per_unit)).to(device)
+            x_init = torch.ones(samples.size(0),2,iteration[1][1],iteration[3])
+            x_input = torch.cat((x_init,samples[:,:,:,0][:,:,:,None]),dim=2)
+            z_0 = model.encoder[0](x_input, z_init)[0]
             z_inf[:, :, 0] = z_0
-            if len(model.encoder) > 1:
-                for idx in range(1, math.floor(knowledge/time_stamps_per_unit)):
-                    z_input = z_inf[:, :, idx - 1].clone()
-                    z_local = model.encoder[idx](samples[:, :, :, idx * time_stamps_per_unit: (idx + memory + 1) * time_stamps_per_unit],z_input)[0]
-                    z_inf[:, :, idx] = z_local
-            if len(model.encoder) == 1:
-                for idx in range(1, math.floor(knowledge/time_stamps_per_unit)):
-                    z_input = z_inf[:, :, idx - 1].clone()
-                    z_local = model.encoder[0](samples[:, :, :, idx * time_stamps_per_unit: (idx + memory + 1) * time_stamps_per_unit],z_input)[0]
-                    z_inf[:, :, idx] = z_local
+
+            for idx in range(1,iteration[3]):
+                z_input = z_inf[:,:,idx-1].clone()
+                x_input = torch.cat((x_init[:,:,:,iteration[3]-idx], samples[:, :, :, :idx+1]), dim=2)
+                z_local = model.encoder[idx](x_input,z_input)[0]
+                z_inf[:, :, idx] = z_local
+
+            for idx in range(iteration[3], math.floor(knowledge/time_stamps_per_unit)):
+                z_input = z_inf[:, :, idx - 1].clone()
+                z_local = model.encoder[idx](samples[:, :, :, (idx - iteration[3]) * time_stamps_per_unit: (idx + 1) * time_stamps_per_unit],z_input)[0]
+                z_inf[:, :, idx] = z_local
 
             # prior
-            z_list = torch.zeros(batchsize, iteration[0][0], n_units - math.floor(knowledge/time_stamps_per_unit)).to(device)
+            z_list = torch.zeros(samples.size(0), iteration[0][0], n_units - math.floor(knowledge/time_stamps_per_unit)).to(device)
             z_input = z_inf[:, :, -1].clone()
             if len(model.prior_model) > 1:
                 for idx in range(math.floor(knowledge/time_stamps_per_unit), n_units):
@@ -151,7 +154,7 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
                     z_list[:, :, idx - idx_first_prior] = z_local
                     z_input = z_local.clone()
             # prediction
-            x_list = torch.zeros(batchsize, iteration[1][0], iteration[1][1],(n_units - int(math.floor(knowledge / time_stamps_per_unit))) * time_stamps_per_unit).to(device)
+            x_list = torch.zeros(samples.size(0), iteration[1][0], iteration[1][1],(n_units - int(math.floor(knowledge / time_stamps_per_unit))) * time_stamps_per_unit).to(device)
             if len(model.decoder) > 1:
                 print('ja')
                 for idx in range(memory):

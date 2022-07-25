@@ -697,3 +697,308 @@ class KalmanVAE_diagonal(nn.Module):
         mu_out,logpre_out = self.decode(z)
 
         return mu_out,logpre_out,z,eps,mu_inf,logvar_inf
+
+
+class kMemoryHiddenMarkovEnc_Unit_diagonal(nn.Module):
+    def __init__(self,z_dim,x_dim):
+        super(kMemoryHiddenMarkovEnc_Unit_diagonal,self).__init__()
+        self.first_one = False
+        self.z_dim = z_dim
+        self.x_dim = x_dim
+
+        input_size_1 = 1
+        input_size_2 = 1
+        for dim_1 in self.z_dim:
+            input_size_1 = input_size_1 * dim_1
+        for dim_2 in self.x_dim:
+            input_size_2 = input_size_2 * dim_2
+
+        self.input_size = input_size_1 + input_size_2
+
+
+        self.x_prenet = nn.Sequential(
+            nn.Conv2d(2,5,3,padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2,2,ceil_mode=True),
+            nn.BatchNorm2d(5,track_running_stats=False),
+            nn.Conv2d(5,10,1),
+            nn.ReLU(),
+            nn.BatchNorm2d(10,track_running_stats=False),
+        )
+
+        #
+        self.z_prenet = nn.Sequential(
+            nn.Linear(input_size_1,100),
+            nn.ReLU(),
+            nn.BatchNorm1d(100,eps=0.02,track_running_stats=False),#
+            nn.Linear(100,100),
+            nn.ReLU(),
+            nn.BatchNorm1d(100,eps=0.02,track_running_stats=False),
+        )
+
+        self.net = nn.Sequential(
+            nn.Linear(10 * math.ceil(self.x_dim[2]/2) * self.x_dim[1]//2 + 100,400),
+            nn.ReLU(),
+            nn.BatchNorm1d(400,track_running_stats=False),
+            nn.Linear(400,400),
+            nn.ReLU(),
+            nn.BatchNorm1d(400,track_running_stats=False),
+            )
+
+        self.mu_net = nn.Sequential(
+            nn.Linear(400,200),
+            nn.ReLU(),
+            nn.BatchNorm1d(200,track_running_stats=False),
+            nn.Linear(200,100),
+            nn.ReLU(),
+            nn.BatchNorm1d(100,track_running_stats=False),
+            nn.Linear(100,input_size_1),
+        )
+
+        self.logvar_net = nn.Sequential(
+            nn.Linear(400,200),
+            nn.ReLU(),
+            nn.BatchNorm1d(200,track_running_stats=False),
+            nn.Linear(200,100),
+            nn.ReLU(),
+            nn.BatchNorm1d(100,track_running_stats=False),
+            nn.Linear(100,input_size_1),
+        )
+
+    def forward(self,x,z):
+        x = self.x_prenet(x)
+        z = self.z_prenet(z)
+        x = nn.Flatten()(x)
+        #z = nn.Flatten()(z)
+        cat_vec = torch.cat((x,z),dim=1)
+        out = self.net(cat_vec)
+        mu = self.mu_net(out)
+        logvar = self.logvar_net(out)
+
+        return mu,logvar
+
+class kMemoryHiddenMarkovDec_Unit_diagonal(nn.Module):
+    def __init__(self,z_dim,x_dim):
+        super(kMemoryHiddenMarkovDec_Unit_diagonal,self).__init__()
+        self.z_dim = z_dim
+        self.x_dim = x_dim
+
+        input_size_1 = 1
+        input_size_2 = 1
+        for dim_1 in self.z_dim:
+            input_size_1 *= dim_1
+        for dim_2 in self.x_dim:
+            input_size_2 *= dim_2
+
+        self.net = nn.Sequential(
+            nn.Linear(input_size_1,200),
+            nn.ReLU(),
+            nn.BatchNorm1d(200,track_running_stats=False),
+            nn.Linear(200,400),
+            nn.ReLU(),
+            nn.BatchNorm1d(400,track_running_stats=False),
+        )
+
+        self.mu_out_net = nn.Sequential(
+            nn.Linear(400,400),
+            nn.ReLU(),
+            nn.BatchNorm1d(400,track_running_stats=False),
+            nn.Linear(400,int(input_size_2)),
+            Reshape(self.x_dim[0],self.x_dim[1],self.x_dim[2]),
+        )
+
+        self.logpre_out_net = nn.Sequential(
+            nn.Linear(400,400),
+            nn.ReLU(),
+            nn.BatchNorm1d(400,track_running_stats=False),
+            nn.Linear(400,int(input_size_2/2)),
+            Reshape(1,self.x_dim[1],self.x_dim[2])
+        )
+
+    def forward(self,z):
+        z = nn.Flatten()(z)
+        out = self.net(z)
+        mu_out = self.mu_out_net(out)
+        logpre_out = self.logpre_out_net(out)
+        return mu_out,logpre_out
+
+class kMemoryHiddenMarkovPrior_Unit_diagonal(nn.Module):
+    def __init__(self,z_dim):
+        super(kMemoryHiddenMarkovPrior_Unit_diagonal,self).__init__()
+        self.z_dim = z_dim
+
+        self.input_size = 1
+        for dim in z_dim:
+            self.input_size *= dim
+
+        self.net = nn.Sequential(
+            nn.Linear(self.input_size,200),
+            nn.ReLU(),
+            #nn.BatchNorm1d(200), -> no BatchNorm for nets with a potential fixed input, since it makes the network unstable
+            nn.BatchNorm1d(200,eps=0.02,track_running_stats=False),
+            nn.Linear(200,200),
+            nn.ReLU(),
+            nn.BatchNorm1d(200,eps=0.02,track_running_stats=False),
+        )
+
+        self.mu_net = nn.Sequential(
+            nn.Linear(200,100),
+            nn.ReLU(),
+            nn.BatchNorm1d(100,track_running_stats=False),
+            nn.Linear(100,self.input_size),
+        )
+
+        self.logpre_net = nn.Sequential(
+            nn.Linear(200,100),
+            nn.ReLU(),
+            nn.BatchNorm1d(100,track_running_stats=False),
+            nn.Linear(100,self.input_size),
+
+        )
+
+    def forward(self,z):
+        out = self.net(z)
+        mu_out = self.mu_net(out)
+        logpre_out = self.logpre_net(out)
+        logpre_out[logpre_out > 4] = 4
+        logpre_out[logpre_out < -4] = -4
+        return mu_out,logpre_out
+
+class causal_kMemoryHMVAE_diagonal(nn.Module):
+    def __init__(self,z_dim,x_dim,time_stamps_per_unit,memory,device):
+        super(causal_kMemoryHMVAE_diagonal,self).__init__()
+
+        self.device = device
+        self.z_dim = z_dim
+        self.x_dim = x_dim
+        self.z_size = 1
+        self.x_size = 1
+        self.time_stamps_per_unit = time_stamps_per_unit
+        self.memory = memory
+
+        for dim in self.z_dim:
+            self.z_size *= dim
+
+        for dim in self.x_dim:
+            self.x_size*= dim
+
+        self.n_units = int(self.x_dim[2]/self.time_stamps_per_unit)
+        self.x_dim_per_unit = [self.x_dim[0],self.x_dim[1],self.time_stamps_per_unit]
+        self.x_dim_encoder = [self.x_dim[0],self.x_dim[1],self.time_stamps_per_unit * (self.memory+1)]
+        self.z_dim_decoder = [self.z_dim[0],1 + self.memory]
+
+        self.encoder = nn.ModuleList([kMemoryHiddenMarkovEnc_Unit_diagonal(self.z_dim,self.x_dim_encoder) for i in range(self.n_units)]) ### x_dim richtig?
+        self.decoder = nn.ModuleList([kMemoryHiddenMarkovDec_Unit_diagonal(self.z_dim_decoder,self.x_dim_per_unit) for i in range(self.n_units)]) ### x_dim richtig?
+        self.prior_model = nn.ModuleList([kMemoryHiddenMarkovPrior_Unit_diagonal(self.z_dim) for i in range(self.n_units)])
+
+        self.encoder[0].first_one = True
+
+
+    def reparameterize(self, log_var, mu):
+        std = torch.exp(0.5 * log_var)
+        eps = torch.randn_like(std)
+        return mu + eps * std,eps
+
+    def feed_prior(self,z):
+        n_units = int(z.size()[2])
+        batchsize = z.size()[0]
+        z_init = torch.zeros(batchsize,self.z_dim[0]).to(self.device) # zeros instead of ones in the spirit of Glow
+        mu_prior = torch.zeros(z.size()).to(self.device)
+        logpre_prior = torch.zeros(z.size()).to(self.device)
+        mu_prior[:,:,0],logpre_prior[:,:,0] = self.prior_model[0](z_init)
+        for unit in range(1,n_units):
+            z_input = z[:,:,unit-1].clone()
+            mu_prior[:,:,unit],logpre_prior[:,:,unit] = self.prior_model[unit](z_input)
+            del z_input
+
+        #logpre_prior[logpre_prior > 6] = 6
+
+        return mu_prior,logpre_prior
+
+    def sample_from_prior(self,n_samples):
+        z_init = torch.zeros(n_samples,self.z_dim[0]).to(self.device) # zeros instead of ones in the spirit of Glow
+        z = torch.zeros(n_samples,self.z_dim[0],self.n_units).to(self.device)
+
+        mu,logpre = self.prior_model[0](z_init)
+        eps = torch.randn(n_samples,self.z_dim[0]).to(self.device)
+        z_sample = mu + eps * 1/torch.sqrt(torch.exp(logpre)) # at the moment I am really implementing log_pre not log_var
+        #z_sample = mu + eps * torch.exp(0.5 * logpre)
+        z[:,:,0] = torch.squeeze(z_sample)
+
+        for unit in range(1,self.n_units):
+            mu,logpre = self.prior_model[unit](z[:,:,unit-1])
+            eps = torch.randn(n_samples, self.z_dim[0]).to(self.device)
+            z_sample = mu + eps * 1/torch.sqrt(torch.exp(logpre))
+            #z_sample = mu + eps * torch.exp(0.5 * logpre)
+            z[:,:,unit] = torch.squeeze(z_sample)
+
+
+        return z
+
+    def encode(self,x):
+        batchsize = x.size()[0]
+        z = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
+        z_init = torch.ones(batchsize,self.z_dim[0]).to(self.device) # zeros instead of ones in the spirit of Glow
+        x_start = torch.ones(batchsize,self.x_dim[0],self.x_dim[1],self.memory*self.time_stamps_per_unit).to(self.device)
+        mu_inf = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
+        logvar_inf = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
+        eps = torch.zeros(batchsize,self.z_dim[0],self.n_units).to(self.device)
+
+        x_input = torch.cat((x_start,x[:,:,:,0][:,:,:,None]),dim=2)
+        mu_z, logvar_z = self.encoder[0](x_input, z_init)
+        z_local, eps_local = self.reparameterize(logvar_z, mu_z)
+        z[:, :, 0] = z_local
+        eps[:, :, 0] = eps_local
+        mu_inf[:, :, 0] = mu_z
+        logvar_inf[:, :, 0] = logvar_z
+
+        for i in range(1,self.memory):
+            x_input = torch.cat((x_start[:,:,:,self.memory-i], x[:, :, :, :i+1]), dim=2)
+            z_input = z[:,:,i-1].clone()
+            mu_z, logvar_z = self.encoder[i](x_input,z_input)
+            # logpre_out_local[logpre_out_local > 9] = 9
+            z_local,eps_local = self.reparameterize(logvar_z,mu_z)
+            z[:,:,i] = z_local
+            eps[:,:,i] = eps_local
+            mu_inf[:,:,i] = mu_z
+            logvar_inf[:,:,i] = logvar_z
+
+        for unit in range(self.memory,self.n_units):
+            z_input = z[:,:,unit-1].clone()
+            x_input = x[:,:,:,unit-self.memory:unit+1]
+            mu_z,logvar_z = self.encoder[unit](x_input,z_input)
+            z_local,eps_local = self.reparameterize(logvar_z,mu_z)
+            z[:,:,unit] = z_local
+            eps[:,:,unit] = eps_local
+            mu_inf[:,:,unit] = mu_z
+            logvar_inf[:,:,unit] = logvar_z
+
+
+        return z,eps,mu_inf,logvar_inf
+
+    def decode(self,z):
+        batchsize = z.size()[0]
+        mu_out = torch.zeros([batchsize] + self.x_dim).to(self.device)
+        z_init = torch.ones(batchsize, self.z_dim[0],self.memory).to(self.device)
+        logpre_out = torch.zeros(batchsize, 1, self.x_dim[1], self.x_dim[2]).to(self.device)
+
+        for i in range(self.memory):
+            z_input = torch.cat((z_init[:, :, :self.memory - i], z[:, :, :i+1]), dim=2)
+            mu_out_local, logpre_out_local = self.decoder[i](z_input)
+            # logpre_out_local[logpre_out_local > 9] = 9
+            mu_out[:, :, :, i * self.time_stamps_per_unit:(i + 1) * self.time_stamps_per_unit], logpre_out[:, :,:,i * self.time_stamps_per_unit:(i + 1) * self.time_stamps_per_unit] = mu_out_local, logpre_out_local
+
+        for unit in range(self.memory,self.n_units):
+            z_input = z[:,:,unit-self.memory:unit+1].clone()
+            mu_out_local, logpre_out_local = self.decoder[unit](z_input)
+            #logpre_out_local[logpre_out_local > 9] = 9
+            mu_out[:, :, :, unit * self.time_stamps_per_unit:(unit + 1) * self.time_stamps_per_unit], logpre_out[:, :,:,unit * self.time_stamps_per_unit:(unit + 1) * self.time_stamps_per_unit] = mu_out_local, logpre_out_local
+
+        return mu_out,logpre_out
+
+
+    def forward(self,x):
+        z,eps,mu_inf,logvar_inf = self.encode(x)
+        mu_out,logpre_out = self.decode(z)
+
+        return mu_out,logpre_out,z,eps,mu_inf,logvar_inf

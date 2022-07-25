@@ -10,9 +10,9 @@ import dataset as ds
 import training as tr
 import networks as mg
 
-GLOBAL_ARCHITECTURE = 'kalmanVAE'
+GLOBAL_ARCHITECTURE = 'causal_kMemoryHMVAE'
 # options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
-#             'markovVanillaVAE' -'kMemoryHiddenMarkovVAE' - 'ApproxKMemoryHiddenMarkovVAE' -'kMemoryMarkovVAE' - 'WN_kMemoryHiddenMarkovVAE'
+#             'markovVanillaVAE' - 'causal_kMemoryHMVAE' -'kMemoryHiddenMarkovVAE' - 'ApproxKMemoryHiddenMarkovVAE' -'kMemoryMarkovVAE' - 'WN_kMemoryHiddenMarkovVAE'
 #             'WN_ModelBasedKMemoryHiddenMarkovVAE' , 'LSTM_HM_VAE', 'Masked_HM_VAE'
 
 now = datetime.datetime.now()
@@ -28,7 +28,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 300
+G_EPOCHS = 3
 LEARNING_RATE = 3e-5
 STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg_s: path gain standardization)
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
@@ -36,9 +36,9 @@ SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased o
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 
-ARCHITECTURE_FAMILY = 'toeplitz'
+ARCHITECTURE_FAMILY = 'diagonal'
 # options: 'toeplitz' - 'unitary' - 'diagonal' - 'cholesky'
-LOCAL_ARCHITECTURE = 'toeplitz'
+LOCAL_ARCHITECTURE = 'diagonal'
 # options for genericVAE: - 'toeplitz' - 'toeplitz_same_pre' - 'unitary' - 'unitary_same_pre' - 'diagonal' - 'diagonal_same_pre' - 'cholesky'
 # options for kalmanVAE: - 'toeplitz' - 'toeplitz_same_dec' - 'toeplitz_same_all' - 'unitary' - 'unitary_same_dec' - 'unitary_same_all' - 'diagonal' - 'diagonal_same_dec' - 'diagonal_same_all'
 # options for Glow: - ''
@@ -53,7 +53,7 @@ if (GLOBAL_ARCHITECTURE == 'kalmanVAE') | (GLOBAL_ARCHITECTURE == 'WN_kalmanVAE'
 # IMPORTANT: TIME STEPS / NUMBER TIME STEPS PER UNIT has to be an integer!
 # IMPORTANT!! IT HAS TO BE A LIST
 
-if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE') | (GLOBAL_ARCHITECTURE == 'WN_kMemoryHiddenMarkovVAE'):
+if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE'):
     DIM_VEC = [([12],[2,32,SNAPSHOTS],1,6,device)]
     LATENT_DIMENSIONS,INTERNAL_DIMENSIONS,INPUT_SIZE = None,None,range(len(DIM_VEC))
     RP_NN,Y_max,Y_min = None,None,None
@@ -87,6 +87,7 @@ if GLOBAL_ARCHITECTURE == 'kalmanVAE':
 glob_var_file.write('RISK_TYPE: ' +RISK_TYPE +'\n')
 glob_var_file.write('BATCHSIZE: ' + str(BATCHSIZE) +'\n')
 glob_var_file.write('G_EPOCHS: ' +str(G_EPOCHS) +'\n')
+glob_var_file.write(f'VELOCITY: {VELOCITY}\n')
 log_file.write('Date: ' +date +'\n')
 log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n')
@@ -176,11 +177,11 @@ if GLOBAL_ARCHITECTURE == 'kalmanVAE':
 
     iterations = DIM_VEC
 
-if GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE':
+if GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE':
     if LOCAL_ARCHITECTURE == 'diagonal':
-        model = mg.kMemoryHiddenMarkovVAE_diagonal
+        model = mg.causal_kMemoryHMVAE_diagonal
     if LOCAL_ARCHITECTURE == 'toeplitz':
-        model = mg.kMemoryHiddenMarkovVAE_toeplitz
+        model = mg.causal_kMemoryHMVAE_toeplitz
 
     iterations = DIM_VEC
 
@@ -195,7 +196,7 @@ iteration = iterations[0]
 if (GLOBAL_ARCHITECTURE == 'kalmanVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3]).to(device)
 
-if (GLOBAL_ARCHITECTURE == 'kMemoryHiddenMarkovVAE'):
+if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
