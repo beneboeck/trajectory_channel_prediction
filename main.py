@@ -28,7 +28,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 10
+G_EPOCHS = 3
 LEARNING_RATE = 3e-5
 STANDARDIZE_METHOD = 'c_s' # 'pg_s','c_s' (c_s: conventional standardization, pg_s: path gain standardization)
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
@@ -202,7 +202,7 @@ if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE'):
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(GLOBAL_ARCHITECTURE, iteration, LEARNING_RATE, model, dataloader,dataloader_val, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file, dataset)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(GLOBAL_ARCHITECTURE, iteration, LEARNING_RATE, model, dataloader,dataloader_val, G_EPOCHS, RISK_TYPE, FREE_BITS_LAMBDA,device, log_file,dir_path, dataset)
 
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 

@@ -39,7 +39,7 @@ def risk_kalman_VAE_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_p
 
 
 def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader_val, epochs, risk_type, lamba,
-                      device, log_file, dataset):
+                      device, log_file,dir_path, dataset):
 
     risk_list= []
     KL_list = []
@@ -118,7 +118,7 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
         RR_list.append(RR.detach().to('cpu'))
         with torch.no_grad():
             model.eval()
-            NMSE, Risk = ev.eval_val(GLOBAL_ARCHITECTURE, iteration, model, dataloader_val, risk_type, lamba, device, log_file)
+            NMSE, Risk = ev.eval_val(GLOBAL_ARCHITECTURE, iteration, model, dataloader_val, risk_type, lamba, device, dir_path)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
             print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')

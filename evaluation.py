@@ -2,8 +2,9 @@ import math
 import torch
 import training as tr
 import numpy as np
+import matplotlib.pyplot as plt
 
-def eval_val(GLOBAL_ARCHITECTURE, iteration, model,dataloader_val,risk_type, lamba,device, log_file):
+def eval_val(GLOBAL_ARCHITECTURE, iteration, model,dataloader_val,risk_type, lamba,device, dir_path):
 
     iterator = iter(dataloader_val)
     samples = iterator.next()
@@ -56,11 +57,11 @@ def eval_val(GLOBAL_ARCHITECTURE, iteration, model,dataloader_val,risk_type, lam
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_kalman_VAE_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
 
-    NMSE = channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,16,iteration,device)
+    NMSE = channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,16,iteration,dir_path,device)
     return NMSE, Risk
 
 
-def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iteration,device):
+def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iteration,dir_path,device):
 
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
@@ -166,43 +167,48 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             complete_x_list = torch.cat((samples[:, :, :, :int(math.floor(knowledge / time_stamps_per_unit)) * time_stamps_per_unit], x_list), dim=3)
             NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2, dim=(1, 2, 3)) / torch.sum(predicted_samples ** 2,dim=(1, 2, 3))).detach().to('cpu'))
 
-    # fig, ax = plt.subplots(4, 6, gridspec_kw={'wspace': 0, 'hspace': 0}, figsize=(18, 4))
-    #
-    # for n in range(6):
-    #     sample = samples[n, :, :, :]
-    #     sample = sample[None, :, :, :]
-    #
-    #     mu_out = complete_x_list[n, :, :, :]
-    #     mu_out = torch.squeeze(mu_out).to('cpu').detach()
-    #     mu_out = torch.complex(mu_out[0, :, :], mu_out[1, :, :])
-    #     abs_out = torch.abs(mu_out)
-    #     angle_out = torch.angle(mu_out)
-    #
-    #     sample = sample.to('cpu')
-    #     sample = torch.squeeze(sample)
-    #     sample = torch.complex(sample[0, :, :], sample[1, :, :])
-    #     abs_sample = torch.abs(sample)
-    #     angle_sample = torch.angle(sample)
-    #
-    #     ax[int(np.floor(n / 3) * 2), int(n % 3 * 2)].imshow(abs_sample.numpy(), cmap='hot')
-    #     ax[int(np.floor(n / 3) * 2), int(n % 3 * 2)].set_xticks([])
-    #     ax[int(np.floor(n / 3) * 2), int(n % 3 * 2)].set_yticks([])
-    #
-    #     ax[int(np.floor(n / 3) * 2), int(n % 3 * 2) + 1].imshow(abs_out.numpy(), cmap='hot')
-    #     ax[int(np.floor(n / 3) * 2), int(n % 3 * 2) + 1].set_xticks([])
-    #     ax[int(np.floor(n / 3) * 2), int(n % 3 * 2) + 1].set_yticks([])
-    #
-    #     ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2)].imshow(angle_sample.numpy(), cmap='hot')
-    #     ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2)].set_xticks([])
-    #     ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2)].set_yticks([])
-    #
-    #     ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2 + 1)].imshow(angle_out.numpy(), cmap='hot')
-    #     ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2 + 1)].set_xticks([])
-    #     ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2 + 1)].set_yticks([])
-    #
-    # fig.suptitle('Real Domain (antennas)- NW:original abs,NE:estimated abs,SW:original phase,SE:estimated phase')
-    #
-    # fig.savefig(dir_path + '/heat_map_for_prediction_' + time + '_' + str(iteration) + '_' + scenario + 'real.png', dpi=300)
-    # plt.close('all')
+
+    prediction_visualization(samples,complete_x_list,dir_path)
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
+
+
+def prediction_visualization(samples,complete_x_list,dir_path):
+    fig, ax = plt.subplots(4, 6, gridspec_kw={'wspace': 0, 'hspace': 0}, figsize=(18, 4))
+
+    for n in range(6):
+        sample = samples[n, :, :, :]
+        sample = sample[None, :, :, :]
+
+        mu_out = complete_x_list[n, :, :, :]
+        mu_out = torch.squeeze(mu_out).to('cpu').detach()
+        mu_out = torch.complex(mu_out[0, :, :], mu_out[1, :, :])
+        abs_out = torch.abs(mu_out)
+        angle_out = torch.angle(mu_out)
+
+        sample = sample.to('cpu')
+        sample = torch.squeeze(sample)
+        sample = torch.complex(sample[0, :, :], sample[1, :, :])
+        abs_sample = torch.abs(sample)
+        angle_sample = torch.angle(sample)
+
+        ax[int(np.floor(n / 3) * 2), int(n % 3 * 2)].imshow(abs_sample.numpy(), cmap='hot')
+        ax[int(np.floor(n / 3) * 2), int(n % 3 * 2)].set_xticks([])
+        ax[int(np.floor(n / 3) * 2), int(n % 3 * 2)].set_yticks([])
+
+        ax[int(np.floor(n / 3) * 2), int(n % 3 * 2) + 1].imshow(abs_out.numpy(), cmap='hot')
+        ax[int(np.floor(n / 3) * 2), int(n % 3 * 2) + 1].set_xticks([])
+        ax[int(np.floor(n / 3) * 2), int(n % 3 * 2) + 1].set_yticks([])
+
+        ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2)].imshow(angle_sample.numpy(), cmap='hot')
+        ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2)].set_xticks([])
+        ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2)].set_yticks([])
+
+        ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2 + 1)].imshow(angle_out.numpy(), cmap='hot')
+        ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2 + 1)].set_xticks([])
+        ax[int(np.floor(n / 3) * 2) + 1, int(n % 3 * 2 + 1)].set_yticks([])
+
+    fig.suptitle('Real Domain (antennas)- NW:original abs,NE:estimated abs,SW:original phase,SE:estimated phase')
+
+    fig.savefig(dir_path + '/heat_map_for_prediction.png', dpi=300)
+    plt.close('all')
