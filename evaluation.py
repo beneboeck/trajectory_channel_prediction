@@ -160,6 +160,8 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
 
                 for idx in range(knowledge,n_units):
                     z_input = z_list[:,:,knowledge-memory:knowledge+1]
+                    print('test')
+                    print(z_input.size())
                     x_local = model.decoder[idx](z_input)[0]
                     x_list[:, :, :, (idx-knowledge) :(idx-knowledge + 1)] = x_local
 
