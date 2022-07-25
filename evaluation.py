@@ -157,33 +157,18 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             x_list = torch.zeros(samples.size(0), iteration[1][0], iteration[1][1],(n_units - int(math.floor(knowledge / time_stamps_per_unit))) * time_stamps_per_unit).to(device)
             if len(model.decoder) > 1:
                 print('ja')
-                for idx in range(memory):
-                    print(idx)
-                    z_input = torch.cat((z_inf[:,:,-(memory - idx):],z_list[:,:,:idx+1]),dim=2)
-                    x_local = model.decoder[math.floor(knowledge/time_stamps_per_unit) + idx](z_input)[0]
-                    x_list[:,:,:,idx*time_stamps_per_unit:(idx+1) * time_stamps_per_unit] = x_local
-                for idx in range(math.floor(knowledge/time_stamps_per_unit) + memory, n_units):
-                    z_input = z_list[:,:,idx - (math.floor(knowledge/time_stamps_per_unit) + memory):(idx + memory + 1) - (math.floor(knowledge/time_stamps_per_unit) + memory)]
-                    x_local = model.decoder[idx](z_input)[0]
-                    x_list[:, :, :,(idx - math.floor(knowledge/time_stamps_per_unit)) * time_stamps_per_unit:(idx - math.floor(knowledge/time_stamps_per_unit) + 1) * time_stamps_per_unit] = x_local
 
-            if len(model.decoder) == 1:
-                for idx in range(memory):
-                    z_input = torch.cat((z_inf[:,:,-(memory - idx)],z_list[:,:,:idx+1]),dim=2)
-                    x_local = model.decoder[0](z_input)[0]
-                    x_list[:,:,:,idx*time_stamps_per_unit:(idx+1) * time_stamps_per_unit] = x_local
-                for idx in range(math.floor(knowledge/time_stamps_per_unit) + memory, n_units):
-                    z_input = z_list[:,:,idx - (math.floor(knowledge/time_stamps_per_unit) + memory):(idx + memory + 1) - (math.floor(knowledge/time_stamps_per_unit) + memory)]
-                    x_local = model.decoder[0](z_input)[0]
-                    x_list[:, :, :,(idx - math.floor(knowledge/time_stamps_per_unit)) * time_stamps_per_unit:(idx - math.floor(knowledge/time_stamps_per_unit) + 1) * time_stamps_per_unit] = x_local
+                for idx in range(knowledge,n_units):
+                    z_input = z_list[:,:,knowledge-memory:knowledge+1]
+                    x_local = model.decoder[idx](z_input)[0]
+                    x_list[:, :, :, (idx-knowledge) :(idx-knowledge + 1)] = x_local
 
             predicted_samples = samples[:, :, :,  int(math.floor(knowledge / time_stamps_per_unit)) * time_stamps_per_unit:]
             print('joo')
             print(predicted_samples.size())
             print(x_list.size())
-            MSE = torch.mean((predicted_samples - x_list) ** 2)
             complete_x_list = torch.cat((samples[:, :, :, :int(math.floor(knowledge / time_stamps_per_unit)) * time_stamps_per_unit], x_list), dim=3)
-
+            NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2, dim=(1, 2, 3)) / torch.sum(predicted_samples ** 2,dim=(1, 2, 3))).detach().to('cpu'))
 
     # fig, ax = plt.subplots(4, 6, gridspec_kw={'wspace': 0, 'hspace': 0}, figsize=(18, 4))
     #
