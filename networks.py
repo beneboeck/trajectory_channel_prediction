@@ -955,7 +955,7 @@ class causal_kMemoryHMVAE_diagonal(nn.Module):
         logvar_inf[:, :, 0] = logvar_z
 
         for i in range(1,self.memory):
-            x_input = torch.cat((x_start[:,:,:,self.memory-i], x[:, :, :, :i+1]), dim=3)
+            x_input = torch.cat((x_start[:,:,:,:self.memory-i], x[:, :, :, :i+1]), dim=3)
             z_input = z[:,:,i-1].clone()
             mu_z, logvar_z = self.encoder[i](x_input,z_input)
             # logpre_out_local[logpre_out_local > 9] = 9
