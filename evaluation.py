@@ -40,7 +40,7 @@ def eval_val(GLOBAL_ARCHITECTURE, iteration, model,dataloader_val,risk_type, lam
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_kalman_VAE_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
-    if (risk_type == 'kMemoryHiddenMarkovVAE_diagonal_free_bits'):
+    if (risk_type == 'causal_kMemoryHMVAE_diagonal_free_bits'):
         mu_out, logpre_out, z, eps, mu_inf, log_var = model(sample)
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_kalman_VAE_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
