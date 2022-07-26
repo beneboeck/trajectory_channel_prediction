@@ -11,7 +11,7 @@ import training as tr
 import networks as mg
 import evaluation as ev
 
-GLOBAL_ARCHITECTURE = 'causal_kMemoryHMVAE'
+GLOBAL_ARCHITECTURE = 'causal_kMemoryHMVAE_small'
 # options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
 #             'markovVanillaVAE' - 'causal_kMemoryHMVAE' -'kMemoryHiddenMarkovVAE' - 'ApproxKMemoryHiddenMarkovVAE' -'kMemoryMarkovVAE' - 'WN_kMemoryHiddenMarkovVAE'
 #             'WN_ModelBasedKMemoryHiddenMarkovVAE' , 'LSTM_HM_VAE', 'Masked_HM_VAE'
@@ -191,6 +191,14 @@ if GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE':
         model = mg.causal_kMemoryHMVAE_diagonal
     if LOCAL_ARCHITECTURE == 'toeplitz':
         model = mg.causal_kMemoryHMVAE_toeplitz
+
+    iterations = DIM_VEC
+
+if GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE_small':
+    if LOCAL_ARCHITECTURE == 'diagonal':
+        model = mg.causal_kMemoryHMVAE_small_diagonal
+    if LOCAL_ARCHITECTURE == 'toeplitz':
+        model = mg.causal_kMemoryHMVAE_small_toeplitz
 
     iterations = DIM_VEC
 
