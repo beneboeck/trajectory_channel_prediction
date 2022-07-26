@@ -10,7 +10,7 @@ def eval_val(setup,model,dataloader_val,cov_type, lamba,device, dir_path):
     samples = iterator.next()
     sample = samples.to(device)
 
-    if (cov_type == 'toeplitz'):
+    if (cov_type == 'Toeplitz'):
         out, z, eps, mu_inf, log_var = model(sample)
         mu_out, B_out, C_out = out
         mu_prior, logpre_prior = model.feed_prior(z)

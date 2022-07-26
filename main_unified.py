@@ -123,7 +123,7 @@ dataloader_test = DataLoader(dataset_test,batch_size=4 * BATCHSIZE,shuffle=True)
 model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,device).to(device)
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,device, log_file,dir_path)
-
+model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
 save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')

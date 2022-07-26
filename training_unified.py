@@ -85,6 +85,7 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
             NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
+            model.train()
             print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')
             log_file.write(f'Evaluation - NMSE: {NMSE},Risk: {Risk}\n')
             if i > 300:

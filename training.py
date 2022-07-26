@@ -132,6 +132,7 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
                 print('slope')
                 print(slope)
                 log_file.write(f'slope of Evaluation ELBO: {slope}\n')
+            model.train()
 
         if slope > 0:
             log_file.write('BREAKING CONDITION, slope positive\n')
