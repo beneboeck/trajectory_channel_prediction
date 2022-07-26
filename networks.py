@@ -1943,7 +1943,7 @@ class Encoder(nn.Module):
         self.x_prenet = nn.Sequential(
             nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
             nn.ReLU(),
-            nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step,track_running_stats=False)),
+            nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step),track_running_stats=False),
             nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
 
         self.net = []
