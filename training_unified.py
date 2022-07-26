@@ -82,7 +82,7 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
         RR_list.append(RR.detach().to('cpu'))
         with torch.no_grad():
             model.eval()
-            NMSE, Risk = ev.eval_val(setup,model, dataloader_val, lamba, device, dir_path)
+            NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
             print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')
