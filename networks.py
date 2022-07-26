@@ -1998,7 +1998,7 @@ class Decoder(nn.Module):
         self.net = nn.Sequential(*self.net)
 
     def forward(self,z):
-        z = nn.Flatten(z)
+        z = nn.Flatten()(z)
         out = self.net(z)
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
