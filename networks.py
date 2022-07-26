@@ -1989,10 +1989,11 @@ class Decoder(nn.Module):
         net_in_dim = de_width * ld * memory
         net_out_dim = int(de_width * ld * memory - step)
         for l in range(de_layer-1):
-            input_dim = de_width * ld * memory
             self.net.append(nn.Linear(net_in_dim,net_out_dim))
             self.net.append(nn.ReLU()),
             self.net.append(nn.BatchNorm1d(net_out_dim))
+            net_in_dim = net_out_dim
+            net_out_dim = int(net_out_dim - step)
         self.net.append(nn.Linear(net_out_dim,output_dim))
         self.net = nn.Sequential(*self.net)
 
