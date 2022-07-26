@@ -1975,10 +1975,11 @@ class Encoder(nn.Module):
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
-    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width):
+    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,device):
         super().__init__()
         self.cov_type = cov_type
         self.n_ant = n_ant
+        self.device = device
         if (cov_type == 'DFT') | (cov_type == 'diagonal'):
             output_dim = 3 * n_ant
         if cov_type == 'Toeplitz':
@@ -2062,7 +2063,7 @@ class HMVAE(nn.Module):
         self.device = device
         self.cov_type = cov_type
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width) for i in range(snapshots)])
-        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width) for i in range(snapshots)])
+        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width) for i in range(snapshots)])
 
     def reparameterize(self, log_var, mu):
