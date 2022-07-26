@@ -1980,6 +1980,15 @@ class Decoder(nn.Module):
         self.cov_type = cov_type
         self.n_ant = n_ant
         self.device = device
+        rand_matrix = torch.randn(32,32)
+        self.B_mask = torch.tril(rand_matrix)
+        self.B_mask[self.B_mask != 0] = 1
+        self.B_mask = self.B_mask[None,None,:,:].to(self.device)
+
+        self.C_mask = torch.tril(rand_matrix,diagonal=-1)
+        self.C_mask[self.C_mask != 0] = 1
+        self.C_mask = self.C_mask[None,None,:,:].to(self.device)
+
         if (cov_type == 'DFT') | (cov_type == 'diagonal'):
             output_dim = 3 * n_ant
         if cov_type == 'Toeplitz':
