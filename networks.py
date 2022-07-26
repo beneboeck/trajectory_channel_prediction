@@ -1507,7 +1507,7 @@ class causal_kMemoryHMVAE_small_Dec_toeplitz(nn.Module):
 
 class causal_kMemoryHMVAE_small_Prior_toeplitz(nn.Module):
     def __init__(self,z_dim):
-        super(kMemoryHiddenMarkovPrior_Unit_toeplitz,self).__init__()
+        super(causal_kMemoryHMVAE_small_Prior_toeplitz,self).__init__()
         self.z_dim = z_dim
 
         self.input_size = 1
@@ -1533,7 +1533,7 @@ class causal_kMemoryHMVAE_small_Prior_toeplitz(nn.Module):
 
 class causal_kMemoryHMVAE_small_toeplitz(nn.Module):
     def __init__(self,z_dim,x_dim,time_stamps_per_unit,memory,device):
-        super(causal_kMemoryHMVAE_toeplitz,self).__init__()
+        super(causal_kMemoryHMVAE_small_toeplitz,self).__init__()
 
         self.device = device
         self.z_dim = z_dim
