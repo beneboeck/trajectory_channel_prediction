@@ -6,6 +6,20 @@ from sklearn import linear_model
 import scipy
 import matplotlib.pyplot as plt
 
+def network_architecture_search():
+    LD = np.random.choice([6,10,14,18]).item()
+    memory = np.random.choice(range(11)).item()
+    rnn_bool = np.random.choice([False,True]).item()
+    en_layer = np.random.choice([2,3]).item()
+    en_width = np.random.choice([4,6,8]).item()
+    pr_layer = np.random.choice([2,3,4]).item()
+    pr_width = np.random.choice([3,6,9]).item()
+    de_layer = np.random.choice([4,5]).item()
+    de_width = np.random([6,8,12]).item()
+    cov_type = np.random.choice(['Toeplitz','diagonal','DFT']).item()
+
+    return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type
+
 
 def save_risk(risk_list,RR_list,KL_list,model_path,title):
     risk = np.array(risk_list)

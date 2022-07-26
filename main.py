@@ -11,8 +11,8 @@ import training as tr
 import networks as mg
 import evaluation as ev
 
-GLOBAL_ARCHITECTURE = 'causal_kMemoryHMVAE_small'
-# options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' -
+GLOBAL_ARCHITECTURE = 'RNN_aided_HMVAE'
+# options: - 'kalmanVAE' - 'genericGlow' - 'markovVAE' - 'hiddenMarkovVanillaVAE' - RNN_aided_HMVAE
 #             'markovVanillaVAE' - 'causal_kMemoryHMVAE' -'kMemoryHiddenMarkovVAE' - 'ApproxKMemoryHiddenMarkovVAE' -'kMemoryMarkovVAE' - 'WN_kMemoryHiddenMarkovVAE'
 #             'WN_ModelBasedKMemoryHiddenMarkovVAE' , 'LSTM_HM_VAE', 'Masked_HM_VAE'
 
