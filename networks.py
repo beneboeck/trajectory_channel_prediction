@@ -1906,7 +1906,7 @@ class Prior(nn.Module):
             self.net.append(nn.ReLU())
             self.net.append(nn.BatchNorm1d(pr_width * ld))
         self.net.append(nn.Linear(pr_width * ld,2 * ld))
-
+        self.hidden_to_out = nn.Linear(self.ld, 2 * self.ld)
         self.net = nn.Sequential(*self.net)
 
     def forward(self, z, h=None):
@@ -1915,7 +1915,7 @@ class Prior(nn.Module):
             new_state = forget_state + (self.choice(z) * self.candidates(z))
         transformed_z = self.net(z)
         if self.rnn_bool == True:
-            mu, logvar = (nn.Tanh()(new_state) * transformed_z).chunk(2, dim=1)
+            mu, logvar = (nn.Tanh()(self.hidden_to_out(new_state)) * transformed_z).chunk(2, dim=1)
         else:
             mu, logvar = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
@@ -1955,6 +1955,7 @@ class Encoder(nn.Module):
             self.net.append(nn.ReLU())
             self.net.append(nn.BatchNorm1d(en_width * ld))
         self.net.append(nn.Linear(en_width * ld,2 * ld))
+        self.hidden_to_out = nn.Linear(self.ld,2*self.ld)
 
         self.net = nn.Sequential(*self.net)
 
@@ -1966,7 +1967,7 @@ class Encoder(nn.Module):
         transformed_x = self.x_prenet(x)
         transformed_z = self.net(torch.cat((z,transformed_x),dim=1))
         if self.rnn_bool == True:
-            mu, logvar = (nn.Tanh()(new_state) * transformed_z).chunk(2, dim=1)
+            mu, logvar = (nn.Tanh()(self.hidden_to_out(new_state)) * transformed_z).chunk(2, dim=1)
         else:
             mu, logvar = transformed_z.chunk(2, dim=1)
             new_state = 0
