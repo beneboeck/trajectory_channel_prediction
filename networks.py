@@ -1983,14 +1983,17 @@ class Decoder(nn.Module):
             output_dim = 3 * n_ant
         if cov_type == 'Toeplitz':
             output_dim = 2 * n_ant + 63
-        step = round((de_width * ld * memory - output_dim)/de_layer)
+        step = round((de_width * ld * memory+1 - output_dim)/de_layer)
 
         self.net = []
-        net_in_dim = de_width * ld * memory
-        net_out_dim = int(de_width * ld * memory - step)
-        for l in range(de_layer-1):
+        net_in_dim = de_width * ld * (memory+1)
+        net_out_dim = int(de_width * ld * (memory+1) - step)
+        self.net.append(nn.Linear(ld*(memory+1),net_in_dim))
+        self.net.append(nn.ReLU())
+        self.net.append(nn.BatchNorm1d(net_in_dim))
+        for l in range(de_layer-2):
             self.net.append(nn.Linear(net_in_dim,net_out_dim))
-            self.net.append(nn.ReLU()),
+            self.net.append(nn.ReLU())
             self.net.append(nn.BatchNorm1d(net_out_dim))
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
