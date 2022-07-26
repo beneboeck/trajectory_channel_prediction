@@ -15,7 +15,7 @@ def network_architecture_search():
     pr_layer = np.random.choice([2,3,4]).item()
     pr_width = np.random.choice([3,6,9]).item()
     de_layer = np.random.choice([4,5]).item()
-    de_width = np.random([6,8,12]).item()
+    de_width = np.random.choice([6,8,12]).item()
     cov_type = np.random.choice(['Toeplitz','diagonal','DFT']).item()
 
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type
