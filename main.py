@@ -213,7 +213,7 @@ iteration = iterations[0]
 if (GLOBAL_ARCHITECTURE == 'kalmanVAE'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3]).to(device)
 
-if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE'):
+if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE') | (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE_small'):
     model = model(iteration[0],iteration[1],iteration[2],iteration[3],iteration[4]).to(device)
 
 if (GLOBAL_ARCHITECTURE == 'ApproxKMemoryHiddenMarkovVAE'):
