@@ -2100,14 +2100,14 @@ class HMVAE(nn.Module):
     def encode(self, x):
 
         batchsize = x.size()[0]
-        z = torch.zeros(batchsize, self.z_dim[0], self.n_units).to(self.device)
-        hidden_state = torch.zeros(batchsize, self.z_dim[0], self.n_units).to(self.device)
-        z_init = torch.ones(batchsize, self.z_dim[0]).to(self.device)  # zeros instead of ones in the spirit of Glow
+        z = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        hidden_state = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        z_init = torch.ones(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
         if self.memory > 0:
-            x_start = torch.ones(batchsize, self.x_dim[0], self.x_dim[1], self.memory).to(self.device)
-        mu_inf = torch.zeros(batchsize, self.z_dim[0], self.n_units).to(self.device)
-        logvar_inf = torch.zeros(batchsize, self.z_dim[0], self.n_units).to(self.device)
-        eps = torch.zeros(batchsize, self.z_dim[0], self.n_units).to(self.device)
+            x_start = torch.ones(batchsize, 2, 32, self.memory).to(self.device)
+        mu_inf = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        logvar_inf = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        eps = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
         if self.memory > 0:
             x_input = torch.cat((x_start, x[:, :, :, 0][:, :, :, None]), dim=3)
         else:
