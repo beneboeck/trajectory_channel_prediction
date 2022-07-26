@@ -2009,7 +2009,7 @@ class Decoder(nn.Module):
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
-            mu_out,alpha = out[:,:,2*self.n_ant],out[:,2*self.n_ant:]
+            mu_out,alpha = out[:,2*self.n_ant],out[:,2*self.n_ant:]
             mu_out = Reshape(2, 32, 1)(mu_out)
             batchsize = out.size(0)
             alpha_0 = alpha[:, 0][:, None]
