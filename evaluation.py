@@ -120,7 +120,7 @@ def channel_prediction(GLOBAL_ARCHITECTURE,model,dataloader_val,knowledge,iterat
             NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2,dim=(1,2,3))/torch.sum(predicted_samples**2,dim=(1,2,3))).detach().to('cpu'))
 
 
-        if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE') || (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE_small'):
+        if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE') | (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE_small'):
             memory = iteration[3]
             # encoding
             z_init = torch.ones(samples.size(0), iteration[0][0]).to(device)
