@@ -2006,6 +2006,7 @@ class Decoder(nn.Module):
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
             mu_out = Reshape(2,32,1)(mu_out)
+            logpre_out = logpre_out[:,:,None]
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
