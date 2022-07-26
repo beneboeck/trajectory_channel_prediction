@@ -54,7 +54,7 @@ if (GLOBAL_ARCHITECTURE == 'kalmanVAE') | (GLOBAL_ARCHITECTURE == 'WN_kalmanVAE'
 # IMPORTANT: TIME STEPS / NUMBER TIME STEPS PER UNIT has to be an integer!
 # IMPORTANT!! IT HAS TO BE A LIST
 
-if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE'):
+if (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE') | (GLOBAL_ARCHITECTURE == 'causal_kMemoryHMVAE_small'):
     DIM_VEC = [([12],[2,32,SNAPSHOTS],1,6,device)]
     LATENT_DIMENSIONS,INTERNAL_DIMENSIONS,INPUT_SIZE = None,None,range(len(DIM_VEC))
     RP_NN,Y_max,Y_min = None,None,None
