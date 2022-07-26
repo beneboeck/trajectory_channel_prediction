@@ -1970,7 +1970,7 @@ class Encoder(nn.Module):
             mu, logvar = (nn.Tanh()(self.hidden_to_out(new_state)) * transformed_z).chunk(2, dim=1)
         else:
             mu, logvar = transformed_z.chunk(2, dim=1)
-            new_state = 0
+            new_state = torch.zeros(z.size())
 
         return mu, logvar, new_state
 
