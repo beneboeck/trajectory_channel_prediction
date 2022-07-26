@@ -2072,7 +2072,7 @@ class HMVAE(nn.Module):
 
     def feed_prior(self, z):
             batchsize = z.size(0)
-            z_init = torch.zeros(batchsize, self.z_dim[0]).to(self.device)  # zeros instead of ones in the spirit of Glow
+            z_init = torch.zeros(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
             mu_prior = torch.zeros(z.size()).to(self.device)
             logpre_prior = torch.zeros(z.size()).to(self.device)
             hidden_state = torch.zeros(z.size()).to(self.device)
@@ -2085,18 +2085,18 @@ class HMVAE(nn.Module):
             return mu_prior, logpre_prior
 
     def sample_from_prior(self, n_samples):
-            z_init = torch.zeros(n_samples, self.z_dim[0]).to(self.device)  # zeros instead of ones in the spirit of Glow
-            z = torch.zeros(n_samples, self.z_dim[0], self.snapshots).to(self.device)
-            hidden_state = torch.zeros(n_samples,self.z_dim[0],self.snapshots)
+            z_init = torch.zeros(n_samples, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
+            z = torch.zeros(n_samples, self.ld, self.snapshots).to(self.device)
+            hidden_state = torch.zeros(n_samples,self.ld,self.snapshots)
             mu, logpre,hidden_state[:,:,0] = self.prior_model[0](z_init,z_init)
-            eps = torch.randn(n_samples, self.z_dim[0]).to(self.device)
+            eps = torch.randn(n_samples, self.ld).to(self.device)
             z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))  # at the moment I am really implementing log_pre not log_var
             # z_sample = mu + eps * torch.exp(0.5 * logpre)
             z[:, :, 0] = torch.squeeze(z_sample)
 
             for unit in range(1, self.snapshots):
                 mu, logpre, hidden_state[:,:,unit] = self.prior_model[unit](z[:, :, unit - 1],hidden_state[:,:,unit-1])
-                eps = torch.randn(n_samples, self.z_dim[0]).to(self.device)
+                eps = torch.randn(n_samples, self.ld).to(self.device)
                 z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))
                 # z_sample = mu + eps * torch.exp(0.5 * logpre)
                 z[:, :, unit] = torch.squeeze(z_sample)
