@@ -1527,6 +1527,7 @@ class causal_kMemoryHMVAE_small_Prior_toeplitz(nn.Module):
 
     def forward(self,z):
         mu_out,logpre_out = self.net(z).chunk(2,dim=1)
+        logpre_out = logpre_out.clone()
         logpre_out[logpre_out > 4] = 4
         logpre_out[logpre_out < -4] = -4
         return mu_out,logpre_out
