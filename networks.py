@@ -1994,7 +1994,7 @@ class Decoder(nn.Module):
             self.net.append(nn.BatchNorm1d(net_out_dim))
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
-        self.net.append(nn.Linear(net_out_dim,output_dim))
+        self.net.append(nn.Linear(net_in_dim,output_dim))
         self.net = nn.Sequential(*self.net)
 
     def forward(self,z):
