@@ -1938,10 +1938,10 @@ class Encoder(nn.Module):
                 nn.Linear(ld, ld),
                 nn.Tanh(),)
 
-        step = round((n_ant * 2 * memory - 2*ld)/2)
+        step = round((n_ant * 2 * (memory+1) - 2*ld)/2)
 
         self.x_prenet = nn.Sequential(
-            nn.Linear(n_ant * 2 * (memory*1),int(n_ant * 2 * (memory+1) - step)),
+            nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
             nn.ReLU(),
             nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step)),
             nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
