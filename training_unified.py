@@ -59,13 +59,13 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
             sample = sample
             sample = sample.to(device)
 
-            if (cov_type == 'toeplitz'):
+            if (cov_type == 'Toeplitz'):
                 out, z, eps, mu_inf, log_var = model(sample)
                 mu_out, B_out, C_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
-            if (cov_type == 'diagonal'):
+            if (cov_type == 'diagonal') | (cov_type == 'DFT'):
                 out, z, eps, mu_inf, log_var = model(sample)
                 mu_out, logpre_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
