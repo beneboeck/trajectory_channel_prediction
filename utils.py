@@ -25,6 +25,7 @@ def apply_DFT(sample_set):
 
 def apply_IDFT(sample_set):
     # sample_set [N_SAMPLES,2,N_ANTENNAS,N_SNAPSHOTS]
+    sample_set = np.array(sample_set.detach().to('cpu'))
     n_ant = sample_set.shape[2]
     F = np.zeros((n_ant,n_ant),dtype=np.cfloat)
     for m in range(n_ant):

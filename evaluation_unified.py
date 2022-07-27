@@ -127,7 +127,7 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
     fig.savefig(dir_path + '/heat_map_for_prediction.png', dpi=300)
     plt.close('all')
 
-def channel_estimation(setup,model,dataloader_val,dir_path,device):
+def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
     NMSE_list = []
 
@@ -196,10 +196,11 @@ def channel_estimation(setup,model,dataloader_val,dir_path,device):
                 logpre_out[:, :, unit:unit + 1] = logpre_local
                 # logpre_out_local[logpre_out_local > 9] = 9
 
-
+        x_compl = torch.complex(sample[:, 0, :, :], sample[:, 1, :, :]).permute(0, 2, 1)
+        mu_compl = torch.complex(mu_out[:, 0, :, :], mu_out[:, 1, :, :]).permute(0, 2, 1)
+        noisy_sample_compl = torch.complex(noisy_sample[:, 0, :, :], noisy_sample[:, 1, :, :]).permute(0, 2,
+                                                                                                       1)  # BS, SNAPSHOTS, ANTENNAS
         if cov_type == 'Toeplitz':
-            x_compl = torch.complex(sample[:, 0, :, :], sample[:, 1, :, :]).permute(0, 2, 1)
-            mu_compl = torch.complex(mu_out[:, 0, :, :], mu_out[:, 1, :, :]).permute(0, 2, 1)
             alpha_0 = B_out[:, :, 0, 0]
             if len(alpha_0.size()) == 2:
                 Gamma = 1 / alpha_0[:, :, None, None] * (torch.matmul(B_out, torch.conj(B_out).permute(0, 1, 3, 2)) - torch.matmul(C_out,torch.conj(C_out).permute(0,1,3,2)))
@@ -208,9 +209,13 @@ def channel_estimation(setup,model,dataloader_val,dir_path,device):
 
             Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
 
+            L,U = torch.linalg.eigh(Gamma)
+            Cov_out = U @ torch.diag_embed(1/L) @ U.mH
+            L_noisy = L + (sig_n**2 * torch.eye(32,32))[None,None,:,:]
+
+            h_hat = mu_compl + Cov_out @ (U @ torch.diag_embed(L_noisy) @ U.mH) @ (noisy_sample_compl - mu_compl)
+            h_hat_last = h_hat[:,-1,:]
 
 
-        if cov_type == 'Toeplitz':
-            return mu_out, B_out, C_out
-        else:
-            return mu_out, logpre_out
+        if cov_type == 'diagonal':
+            Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1))))
