@@ -213,9 +213,9 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
 
             L,U = torch.linalg.eigh(Gamma)
             Cov_out = U @ torch.diag_embed(1/L).cfloat() @ U.mH
-            L_noisy = (L + (sig_n**2 * torch.eye(32,32).to(device))[None,None,:,:]).cfloat()
+            L_noisy = (torch.diag_embed(L) + (sig_n**2 * torch.eye(32,32).to(device))[None,None,:,:]).cfloat()
 
-            h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ (U @ torch.diag_embed(L_noisy) @ U.mH), (noisy_sample_compl - mu_compl))
+            h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ (U @ L_noisy @ U.mH), (noisy_sample_compl - mu_compl))
             h_hat_last = h_hat[:,-1,:]
 
 
