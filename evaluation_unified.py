@@ -9,7 +9,7 @@ def eval_val(setup,model,dataloader_val,cov_type, lamba,device, dir_path):
 
     iterator = iter(dataloader_val)
     samples = iterator.next()
-    sample = samples.to(device)
+    sample = samples[0].to(device)
 
     if (cov_type == 'Toeplitz'):
         out, z, eps, mu_inf, log_var = model(sample)
@@ -164,3 +164,41 @@ def channel_estimation(setup,model,dataloader_val,dir_path,device):
 
         #decoding
 
+        batchsize = z.size(0)
+        mu_out = torch.zeros(batchsize, 2, 32, snapshots).to(device)
+        z_init = torch.ones(batchsize, LD, memory).to(device)
+        if cov_type == 'Toeplitz':
+            B_out = torch.zeros(batchsize, snapshots, 32, 32, dtype=torch.cfloat).to(device)
+            C_out = torch.zeros(batchsize, snapshots, 32, 32, dtype=torch.cfloat).to(device)
+        else:
+            logpre_out = torch.zeros(batchsize, 32, snapshots).to(device)
+
+        for i in range(memory):
+            z_input = torch.cat((z_init[:, :, :memory - i], z[:, :, :i + 1]), dim=2)
+            if self.cov_type == 'Toeplitz':
+                mu_out_local, B_out_local, C_out_local = model.decoder[i](z_input)
+                mu_out[:, :, :, i:(i + 1)], B_out[:, i:(i + 1), :, :], C_out[:, i:(i + 1), :,:] = mu_out_local, B_out_local, C_out_local
+            else:
+                mu_out_local, logpre_local = model.decoder[i](z_input)
+                mu_out[:, :, :, i:(i + 1)], logpre_out[:, :, i:i + 1] = mu_out_local, logpre_local
+            # logpre_out_local[logpre_out_local > 9] = 9
+
+        for unit in range(memory, snapshots):
+            z_input = z[:, :, unit - memory:unit + 1].clone()
+            if self.cov_type == 'Toeplitz':
+                mu_out_local, B_out_local, C_out_local = model.decoder[unit](z_input)
+                mu_out[:, :, :, unit:unit + 1] = mu_out_local
+                B_out[:, unit:unit + 1, :, :] = B_out_local
+                C_out[:, unit:unit + 1, :, :] = C_out_local
+            else:
+                mu_out_local, logpre_local = model.decoder[unit](z_input)
+                mu_out[:, :, :, unit:unit + 1] = mu_out_local
+                logpre_out[:, :, unit:unit + 1] = logpre_local
+                # logpre_out_local[logpre_out_local > 9] = 9
+
+
+
+        if self.cov_type == 'Toeplitz':
+            return mu_out, B_out, C_out
+        else:
+            return mu_out, logpre_out
