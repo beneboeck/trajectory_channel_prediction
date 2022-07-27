@@ -215,7 +215,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             Cov_out = U @ torch.diag_embed(1/L) @ U.mH
             L_noisy = L + (sig_n**2 * torch.eye(32,32).to(device))[None,None,:,:]
 
-            h_hat = mu_compl + Cov_out @ (U @ torch.diag_embed(L_noisy) @ U.mH) @ (noisy_sample_compl - mu_compl)
+            h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ (U @ torch.diag_embed(L_noisy) @ U.mH), (noisy_sample_compl - mu_compl))
             h_hat_last = h_hat[:,-1,:]
 
 
@@ -229,7 +229,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             print(inv_matrix.size())
             print(noisy_sample_compl.size())
 
-            h_hat = mu_compl + Cov_out @ inv_matrix @ (noisy_sample_compl - mu_compl)
+            h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ inv_matrix, (noisy_sample_compl - mu_compl))
             h_hat_last = h_hat[:, -1, :]
 
         if cov_type == 'DFT':
