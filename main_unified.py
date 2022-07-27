@@ -38,6 +38,7 @@ print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,c
 
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type]
 
+setup = [16,10,True,3,8,4,9,5,12,'DFT']
 glob_var_file.write('Date: ' +date +'\n')
 glob_var_file.write('Time: ' + time + '\n')
 glob_var_file.write(f'Latent Dim: {LD}\n')
