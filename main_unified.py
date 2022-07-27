@@ -42,7 +42,10 @@ print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,c
 
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type]
 
+LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = 16,10,True,3,8,4,9,5,12,'DFT'
 setup = [16,10,True,3,8,4,9,5,12,'DFT']
+
+
 glob_var_file.write('Date: ' +date +'\n')
 glob_var_file.write('Time: ' + time + '\n')
 glob_var_file.write(f'Latent Dim: {LD}\n')
@@ -58,6 +61,8 @@ glob_var_file.write(f'Cov_Type: {cov_type}\n')
 glob_var_file.write('BATCHSIZE: ' + str(BATCHSIZE) +'\n')
 glob_var_file.write('G_EPOCHS: ' +str(G_EPOCHS) +'\n')
 glob_var_file.write(f'VELOCITY: {VELOCITY}\n')
+glob_var_file.write(f'Learning Rate: {LEARNING_RATE}\n')
+glob_var_file.write(f'SNR_db: {SNR_db}\n')
 
 log_file.write('Date: ' +date +'\n')
 log_file.write('Time: ' + time + '\n')
@@ -115,6 +120,9 @@ y_test_n = y_test_n[:,:,:,1:]
 
 data = np.concatenate((x_train_n,y_train_n),axis=3)
 data_DFT = apply_DFT(data)
+noisy_data = data + sig_n * np.random.randn(*data.shape)
+noisy_data_DFT
+
 dataset = ds.dataset(data)
 dataset_DFT = ds.dataset(data_DFT)
 dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
