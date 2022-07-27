@@ -222,14 +222,9 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
         if (cov_type == 'diagonal') | (cov_type == 'DFT'):
             Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1)))).cfloat()
             inv_matrix = 1/Cov_out + (sig_n**2 * torch.eye(32,32).to(device)).cfloat()[None,None,:,:]
-
-            print('hier')
-            print(mu_compl.size())
-            print(Cov_out.size())
-            print(inv_matrix.size())
-            print(noisy_sample_compl.size())
-
             h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ inv_matrix, (noisy_sample_compl - mu_compl))
+            print('hier')
+            print(h_hat.size())
             h_hat_last = h_hat[:, -1, :]
 
         if cov_type == 'DFT':
@@ -238,7 +233,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
 
         h_last = x_compl[:, -1, :]
 
-        NMSE_list.append(torch.mean(torch.sum(torch.abs(h_last - h_hat_last) ** 2, dim=(1)) / torch.sum(torch.abs(h_last) ** 2,dim=(1))).detach().to('cpu'))
+        NMSE_list.append(torch.mean(torch.sum(torch.abs(h_last - h_hat_last) ** 2, dim=1) / torch.sum(torch.abs(h_last) ** 2,dim=1)).detach().to('cpu'))
 
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
