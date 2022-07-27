@@ -17,7 +17,7 @@ def apply_DFT(sample_set):
             F[m,n] = 1/np.sqrt(n_ant) * np.exp(-1j * 2 * math.pi * (m * n)/n_ant)
 
     sample_set_compl = sample_set[:,0,:,:] + 1j * sample_set[:,1,:,:]
-    transformed_set = np.einsum('mn,kln -> klm',F,sample_set_compl)
+    transformed_set = np.einsum('mn,knl -> kml',F,sample_set_compl)
     realed_set = np.zeros((sample_set.shape))
     realed_set[:,0,:,:] = np.real(transformed_set)
     realed_set[:,1,:,:] = np.imag(transformed_set)
@@ -32,7 +32,7 @@ def apply_IDFT(sample_set):
             F[m,n] = 1/np.sqrt(n_ant) * np.exp(1j * 2 * math.pi * (m * n)/n_ant)
 
     sample_set_compl = sample_set[:,0,:,:] + 1j * sample_set[:,1,:,:]
-    transformed_set = np.einsum('mn,kln -> klm',F,sample_set_compl)
+    transformed_set = np.einsum('mn,knl -> kml',F,sample_set_compl)
     realed_set = np.zeros((sample_set.shape))
     realed_set[:,0,:,:] = np.real(transformed_set)
     realed_set[:,1,:,:] = np.imag(transformed_set)
