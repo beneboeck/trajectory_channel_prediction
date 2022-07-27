@@ -38,7 +38,7 @@ def risk_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_prior,logpre
     return RR + KL,RR,KL
 
 
-def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path):
+def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path,n_iterations, n_permutations, normed, dataset_val, snapshots):
 
     risk_list= []
     KL_list = []
@@ -84,10 +84,11 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
             model.eval()
             NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
             NMSE_estimation = ev.channel_estimation(setup, model, dataloader_val, sig_n, dir_path, device)
+            TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, dataset_val, snapshots, sig_n, dir_path,device)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
             model.train()
-            print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f},Risk: {Risk:.4f}')
+            print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1}, TPR2: {TPR2}, Risk: {Risk:.4f}')
             log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f},Risk: {Risk:.4f}\n')
             if i > 300:
                 x_range = torch.arange(30)

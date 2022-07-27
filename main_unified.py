@@ -24,12 +24,15 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 10
+G_EPOCHS = 2
 LEARNING_RATE = 2e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
+n_iterations = 75
+n_permutations = 300
+normed=False
 
 SNR_db = 5
 SNR_eff = 10**(SNR_db/10)
@@ -153,7 +156,7 @@ model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_wi
 if cov_type == 'DFT':
     dataloader = dataloader_DFT
     dataloader_val = dataloader_val_DFT
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n,device, log_file,dir_path)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n,device, log_file,dir_path,n_iterations, n_permutations, normed, dataset_val, SNAPSHOTS)
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
