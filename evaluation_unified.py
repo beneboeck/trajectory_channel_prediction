@@ -87,6 +87,8 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
     if cov_type == 'DFT':
         samples = apply_IDFT(samples)
         complete_x_list = apply_IDFT(complete_x_list)
+        samples = torch.tensor(samples)
+        complete_x_list = torch.tensor(complete_x_list)
 
     fig, ax = plt.subplots(4, 6, gridspec_kw={'wspace': 0, 'hspace': 0}, figsize=(18, 4))
 
@@ -198,8 +200,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
 
         x_compl = torch.complex(sample[:, 0, :, :], sample[:, 1, :, :]).permute(0, 2, 1)
         mu_compl = torch.complex(mu_out[:, 0, :, :], mu_out[:, 1, :, :]).permute(0, 2, 1)
-        noisy_sample_compl = torch.complex(noisy_sample[:, 0, :, :], noisy_sample[:, 1, :, :]).permute(0, 2,
-                                                                                                       1)  # BS, SNAPSHOTS, ANTENNAS
+        noisy_sample_compl = torch.complex(noisy_sample[:, 0, :, :], noisy_sample[:, 1, :, :]).permute(0, 2,1)  # BS, SNAPSHOTS, ANTENNAS
         if cov_type == 'Toeplitz':
             alpha_0 = B_out[:, :, 0, 0]
             if len(alpha_0.size()) == 2:
@@ -219,3 +220,9 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
 
         if cov_type == 'diagonal':
             Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1))))
+            inv_matrix = 1/Cov_out + (sig_n**2 * torch.eye(32,32))[None,None,:,:]
+
+            h_hat = mu_compl + Cov_out @ inv_matrix @ (noisy_sample_compl - mu_compl)
+            h_hat_last = h_hat[:, -1, :]
+
+        if cov_type == 'DFT':
