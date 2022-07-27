@@ -31,6 +31,10 @@ SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased o
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 
+SNR_db = 5
+SNR_eff = 10**(SNR_db/10)
+sig_n = math.sqrt(1/(32 * SNR_eff))
+
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
 
 print('Setup')
