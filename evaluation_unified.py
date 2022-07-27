@@ -223,6 +223,12 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1))))
             inv_matrix = 1/Cov_out + (sig_n**2 * torch.eye(32,32).to(device))[None,None,:,:]
 
+            print('hier')
+            print(mu_compl.size())
+            print(Cov_out.size())
+            print(inv_matrix.size())
+            print(noisy_sample_compl.size())
+
             h_hat = mu_compl + Cov_out @ inv_matrix @ (noisy_sample_compl - mu_compl)
             h_hat_last = h_hat[:, -1, :]
 
