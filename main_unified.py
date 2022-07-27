@@ -42,8 +42,8 @@ print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,c
 
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type]
 
-LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = 16,10,True,3,8,4,9,5,12,'DFT'
-setup = [16,10,True,3,8,4,9,5,12,'DFT']
+#LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = 16,10,True,3,8,4,9,5,12,'DFT'
+#setup = [16,10,True,3,8,4,9,5,12,'DFT']
 
 
 glob_var_file.write('Date: ' +date +'\n')
@@ -153,7 +153,7 @@ model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_wi
 if cov_type == 'DFT':
     dataloader = dataloader_DFT
     dataloader_val = dataloader_val_DFT
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,device, log_file,dir_path)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n,device, log_file,dir_path)
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 

@@ -38,7 +38,7 @@ def risk_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_prior,logpre
     return RR + KL,RR,KL
 
 
-def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba, device, log_file,dir_path):
+def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path):
 
     risk_list= []
     KL_list = []
@@ -83,11 +83,12 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
         with torch.no_grad():
             model.eval()
             NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
+            NMSE_estimation = ev.channel_estimation(setup, model, dataloader_val, sig_n, dir_path, device)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
             model.train()
-            print(f'Evaluation - NMSE: {NMSE:.4f},Risk: {Risk:.4f}')
-            log_file.write(f'Evaluation - NMSE: {NMSE},Risk: {Risk}\n')
+            print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f},Risk: {Risk:.4f}')
+            log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f},Risk: {Risk:.4f}\n')
             if i > 300:
                 x_range = torch.arange(30)
                 x = torch.ones(30, 2)

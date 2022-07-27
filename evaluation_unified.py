@@ -229,4 +229,9 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             h_hat = torch.tensor(apply_IDFT(h_hat.permute(0,2,1))).permute(0,2,1)
             h_hat_last = h_hat[:,-1,:]
 
-            
+        h_last = x_compl[:, -1, :]
+
+        NMSE_list.append(torch.mean(torch.sum(torch.abs(h_last - h_hat_last) ** 2, dim=(1)) / torch.sum(torch.abs(h_last) ** 2,dim=(1))).detach().to('cpu'))
+
+    NMSE = np.mean(np.array(NMSE_list))
+    return NMSE
