@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def apply_DFT(sample_set):
     # sample_set [N_SAMPLES,2,N_ANTENNAS,N_SNAPSHOTS]
     n_ant = sample_set.shape[2]
-    F = np.zeros((n_ant,n_ant),dtype=np.complex)
+    F = np.zeros((n_ant,n_ant),dtype=np.cfloat)
     for m in range(n_ant):
         for n in range(n_ant):
             F[m,n] = 1/np.sqrt(n_ant) * np.exp(-1j * 2 * math.pi * (m * n)/n_ant)
@@ -26,7 +26,7 @@ def apply_DFT(sample_set):
 def apply_IDFT(sample_set):
     # sample_set [N_SAMPLES,2,N_ANTENNAS,N_SNAPSHOTS]
     n_ant = sample_set.shape[2]
-    F = np.zeros((n_ant,n_ant),dtype=np.complex)
+    F = np.zeros((n_ant,n_ant),dtype=np.cfloat)
     for m in range(n_ant):
         for n in range(n_ant):
             F[m,n] = 1/np.sqrt(n_ant) * np.exp(1j * 2 * math.pi * (m * n)/n_ant)

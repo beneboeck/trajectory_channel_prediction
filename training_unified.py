@@ -55,8 +55,8 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
     for i in range(epochs):
         print('epoch')
         print(i)
-        for ind, sample in enumerate(loader):
-            sample = sample
+        for ind, samples in enumerate(loader):
+            sample = samples[0]
             sample = sample.to(device)
 
             if (cov_type == 'Toeplitz'):

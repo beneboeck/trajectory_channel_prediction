@@ -17,12 +17,13 @@ import networks as n
 
 
 class dataset(Dataset):
-    def __init__(self,h):
+    def __init__(self,h,y):
         super().__init__()
         self.h = torch.tensor(h).float()
+        self.y = torch.tensor(y).float()
 
     def __len__(self):
         return self.h.size(0)
 
     def __getitem__(self,idx):
-        return self.h[idx,:,:,:]
+        return self.h[idx,:,:,:],self.y[idx,:,:,:]

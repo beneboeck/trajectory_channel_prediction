@@ -32,7 +32,7 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
-        samples = sample.to(device)
+        samples = sample[0].to(device)
         n_units = int(samples.size(3))
 
         # encoding
@@ -126,3 +126,40 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
 
     fig.savefig(dir_path + '/heat_map_for_prediction.png', dpi=300)
     plt.close('all')
+
+def channel_estimation(setup,model,dataloader_val,dir_path,device):
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
+    NMSE_list = []
+
+    #encoding
+    for ind, sample in enumerate(dataloader_val):
+        sample,noisy_sample = sample
+        sample = sample.to(device)
+        snapshots = int(sample.size(3))
+        batchsize = sample.size(0)
+        z = torch.zeros(batchsize, LD, snapshots).to(device)
+        hidden_state = torch.zeros(batchsize, LD, snapshots).to(device)
+        z_init = torch.ones(batchsize,LD).to(device)  # zeros instead of ones in the spirit of Glow
+        if memory > 0:
+            x_start = torch.ones(batchsize, 2, 32, memory).to(device)
+
+        if memory > 0:
+            x_input = torch.cat((x_start, sample[:, :, :, 0][:, :, :, None]), dim=3)
+        else:
+            x_input = sample[:, :, :, :1]
+        mu_z, logvar_z, hidden_state[:, :, 0] = model.encoder[0](x_input, z_init, z_init)
+        z[:, :, 0] = mu_z
+
+        for i in range(1, memory):
+            x_input = torch.cat((x_start[:, :, :, :memory - i], sample[:, :, :, :i + 1]), dim=3)
+            z_input = z[:, :, i - 1].clone()
+            mu_z, logvar_z, hidden_state[:, :, i] = model.encoder[i](x_input, z_input, hidden_state[:, :, i - 1].clone())
+            z[:, :, i] = mu_z
+
+        for unit in range(memory, snapshots):
+            z_input = z[:, :, unit - 1].clone()
+            x_input = sample[:, :, :, unit - memory:unit + 1]
+            mu_z, logvar_z, hidden_state[:, :, unit] = model.encoder[unit](x_input, z_input,hidden_state[:, :, unit - 1].clone())
+            z[:, :, unit] = mu_z
+
+        #decoding
