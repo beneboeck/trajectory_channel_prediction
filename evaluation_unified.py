@@ -322,7 +322,7 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
             new_var_new[:, 1, :, :] = torch.imag(new_var)
             mu_out2 = new_var_new + mu_out2
 
-        if cov_type == 'toeplitz':
+        if cov_type == 'Toeplitz':
             mu_out2, B_out2, C_out2 = output_rep  # (BS,2,32,S) , (BS,S,32,32) complex, (BS,S,32,32) compplex
             alpha_02 = B_out2[:, :, 0, 0]
             Gamma2 = 1 / alpha_02[:, :, None, None] * (torch.matmul(B_out2, torch.conj(B_out2).permute(0, 1, 3, 2)) - torch.matmul(C_out2,torch.conj(C_out2).permute(0,1,3,2)))
