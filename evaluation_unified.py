@@ -3,6 +3,7 @@ import torch
 import training_unified as tr
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import *
 
 def eval_val(setup,model,dataloader_val,cov_type, lamba,device, dir_path):
 
@@ -76,12 +77,17 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
             NMSE_list.append(torch.mean(torch.sum((predicted_samples - x_list) ** 2, dim=(1, 2, 3)) / torch.sum(predicted_samples ** 2,dim=(1, 2, 3))).detach().to('cpu'))
 
     if PHASE == 'testing':
-        prediction_visualization(samples,complete_x_list,dir_path)
+        prediction_visualization(setup,samples,complete_x_list,dir_path)
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
 
 
-def prediction_visualization(samples,complete_x_list,dir_path):
+def prediction_visualization(setup,samples,complete_x_list,dir_path):
+    cov_type = setup[-1]
+    if cov_type == 'DFT':
+        samples = apply_IDFT(samples)
+        complete_x_list = apply_IDFT(complete_x_list)
+
     fig, ax = plt.subplots(4, 6, gridspec_kw={'wspace': 0, 'hspace': 0}, figsize=(18, 4))
 
     for n in range(6):

@@ -4,7 +4,39 @@ import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn import linear_model
 import scipy
+import math
 import matplotlib.pyplot as plt
+
+
+def apply_DFT(sample_set):
+    # sample_set [N_SAMPLES,2,N_ANTENNAS,N_SNAPSHOTS]
+    n_ant = sample_set.shape[2]
+    F = np.zeros((n_ant,n_ant))
+    for m in range(n_ant):
+        for n in range(n_ant):
+            F[m,n] = 1/np.sqrt(n_ant) * np.exp(-1j * 2 * math.pi * (m * n)/n_ant)
+
+    sample_set_compl = sample_set[:,0,:,:] + 1j * sample_set[:,1,:,:]
+    transformed_set = np.einsum('mn,kln -> klm',F,sample_set_compl)
+    realed_set = np.zeros((sample_set.shape))
+    realed_set[:,0,:,:] = np.real(transformed_set)
+    realed_set[:,1,:,:] = np.imag(transformed_set)
+    return realed_set
+
+def apply_IDFT(sample_set):
+    # sample_set [N_SAMPLES,2,N_ANTENNAS,N_SNAPSHOTS]
+    n_ant = sample_set.shape[2]
+    F = np.zeros((n_ant,n_ant))
+    for m in range(n_ant):
+        for n in range(n_ant):
+            F[m,n] = 1/np.sqrt(n_ant) * np.exp(1j * 2 * math.pi * (m * n)/n_ant)
+
+    sample_set_compl = sample_set[:,0,:,:] + 1j * sample_set[:,1,:,:]
+    transformed_set = np.einsum('mn,kln -> klm',F,sample_set_compl)
+    realed_set = np.zeros((sample_set.shape))
+    realed_set[:,0,:,:] = np.real(transformed_set)
+    realed_set[:,1,:,:] = np.imag(transformed_set)
+    return realed_set
 
 def network_architecture_search():
     LD = np.random.choice([6,10,14,18]).item()

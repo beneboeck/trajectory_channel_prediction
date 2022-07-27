@@ -24,8 +24,8 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 50
-LEARNING_RATE = 3e-5
+G_EPOCHS = 10
+LEARNING_RATE = 2e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'Quadriga'
@@ -109,19 +109,31 @@ y_test_n = y_test_n[label_test == VELOCITY]
 y_test_n = y_test_n[:,:,:,1:]
 
 data = np.concatenate((x_train_n,y_train_n),axis=3)
+data_DFT = apply_DFT(data)
 dataset = ds.dataset(data)
+dataset_DFT = ds.dataset(data_DFT)
 dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
+dataloader_DFT = DataLoader(dataset_DFT,batch_size=BATCHSIZE,shuffle=True)
 
 data_val = np.concatenate((x_val_n,y_val_n),axis=3)
+data_val_DFT = apply_DFT(data_val)
 dataset_val = ds.dataset(data_val)
+dataset_val_DFT = ds.dataset(data_val_DFT)
 dataloader_val = DataLoader(dataset_val,batch_size=4 * BATCHSIZE,shuffle=True)
+dataloader_val_DFT = DataLoader(dataset_val_DFT,batch_size=4 * BATCHSIZE,shuffle=True)
 
 data_test = np.concatenate((x_test_n,y_test_n),axis=3)
+data_test_DFT = apply_DFT(data_test)
 dataset_test = ds.dataset(data_test)
+dataset_test_DFT = apply_DFT(data_test_DFT)
 dataloader_test = DataLoader(dataset_test,batch_size=4 * BATCHSIZE,shuffle=True)
+dataloader_test_DFT = DataLoader(dataset_test_DFT,batch_size=4 * BATCHSIZE,shuffle=True)
 
 model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,device).to(device)
 
+if cov_type == 'DFT':
+    dataloader = dataloader_DFT
+    dataloader_val = dataloader_val_DFT
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,device, log_file,dir_path)
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
@@ -132,6 +144,8 @@ save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE')
 torch.save(model.state_dict(),dir_path + '/model_dict')
 log_file.write('\nTESTING\n')
 print('testing')
-NMSE_test = ev.channel_prediction(setup,model,dataloader_val,16,dir_path,device,'testing')
+if  cov_type == 'DFT':
+    dataloader_test = dataloader_test_DFT
+NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
 print(f'NMSE test: {NMSE_test}')
 log_file.write(f'NMSE test: {NMSE_test}\n')
