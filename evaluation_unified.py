@@ -137,6 +137,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
     for ind, sample in enumerate(dataloader_val):
         sample,noisy_sample = sample
         sample = sample.to(device)
+        noisy_sample = noisy_sample.to(device)
         snapshots = int(sample.size(3))
         batchsize = sample.size(0)
         z = torch.zeros(batchsize, LD, snapshots).to(device)
