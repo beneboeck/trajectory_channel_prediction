@@ -36,7 +36,7 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
         n_units = int(samples.size(3))
 
         # encoding
-        batchsize = sample.size(0)
+        batchsize = samples.size(0)
         z = torch.zeros(batchsize, LD, n_units).to(device)
         hidden_state = torch.zeros(batchsize, LD, n_units).to(device)
         z_init = torch.ones(batchsize, LD).to(device)  # zeros instead of ones in the spirit of Glow
@@ -175,7 +175,7 @@ def channel_estimation(setup,model,dataloader_val,dir_path,device):
 
         for i in range(memory):
             z_input = torch.cat((z_init[:, :, :memory - i], z[:, :, :i + 1]), dim=2)
-            if self.cov_type == 'Toeplitz':
+            if cov_type == 'Toeplitz':
                 mu_out_local, B_out_local, C_out_local = model.decoder[i](z_input)
                 mu_out[:, :, :, i:(i + 1)], B_out[:, i:(i + 1), :, :], C_out[:, i:(i + 1), :,:] = mu_out_local, B_out_local, C_out_local
             else:
@@ -185,7 +185,7 @@ def channel_estimation(setup,model,dataloader_val,dir_path,device):
 
         for unit in range(memory, snapshots):
             z_input = z[:, :, unit - memory:unit + 1].clone()
-            if self.cov_type == 'Toeplitz':
+            if cov_type == 'Toeplitz':
                 mu_out_local, B_out_local, C_out_local = model.decoder[unit](z_input)
                 mu_out[:, :, :, unit:unit + 1] = mu_out_local
                 B_out[:, unit:unit + 1, :, :] = B_out_local
@@ -197,8 +197,20 @@ def channel_estimation(setup,model,dataloader_val,dir_path,device):
                 # logpre_out_local[logpre_out_local > 9] = 9
 
 
+        if cov_type == 'Toeplitz':
+            x_compl = torch.complex(sample[:, 0, :, :], sample[:, 1, :, :]).permute(0, 2, 1)
+            mu_compl = torch.complex(mu_out[:, 0, :, :], mu_out[:, 1, :, :]).permute(0, 2, 1)
+            alpha_0 = B_out[:, :, 0, 0]
+            if len(alpha_0.size()) == 2:
+                Gamma = 1 / alpha_0[:, :, None, None] * (torch.matmul(B_out, torch.conj(B_out).permute(0, 1, 3, 2)) - torch.matmul(C_out,torch.conj(C_out).permute(0,1,3,2)))
+            if len(alpha_0.size()) == 1:
+                Gamma = 1 / alpha_0[None, :, None, None] * (torch.matmul(B_out, torch.conj(B_out).permute(0, 1, 3, 2)) - torch.matmul(C_out,torch.conj(C_out).permute(0,1,3,2)))
 
-        if self.cov_type == 'Toeplitz':
+            Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
+
+
+
+        if cov_type == 'Toeplitz':
             return mu_out, B_out, C_out
         else:
             return mu_out, logpre_out
