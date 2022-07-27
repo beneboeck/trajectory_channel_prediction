@@ -2072,12 +2072,14 @@ class Decoder(nn.Module):
 class HMVAE(nn.Module):
     def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,device):
         super().__init__()
+        # attributes
         self.memory = memory
         self.n_ant = n_ant
         self.snapshots = snapshots
         self.ld = ld
         self.device = device
         self.cov_type = cov_type
+
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width) for i in range(snapshots)])
         self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width) for i in range(snapshots)])
@@ -2088,6 +2090,7 @@ class HMVAE(nn.Module):
             return mu + eps * std, eps
 
     def feed_prior(self, z):
+            # z: [BS,latent_dim,snapshots]
             batchsize = z.size(0)
             z_init = torch.zeros(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
             mu_prior = torch.zeros(z.size()).to(self.device)
@@ -2097,14 +2100,14 @@ class HMVAE(nn.Module):
             for unit in range(1, self.snapshots):
                 z_input = z[:, :, unit - 1].clone()
                 h_input = hidden_state[:,:,unit-1].clone()
-                mu_prior[:, :, unit], logpre_prior[:, :, unit],hidden_state[:,:,unit] = self.prior_model[unit](z_input,h_input)
+                mu_prior[:, :, unit], logpre_prior[:, :, unit],hidden_state[:,:,unit] = self.prior_model[unit](z_input, h_input)
             # logpre_prior[logpre_prior > 6] = 6
             return mu_prior, logpre_prior
 
     def sample_from_prior(self, n_samples):
             z_init = torch.zeros(n_samples, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
             z = torch.zeros(n_samples, self.ld, self.snapshots).to(self.device)
-            hidden_state = torch.zeros(n_samples,self.ld,self.snapshots)
+            hidden_state = torch.zeros(n_samples,self.ld,self.snapshots).to(self.device)
             mu, logpre,hidden_state[:,:,0] = self.prior_model[0](z_init,z_init)
             eps = torch.randn(n_samples, self.ld).to(self.device)
             z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))  # at the moment I am really implementing log_pre not log_var
@@ -2122,7 +2125,7 @@ class HMVAE(nn.Module):
 
     def encode(self, x):
 
-        batchsize = x.size()[0]
+        batchsize = x.size(0)
         z = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
         hidden_state = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
         z_init = torch.ones(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
@@ -2131,6 +2134,7 @@ class HMVAE(nn.Module):
         mu_inf = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
         logvar_inf = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
         eps = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+
         if self.memory > 0:
             x_input = torch.cat((x_start, x[:, :, :, 0][:, :, :, None]), dim=3)
         else:
