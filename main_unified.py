@@ -130,8 +130,8 @@ dataloader_DFT = DataLoader(dataset_DFT,batch_size=BATCHSIZE,shuffle=True)
 
 data_val = np.concatenate((x_val_n,y_val_n),axis=3)
 data_val_DFT = apply_DFT(data_val)
-noisy_data_val = data_val + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
-noisy_data_val_DFT = data_val_DFT + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
+noisy_data_val = data_val + sig_n/math.sqrt(2) * np.random.randn(*data_val.shape)
+noisy_data_val_DFT = data_val_DFT + sig_n/math.sqrt(2) * np.random.randn(*data_val.shape)
 
 dataset_val = ds.dataset(data_val,noisy_data_val)
 dataset_val_DFT = ds.dataset(data_val_DFT,noisy_data_val_DFT)
@@ -140,8 +140,8 @@ dataloader_val_DFT = DataLoader(dataset_val_DFT,batch_size=4 * BATCHSIZE,shuffle
 
 data_test = np.concatenate((x_test_n,y_test_n),axis=3)
 data_test_DFT = apply_DFT(data_test)
-noisy_data_test = data_test + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
-noisy_data_test_DFT = data_test_DFT + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
+noisy_data_test = data_test + sig_n/math.sqrt(2) * np.random.randn(*data_test.shape)
+noisy_data_test_DFT = data_test_DFT + sig_n/math.sqrt(2) * np.random.randn(*data_test.shape)
 
 dataset_test = ds.dataset(data_test,noisy_data_test)
 dataset_test_DFT = ds.dataset(data_test_DFT,noisy_data_test_DFT)
