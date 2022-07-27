@@ -218,7 +218,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             h_hat_last = h_hat[:,-1,:]
 
 
-        if cov_type == 'diagonal':
+        if (cov_type == 'diagonal') | (cov_type == 'DFT'):
             Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1))))
             inv_matrix = 1/Cov_out + (sig_n**2 * torch.eye(32,32))[None,None,:,:]
 
@@ -226,3 +226,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             h_hat_last = h_hat[:, -1, :]
 
         if cov_type == 'DFT':
+            h_hat = torch.tensor(apply_IDFT(h_hat.permute(0,2,1))).permute(0,2,1)
+            h_hat_last = h_hat[:,-1,:]
+
+            
