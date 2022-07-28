@@ -2115,7 +2115,7 @@ class HMVAE(nn.Module):
             z[:, :, 0] = torch.squeeze(z_sample)
 
             for unit in range(1, self.snapshots):
-                mu, logpre, hidden_state[:,:,unit] = self.prior_model[unit](z[:, :, unit - 1],hidden_state[:,:,unit-1])
+                mu, logpre, hidden_state[:,:,unit] = self.prior_model[unit](z[:, :, unit - 1],hidden_state[:,:,unit-1].clone())
                 eps = torch.randn(n_samples, self.ld).to(self.device)
                 z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))
                 # z_sample = mu + eps * torch.exp(0.5 * logpre)

@@ -253,7 +253,7 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
     H2 = np.zeros(n_iterations)
 
     for g in range(n_iterations):
-        print('new iteration')
+        #print('new iteration')
 
         alpha = 0.05
         H = np.zeros(n_iterations)
