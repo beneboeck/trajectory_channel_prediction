@@ -167,6 +167,9 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             mu_z, logvar_z, hidden_state[:, :, unit] = model.encoder[unit](x_input, z_input,hidden_state[:, :, unit - 1].clone())
             z[:, :, unit] = mu_z
 
+        print('channel estimation testing')
+        print(torch.max(torch.abs(z)))
+
         #decoding
 
         batchsize = z.size(0)
@@ -242,6 +245,8 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             h_hat_last = h_hat[:,-1,:]
 
         h_last = x_compl[:, -1, :]
+
+        print(torch.max(torch.abs(mu_compl)))
 
         NMSE_list.append(torch.mean(torch.sum(torch.abs(h_last - h_hat_last) ** 2, dim=1) / torch.sum(torch.abs(h_last) ** 2,dim=1)).detach().to('cpu'))
 

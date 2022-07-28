@@ -2097,10 +2097,14 @@ class HMVAE(nn.Module):
             logpre_prior = torch.zeros(z.size()).to(self.device)
             hidden_state = torch.zeros(z.size()).to(self.device)
             mu_prior[:, :, 0], logpre_prior[:, :, 0],hidden_state[:,:,0] = self.prior_model[0](z_init,z_init)
+            if torch.sum(mu_prior[:,:,0] != mu_prior[:,:,0]) > 0:
+                print('Nan in feed prior')
             for unit in range(1, self.snapshots):
                 z_input = z[:, :, unit - 1].clone()
                 h_input = hidden_state[:,:,unit-1].clone()
                 mu_prior[:, :, unit], logpre_prior[:, :, unit],hidden_state[:,:,unit] = self.prior_model[unit](z_input, h_input)
+                if torch.sum(mu_prior[:, :, unit] != mu_prior[:, :, unit]) > 0:
+                    print('Nan in feed prior For loop')
             # logpre_prior[logpre_prior > 6] = 6
             return mu_prior, logpre_prior
 
@@ -2116,6 +2120,8 @@ class HMVAE(nn.Module):
 
             for unit in range(1, self.snapshots):
                 mu, logpre, hidden_state[:,:,unit] = self.prior_model[unit](z[:, :, unit - 1],hidden_state[:,:,unit-1].clone())
+                if torch.sum(mu != mu) > 0:
+                    print('Nan in sample from prior')
                 eps = torch.randn(n_samples, self.ld).to(self.device)
                 z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))
                 # z_sample = mu + eps * torch.exp(0.5 * logpre)
@@ -2150,6 +2156,8 @@ class HMVAE(nn.Module):
             x_input = torch.cat((x_start[:, :, :, :self.memory - i], x[:, :, :, :i + 1]), dim=3)
             z_input = z[:, :, i - 1].clone()
             mu_z, logvar_z,hidden_state[:,:,i] = self.encoder[i](x_input, z_input,hidden_state[:,:,i-1].clone())
+            if torch.sum(mu_z != mu_z) > 0:
+                print('Nan in encode')
             # logpre_out_local[logpre_out_local > 9] = 9
             z_local, eps_local = self.reparameterize(logvar_z, mu_z)
             z[:, :, i] = z_local
@@ -2161,6 +2169,8 @@ class HMVAE(nn.Module):
             z_input = z[:, :, unit - 1].clone()
             x_input = x[:, :, :, unit - self.memory:unit + 1]
             mu_z, logvar_z,hidden_state[:,:,unit] = self.encoder[unit](x_input, z_input,hidden_state[:,:,unit-1].clone())
+            if torch.sum(mu_z != mu_z) > 0:
+                print('Nan in encode')
             z_local, eps_local = self.reparameterize(logvar_z, mu_z)
             z[:, :, unit] = z_local
             eps[:, :, unit] = eps_local
@@ -2184,6 +2194,8 @@ class HMVAE(nn.Module):
                 if self.cov_type == 'Toeplitz':
                     mu_out_local, B_out_local, C_out_local = self.decoder[i](z_input)
                     mu_out[:, :, :, i:(i + 1)], B_out[:, i:(i + 1), :, :], C_out[:, i:(i + 1), :,:] = mu_out_local, B_out_local, C_out_local
+                    if torch.sum(mu_out != mu_out) > 0:
+                        print('Nan in decode')
                 else:
                     mu_out_local, logpre_local = self.decoder[i](z_input)
                     mu_out[:, :, :, i:(i + 1)],logpre_out[:,:,i:i+1] = mu_out_local, logpre_local
@@ -2201,7 +2213,8 @@ class HMVAE(nn.Module):
                     mu_out[:, :, :, unit :unit + 1] = mu_out_local
                     logpre_out[:,:,unit:unit + 1] = logpre_local
                     # logpre_out_local[logpre_out_local > 9] = 9
-
+                if torch.sum(mu_out_local != mu_out_local) > 0:
+                    print('Nan in decode')
             if self.cov_type == 'Toeplitz':
                 return mu_out,B_out,C_out
             else:

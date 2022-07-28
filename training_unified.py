@@ -45,6 +45,9 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
     RR_list = []
     eval_risk = []
     eval_NMSE = []
+    eval_NMSE_estimation = []
+    eval_TPR1 = []
+    eval_TPR2 = []
     slope = -1.
 
     optimizer = torch.optim.Adam(lr=lr, params=model.parameters())
@@ -87,6 +90,9 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
             TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, dataset_val, snapshots, dir_path,device)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
+            eval_NMSE_estimation.append(NMSE_estimation)
+            eval_TPR1.append(TPR1)
+            eval_TPR2.append(TPR2)
             model.train()
             print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
             log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
