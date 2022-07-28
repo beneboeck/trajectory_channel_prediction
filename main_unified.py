@@ -40,6 +40,7 @@ print('Setup')
 print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)
 
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type]
+SNR_db = 5
 
 #LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = 16,10,True,3,8,4,9,5,12,'DFT'
 #setup = [16,10,True,3,8,4,9,5,12,'DFT']
@@ -122,7 +123,6 @@ data = data - np.mean(data,axis=(0,3))[None,:,:,None]
 data = data/np.sqrt(np.mean(np.sum(data**2,axis=(1,2)))) * np.sqrt(32)
 
 x = np.mean(np.sum(data[:,:,:,-1],axis=(1,2)))
-SNR_db = 5
 SNR_eff = 10**(SNR_db/10)
 sig_n_train = math.sqrt(x/(32 * SNR_eff))
 
