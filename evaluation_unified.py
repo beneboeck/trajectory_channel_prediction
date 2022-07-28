@@ -435,8 +435,8 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
             if (count > np.ceil(n_permutations * alpha)) & (count2 > np.ceil(n_permutations * alpha)):
                 break
 
-            H[g] = h
-            H2[g] = h2
+        H[g] = h
+        H2[g] = h2
 
     TPR1 = H.sum() / n_iterations
     TPR2 = H2.sum() / n_iterations
