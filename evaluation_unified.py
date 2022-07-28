@@ -228,6 +228,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1)))).cfloat()
             inv_matrix = 1/Cov_out + (sig_n**2 * torch.eye(32,32).to(device)).cfloat()[None,None,:,:]
             print('estimation test')
+            print(torch.max(torch.abs(Cov_out)))
             print(torch.max(torch.abs(inv_matrix)))
             print(torch.min(torch.abs(inv_matrix)))
 
