@@ -36,7 +36,7 @@ n_permutations = 100
 normed=False
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
-cov_type = 'Toeplitz'
+cov_type = 'DFT'
 rnn_bool = True
 print('Setup')
 print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)

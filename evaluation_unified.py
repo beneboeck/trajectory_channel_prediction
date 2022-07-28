@@ -293,7 +293,7 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         #print('test')
         #print(torch.mean(z_samples))
         #print(torch.std(z_samples))
-        if cov_type == 'diagonal':
+        if (cov_type == 'diagonal') | (cov_type == 'DFT'):
             mu_out, logpre_out = model.decode(z_samples)  # (BS,2,32,S) , (BS,1,32,S)
             new_gauss = 1 / (torch.sqrt(torch.tensor(2).to(device))) * (torch.randn(mu_out.size()[0], mu_out.size()[2], mu_out.size()[3]).to(device) + 1j * torch.randn(mu_out.size()[0], mu_out.size()[2],mu_out.size()[3]).to(device))  # (BS,32,S) complex
             new_var = new_gauss * torch.exp(-0.5 * torch.squeeze(logpre_out))  # (BS,32,S)
@@ -333,7 +333,7 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         z_samples = z_samples.view(batchsize, LD, snapshots)
         output_rep = model.decode(z_samples)
 
-        if cov_type == 'diagonal':
+        if (cov_type == 'diagonal') | (cov_type == 'DFT'):
             mu_out2, logpre_out2 = output_rep  # (BS,2,32,S) , (BS,1,32,S)
             new_gauss = 1 / (torch.sqrt(torch.tensor(2).to(device))) * (torch.randn(mu_out2.size()[0], mu_out2.size()[2], mu_out2.size()[3]).to(device) + 1j * torch.randn(mu_out2.size()[0], mu_out2.size()[2],mu_out2.size()[3]).to(device))  # (BS,32,S) complex
             new_var = new_gauss * torch.exp(-0.5 * torch.squeeze(logpre_out2))  # (BS,32,S)
@@ -365,6 +365,12 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         mu_out = mu_out.detach()
         samples = samples.detach()
         samples2 = samples2.detach()
+
+        if cov_type == 'DFT':
+            mu_out = apply_IDFT(mu_out)
+            mu_out2 = apply_IDFT(mu_out2)
+            samples = apply_IDFT(samples)
+            samples2 = apply_IDFT(samples2)
 
         mu_out_MMD = mu_out.reshape(batchsize, -1)
         samples_MMD = samples.view(batchsize, -1)
