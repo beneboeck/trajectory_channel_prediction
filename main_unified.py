@@ -25,7 +25,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 10
+G_EPOCHS = 15
 LEARNING_RATE = 2e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
@@ -36,7 +36,7 @@ n_permutations = 100
 normed=False
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
-cov_type = 'diagonal'
+cov_type = 'Toeplitz'
 print('Setup')
 print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)
 
