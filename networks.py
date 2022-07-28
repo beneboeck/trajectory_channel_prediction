@@ -1989,7 +1989,7 @@ class Encoder(nn.Module):
             print('logvar was regularized')
             print(torch.max(torch.abs(logvar)))
         logvar2[logvar > 4] = 4
-        return mu, logvar, new_state
+        return mu, logvar2, new_state
 
 class Decoder(nn.Module):
     def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,device):
