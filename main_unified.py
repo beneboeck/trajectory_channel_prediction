@@ -129,8 +129,8 @@ noisy_data = data + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
 noisy_data_DFT = data_DFT + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
 
 print('stats')
-print(np.mean(data[:,0,0,0]))
-print(np.std(data[:,0,0,0]))
+print(np.mean(data[:,0,0,:]))
+print(np.std(data[:,0,0,:]))
 
 dataset = ds.dataset(data,noisy_data)
 dataset_DFT = ds.dataset(data_DFT,noisy_data_DFT)
