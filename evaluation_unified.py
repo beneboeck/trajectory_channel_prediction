@@ -257,10 +257,6 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
             print(f'iteration: {g}')
         #print('new iteration')
 
-        alpha = 0.05
-        H = np.zeros(n_iterations)
-        H2 = np.zeros(n_iterations)
-
         loader = DataLoader(dataset_val, batch_size=batchsize, shuffle=True)
         iterator = iter(loader)
 
