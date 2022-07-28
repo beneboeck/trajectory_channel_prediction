@@ -2016,14 +2016,14 @@ class Decoder(nn.Module):
         net_in_dim = de_width * ld * (memory+1)
         net_out_dim = int(de_width * ld * (memory+1) - step)
         self.net.append(nn.Linear(ld*(memory+1),net_in_dim))
-        self.net.append(nn.ReLU())
-        #self.net.append(nn.BatchNorm1d(net_in_dim,track_running_stats=False))
+        #self.net.append(nn.ReLU())
+        self.net.append(nn.BatchNorm1d(net_in_dim,track_running_stats=False))
         self.net.append(nn.BatchNorm1d(net_in_dim, eps=1e-3))
         for l in range(de_layer-2):
             self.net.append(nn.Linear(net_in_dim,net_out_dim))
             self.net.append(nn.ReLU())
-            #self.net.append(nn.BatchNorm1d(net_out_dim,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-3))
+            self.net.append(nn.BatchNorm1d(net_out_dim,track_running_stats=False))
+            #self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-3))
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
         self.net.append(nn.Linear(net_in_dim,output_dim))
