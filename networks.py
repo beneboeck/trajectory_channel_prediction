@@ -2043,7 +2043,8 @@ class Decoder(nn.Module):
             logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             if torch.sum(logpre_out[torch.abs(logpre_out) > 4]) != 0:
                 print('logpre_out was regularized')
-
+            if torch.sum(logpre_out == 0) > 0:
+                print('logpre_out wirklich 0')
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
