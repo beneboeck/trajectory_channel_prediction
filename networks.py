@@ -1987,7 +1987,7 @@ class Encoder(nn.Module):
 
         logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
         logvar2 = logvar.clone()
-        if torch.sum(logvar[torch.abs(logvar) > 4]) != 0:
+        if torch.sum(logvar[torch.abs(logvar) > 5]) != 0:
             print(torch.max(torch.abs(logvar)))
             print('logvar was regularized')
             print(torch.max(torch.abs(logvar)))
