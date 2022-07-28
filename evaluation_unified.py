@@ -245,7 +245,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
     return NMSE
 
 
-def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,snapshots,sig_n,dir_path,device):
+def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,snapshots,dir_path,device):
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
     alpha = 0.05
     batchsize=1000
@@ -267,14 +267,20 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         samples = iterator.next()
         samples = samples[0].to(device)
 
+        print('testhier')
+        print(samples.size())
+
             # samples2 are for the generating latent distributions q(z|x) for MMD inf
 
         samples2 = iterator.next()
         samples2 = samples2[0].to(device)
 
+        print(samples2.size())
+        print(samples2[0,:,0,0])
         # here I create completely new data
 
         z_samples = model.sample_from_prior(batchsize)
+        print(z_samples.size())
         if cov_type == 'diagonal':
             mu_out, logpre_out = model.decode(z_samples)  # (BS,2,32,S) , (BS,1,32,S)
             new_gauss = 1 / (torch.sqrt(torch.tensor(2).to(device))) * (torch.randn(mu_out.size()[0], mu_out.size()[2], mu_out.size()[3]).to(device) + 1j * torch.randn(mu_out.size()[0], mu_out.size()[2],mu_out.size()[3]).to(device))  # (BS,32,S) complex
@@ -341,18 +347,18 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
 
 
 
-    mu_out2 = mu_out2.detach()
-    mu_out = mu_out.detach()
-    samples = samples.detach()
-    samples2 = samples2.detach()
+        mu_out2 = mu_out2.detach()
+        mu_out = mu_out.detach()
+        samples = samples.detach()
+        samples2 = samples2.detach()
 
-    mu_out_MMD = mu_out.reshape(batchsize, -1)
-    samples_MMD = samples.view(batchsize, -1)
-    mu_out2_MMD = mu_out2.reshape(batchsize, -1)
-    samples2_MMD = samples.view(batchsize, -1)
+        mu_out_MMD = mu_out.reshape(batchsize, -1)
+        samples_MMD = samples.view(batchsize, -1)
+        mu_out2_MMD = mu_out2.reshape(batchsize, -1)
+        samples2_MMD = samples.view(batchsize, -1)
 
-    del mu_out2, mu_out, samples, samples2
-    torch.cuda.empty_cache()
+        del mu_out2, mu_out, samples, samples2
+        torch.cuda.empty_cache()
 
             # valentina_mu_out = np.array(mu_out_MMD.to('cpu'))
             # valentina_samples = np.array(samples_MMD.to('cpu'))
@@ -364,76 +370,76 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
             # np.savetxt('/home/ga42kab/lrz-nashome/mu_out2.txt', valentina_mu_out2)
             # np.savetxt('/home/ga42kab/lrz-nashome/samples2.txt', valentina_samples2)
 
-    if normed == True:
-        mu_out_MMD = mu_out_MMD / torch.linalg.norm(mu_out_MMD, axis=1, keepdims=True)
-        samples_MMD = samples_MMD / torch.linalg.norm(samples_MMD, dim=1, keepdim=True)
-        mu_out2_MMD = mu_out2_MMD / torch.linalg.norm(mu_out2_MMD, dim=1, keepdim=True)
-        samples2_MMD = samples2_MMD / torch.linalg.norm(samples2_MMD, dim=1, keepdim=True)
+        if normed == True:
+            mu_out_MMD = mu_out_MMD / torch.linalg.norm(mu_out_MMD, axis=1, keepdims=True)
+            samples_MMD = samples_MMD / torch.linalg.norm(samples_MMD, dim=1, keepdim=True)
+            mu_out2_MMD = mu_out2_MMD / torch.linalg.norm(mu_out2_MMD, dim=1, keepdim=True)
+            samples2_MMD = samples2_MMD / torch.linalg.norm(samples2_MMD, dim=1, keepdim=True)
 
-    Dxy = Pdist2(samples_MMD, mu_out_MMD)
-    sigma0 = Dxy.median()
+        Dxy = Pdist2(samples_MMD, mu_out_MMD)
+        sigma0 = Dxy.median()
 
-    del Dxy
-    torch.cuda.empty_cache()
+        del Dxy
+        torch.cuda.empty_cache()
 
-    Dxy2 = Pdist2(samples2_MMD, mu_out2_MMD)
-    sigma02 = Dxy2.median()
+        Dxy2 = Pdist2(samples2_MMD, mu_out2_MMD)
+        sigma02 = Dxy2.median()
 
             # print('###########')
             # code.interact(local=locals())
 
-    del Dxy2
-    torch.cuda.empty_cache()
+        del Dxy2
+        torch.cuda.empty_cache()
 
-    mmd_value, Kxyxy, mmd_var = MMDu(samples_MMD, mu_out_MMD, sigma0=sigma0)
-    mmd_value2, Kxyxy2, mmd_var2 = MMDu(samples2_MMD, mu_out2_MMD, sigma0=sigma02)
+        mmd_value, Kxyxy, mmd_var = MMDu(samples_MMD, mu_out_MMD, sigma0=sigma0)
+        mmd_value2, Kxyxy2, mmd_var2 = MMDu(samples2_MMD, mu_out2_MMD, sigma0=sigma02)
 
-    mmd_vector = np.zeros(n_permutations)
-    count = 0
-    mmd_vector2 = np.zeros(n_permutations)
-    count2 = 0
-    nxy = 2 * batchsize
+        mmd_vector = np.zeros(n_permutations)
+        count = 0
+        mmd_vector2 = np.zeros(n_permutations)
+        count2 = 0
+        nxy = 2 * batchsize
 
-    for i in range(n_permutations):
-        ind = np.random.choice(nxy, nxy, replace=False)
+        for i in range(n_permutations):
+            ind = np.random.choice(nxy, nxy, replace=False)
                 # divide into new X, Y
-        indx = ind[:batchsize]
-        indy = ind[batchsize:]
+            indx = ind[:batchsize]
+            indy = ind[batchsize:]
 
                 # take the part of the matrix that corresponds to the decision
-        Kx = Kxyxy[np.ix_(indx, indx)]
-        Ky = Kxyxy[np.ix_(indy, indy)]
-        Kxy = Kxyxy[np.ix_(indx, indy)]
+            Kx = Kxyxy[np.ix_(indx, indx)]
+            Ky = Kxyxy[np.ix_(indy, indy)]
+            Kxy = Kxyxy[np.ix_(indx, indy)]
 
-        Kx2 = Kxyxy2[np.ix_(indx, indx)]
-        Ky2 = Kxyxy2[np.ix_(indy, indy)]
-        Kxy2 = Kxyxy2[np.ix_(indx, indy)]
+            Kx2 = Kxyxy2[np.ix_(indx, indx)]
+            Ky2 = Kxyxy2[np.ix_(indy, indy)]
+            Kxy2 = Kxyxy2[np.ix_(indx, indy)]
 
-        TEMP = eval_mmd2(Kx, Ky, Kxy)
-        mmd_vector[i] = TEMP[0]
-        TEMP2 = eval_mmd2(Kx2, Ky2, Kxy2)
-        mmd_vector2[i] = TEMP2[0]
+            TEMP = eval_mmd2(Kx, Ky, Kxy)
+            mmd_vector[i] = TEMP[0]
+            TEMP2 = eval_mmd2(Kx2, Ky2, Kxy2)
+            mmd_vector2[i] = TEMP2[0]
 
-        if mmd_vector[i] > mmd_value:
-            count = count + 1
-        if mmd_vector2[i] > mmd_value2:
-            count2 = count2 + 1
+            if mmd_vector[i] > mmd_value:
+                count = count + 1
+            if mmd_vector2[i] > mmd_value2:
+                count2 = count2 + 1
 
-        if count > np.ceil(n_permutations * alpha):
-            h = 0
-        else:
-            h = 1
+            if count > np.ceil(n_permutations * alpha):
+                h = 0
+            else:
+                h = 1
 
-        if count2 > np.ceil(n_permutations * alpha):
-            h2 = 0
-        else:
-            h2 = 1
+            if count2 > np.ceil(n_permutations * alpha):
+                h2 = 0
+            else:
+                h2 = 1
 
-        if (count > np.ceil(n_permutations * alpha)) & (count2 > np.ceil(n_permutations * alpha)):
-            break
+            if (count > np.ceil(n_permutations * alpha)) & (count2 > np.ceil(n_permutations * alpha)):
+                break
 
-    H[g] = h
-    H2[g] = h2
+        H[g] = h
+        H2[g] = h2
 
     TPR1 = H.sum() / n_iterations
     TPR2 = H2.sum() / n_iterations

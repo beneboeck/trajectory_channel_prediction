@@ -84,7 +84,7 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
             model.eval()
             NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
             NMSE_estimation = ev.channel_estimation(setup, model, dataloader_val, sig_n, dir_path, device)
-            TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, dataset_val, snapshots, sig_n, dir_path,device)
+            TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, dataset_val, snapshots, dir_path,device)
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
             model.train()
