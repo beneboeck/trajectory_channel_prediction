@@ -402,6 +402,7 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         nxy = 2 * batchsize
 
         for i in range(n_permutations):
+            print('a permutation')
             ind = np.random.choice(nxy, nxy, replace=False)
                 # divide into new X, Y
             indx = ind[:batchsize]
