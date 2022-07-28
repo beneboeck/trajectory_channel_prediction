@@ -39,7 +39,7 @@ SNR_eff = 10**(SNR_db/10)
 sig_n = math.sqrt(1/(32 * SNR_eff))
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
-
+cov_type = 'diagonal'
 print('Setup')
 print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)
 
