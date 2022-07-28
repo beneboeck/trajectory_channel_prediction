@@ -10,6 +10,7 @@ import dataset as ds
 import training_unified as tr
 import networks as mg
 import evaluation_unified as ev
+import math
 
 now = datetime.datetime.now()
 date = str(now)[:10]
@@ -122,7 +123,7 @@ data = np.concatenate((x_train_n,y_train_n),axis=3)
 data = data - np.mean(data,axis=(0,3))[None,:,:,None]
 data = data/np.sqrt(np.mean(np.sum(data**2,axis=(1,2)))) * np.sqrt(32)
 
-x = np.mean(np.sum(data[:,:,:,-1],axis=(1,2)))
+x = np.mean(np.sum(data[:,:,:,-1]**2,axis=(1,2)))
 SNR_eff = 10**(SNR_db/10)
 sig_n_train = math.sqrt(x/(32 * SNR_eff))
 
