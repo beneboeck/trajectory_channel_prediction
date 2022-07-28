@@ -1922,11 +1922,12 @@ class Prior(nn.Module):
             mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
 
-        logpre[logpre > 4] = 4
+        logpre2 = logpre.clone()
+        logpre2[logpre > 4] = 4
         if torch.sum(logpre[torch.abs(logpre) > 4]) != 0:
             print('logpre was regularized')
 
-        return mu, logpre, new_state
+        return mu, logpre2, new_state
 
 class Encoder(nn.Module):
     def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width):
@@ -2027,7 +2028,7 @@ class Decoder(nn.Module):
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
             mu_out = Reshape(2,32,1)(mu_out)
-            logpre_out = logpre_out[:,:,None]
+            logpre_out = logpre_out[:,:,None].clone()
             logpre_out[logpre_out > 4] = 4
             if torch.sum(logpre_out[torch.abs(logpre_out) > 4]) != 0:
                 print('logpre_out was regularized')
