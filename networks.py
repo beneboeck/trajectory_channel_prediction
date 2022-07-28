@@ -2056,7 +2056,9 @@ class Decoder(nn.Module):
             alpha_0 = torch.squeeze(Reshape(1, 1, 1)(alpha_0))
             alpha_0 = torch.exp(alpha_0)
             alpha_intermediate = alpha_0.clone()
-            alpha_intermediate[alpha_0 > 500] = 500
+            if torch.sum(alpha_intermediate[alpha_0 > 100]) > 0:
+                print('alpha regularized')
+            alpha_intermediate[alpha_0 > 100] = 100
             alpha_0 = alpha_intermediate.clone()
             alpha_rest = Reshape(1, 1, 62)(alpha_rest)
             if batchsize != 1:

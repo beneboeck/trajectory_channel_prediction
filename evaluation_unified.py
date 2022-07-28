@@ -223,7 +223,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             print(torch.max(torch.abs(B_out)))
             print(torch.max(torch.abs(Cov_out)))
 
-            L_noisy = 1/(torch.diag_embed(1/L + sig_n**2)).cfloat()
+            L_noisy = torch.diag_embed(1/(1/L + sig_n**2)).cfloat()
             print(torch.max(torch.abs(L_noisy)))
             h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ (U @ L_noisy @ U.mH), (noisy_sample_compl - mu_compl))
             h_hat_last = h_hat[:,-1,:]
