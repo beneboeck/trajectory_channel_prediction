@@ -30,8 +30,8 @@ FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
-n_iterations = 10
-n_permutations = 20
+n_iterations = 40
+n_permutations = 100
 normed=False
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
