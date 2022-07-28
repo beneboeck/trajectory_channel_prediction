@@ -1923,10 +1923,11 @@ class Prior(nn.Module):
             new_state = torch.zeros(z.size())
 
         logpre2 = logpre.clone()
-        logpre2[logpre > 4] = 4
         if torch.sum(logpre[torch.abs(logpre) > 4]) != 0:
+            print(torch.max(torch.abs(logpre)))
             print('logpre was regularized')
-
+            print(torch.max(torch.abs(logpre)))
+        logpre2[logpre > 4] = 4
         return mu, logpre2, new_state
 
 class Encoder(nn.Module):
