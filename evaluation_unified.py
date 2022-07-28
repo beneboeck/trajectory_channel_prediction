@@ -253,6 +253,8 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
     H2 = np.zeros(n_iterations)
 
     for g in range(n_iterations):
+        if g%100:
+            print(f'iteration: {g}')
         #print('new iteration')
 
         alpha = 0.05
@@ -267,20 +269,15 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         samples = iterator.next()
         samples = samples[0].to(device)
 
-        print('testhier')
-        print(samples.size())
-
             # samples2 are for the generating latent distributions q(z|x) for MMD inf
 
         samples2 = iterator.next()
         samples2 = samples2[0].to(device)
 
-        print(samples2.size())
-        print(samples2[0,:,0,0])
         # here I create completely new data
 
         z_samples = model.sample_from_prior(batchsize)
-        print(z_samples.size())
+
         if cov_type == 'diagonal':
             mu_out, logpre_out = model.decode(z_samples)  # (BS,2,32,S) , (BS,1,32,S)
             new_gauss = 1 / (torch.sqrt(torch.tensor(2).to(device))) * (torch.randn(mu_out.size()[0], mu_out.size()[2], mu_out.size()[3]).to(device) + 1j * torch.randn(mu_out.size()[0], mu_out.size()[2],mu_out.size()[3]).to(device))  # (BS,32,S) complex
@@ -438,13 +435,9 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
             if (count > np.ceil(n_permutations * alpha)) & (count2 > np.ceil(n_permutations * alpha)):
                 break
 
-        H[g] = h
-        H2[g] = h2
+            H[g] = h
+            H2[g] = h2
 
     TPR1 = H.sum() / n_iterations
     TPR2 = H2.sum() / n_iterations
-    print('hier')
-    print('normal TPR ' + str(TPR1) + '\n')
-    print('inference TPR ' + str(TPR2) + '\n')
-    print(TPR1, TPR2)
     return TPR1, TPR2

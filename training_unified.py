@@ -88,8 +88,8 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
             eval_risk.append(Risk.detach().to('cpu'))
             eval_NMSE.append(NMSE)
             model.train()
-            print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1}, TPR2: {TPR2}, Risk: {Risk:.4f}')
-            log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f},Risk: {Risk:.4f}\n')
+            print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:4.f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
+            log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:4.f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
             if i > 300:
                 x_range = torch.arange(30)
                 x = torch.ones(30, 2)
