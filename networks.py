@@ -2122,8 +2122,11 @@ class HMVAE(nn.Module):
 
             for unit in range(1, self.snapshots):
                 mu, logpre, hidden_state[:,:,unit] = self.prior_model[unit](z[:, :, unit - 1],hidden_state[:,:,unit-1].clone())
+                print('logpre sample from prior')
+                print(torch.max(torch.abs(torch.exp(logpre))))
                 if torch.sum(mu != mu) > 0:
                     print('Nan in sample from prior')
+                    print(unit)
                     raise ValueError
                 eps = torch.randn(n_samples, self.ld).to(self.device)
                 z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))
