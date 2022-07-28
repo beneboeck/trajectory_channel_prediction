@@ -1906,7 +1906,7 @@ class Prior(nn.Module):
             self.net.append(nn.Linear(pr_width * ld, pr_width * ld))
             self.net.append(nn.ReLU())
             #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
+            #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
         self.net.append(nn.Linear(pr_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld, 2 * self.ld)
         self.net = nn.Sequential(*self.net)
@@ -2006,12 +2006,12 @@ class Decoder(nn.Module):
         self.net.append(nn.Linear(ld*(memory+1),net_in_dim))
         self.net.append(nn.ReLU())
         #self.net.append(nn.BatchNorm1d(net_in_dim,track_running_stats=False))
-        self.net.append(nn.BatchNorm1d(net_in_dim, eps=3e-4))
+        self.net.append(nn.BatchNorm1d(net_in_dim, eps=1e-3))
         for l in range(de_layer-2):
             self.net.append(nn.Linear(net_in_dim,net_out_dim))
             self.net.append(nn.ReLU())
             #self.net.append(nn.BatchNorm1d(net_out_dim,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(net_out_dim, eps=3e-4))
+            self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-3))
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
         self.net.append(nn.Linear(net_in_dim,output_dim))
