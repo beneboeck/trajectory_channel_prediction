@@ -123,7 +123,7 @@ y_test_n = y_test_n[:,:,:,1:]
 
 data = np.concatenate((x_train_n,y_train_n),axis=3)
 data = data - np.mean(data,axis=(0,3))[None,:,:,None]
-data = data/np.sqrt(np.mean(np.sum(data**2,axis=(1,2)))) * 32
+data = data/np.mean(np.sum(data**2,axis=(1,2))) * 32
 data_DFT = apply_DFT(data)
 noisy_data = data + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
 noisy_data_DFT = data_DFT + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
@@ -131,6 +131,7 @@ noisy_data_DFT = data_DFT + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
 print('stats')
 print(np.mean(data[:,0,0,:]))
 print(np.mean(np.sum(data**2,axis=(1,2))))
+print(np.mean(h[:,0,0,0]))
 
 dataset = ds.dataset(data,noisy_data)
 dataset_DFT = ds.dataset(data_DFT,noisy_data_DFT)
