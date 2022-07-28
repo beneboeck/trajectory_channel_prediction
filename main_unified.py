@@ -122,6 +122,8 @@ y_test_n = y_test_n[label_test == VELOCITY]
 y_test_n = y_test_n[:,:,:,1:]
 
 data = np.concatenate((x_train_n,y_train_n),axis=3)
+data = data - np.mean(data,axis=(0,3))[None,:,:,None]
+data = data/np.sqrt(np.mean(np.linalg.norm(data,axis=(1,2)))) * 32
 data_DFT = apply_DFT(data)
 noisy_data = data + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
 noisy_data_DFT = data_DFT + sig_n/math.sqrt(2) * np.random.randn(*data.shape)
@@ -136,6 +138,8 @@ dataloader = DataLoader(dataset,batch_size=BATCHSIZE,shuffle=True)
 dataloader_DFT = DataLoader(dataset_DFT,batch_size=BATCHSIZE,shuffle=True)
 
 data_val = np.concatenate((x_val_n,y_val_n),axis=3)
+data_val = data_val - np.mean(data_val,axis=(0,3))[None,:,:,None]
+data_val = data_val/np.sqrt(np.mean(np.linalg.norm(data_val,axis=(1,2)))) * 32
 data_val_DFT = apply_DFT(data_val)
 noisy_data_val = data_val + sig_n/math.sqrt(2) * np.random.randn(*data_val.shape)
 noisy_data_val_DFT = data_val_DFT + sig_n/math.sqrt(2) * np.random.randn(*data_val.shape)
@@ -146,6 +150,8 @@ dataloader_val = DataLoader(dataset_val,batch_size=4 * BATCHSIZE,shuffle=True)
 dataloader_val_DFT = DataLoader(dataset_val_DFT,batch_size=4 * BATCHSIZE,shuffle=True)
 
 data_test = np.concatenate((x_test_n,y_test_n),axis=3)
+data_test = data_test - np.mean(data_test,axis=(0,3))[None,:,:,None]
+data_test = data_test/np.sqrt(np.mean(np.linalg.norm(data_test,axis=(1,2)))) * 32
 data_test_DFT = apply_DFT(data_test)
 noisy_data_test = data_test + sig_n/math.sqrt(2) * np.random.randn(*data_test.shape)
 noisy_data_test_DFT = data_test_DFT + sig_n/math.sqrt(2) * np.random.randn(*data_test.shape)

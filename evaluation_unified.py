@@ -229,7 +229,7 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
 
         if (cov_type == 'diagonal') | (cov_type == 'DFT'):
             Cov_out = torch.diag_embed(1/(torch.exp(logpre_out.permute(0,2,1)))).cfloat()
-            inv_matrix = 1/torch.diag_embed(( sig_n**2 + 1/torch.exp(logpre_out.permute(0,2,1)))).cfloat()
+            inv_matrix = torch.diag_embed(1/(sig_n**2 + 1/torch.exp(logpre_out.permute(0,2,1)))).cfloat()
             #inv_matrix = torch.diag_embed(torch.exp(logpre_out.permute(0,2,1))).cfloat() + (1/(sig_n**2) * torch.eye(32,32).to(device)).cfloat()[None,None,:,:]
             print('estimation test')
             print(torch.max(torch.abs(Cov_out)))
