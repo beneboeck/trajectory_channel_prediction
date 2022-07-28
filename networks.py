@@ -1900,13 +1900,13 @@ class Prior(nn.Module):
         self.net = []
         self.net.append(nn.Linear(ld,pr_width * ld))
         self.net.append(nn.ReLU())
-        #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-        self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
+        self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
+        #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
         for l in range(pr_layer-2):
             self.net.append(nn.Linear(pr_width * ld, pr_width * ld))
             self.net.append(nn.ReLU())
-            #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
+            self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
+            #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
         self.net.append(nn.Linear(pr_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld, 2 * self.ld)
         self.net = nn.Sequential(*self.net)
@@ -1951,20 +1951,20 @@ class Encoder(nn.Module):
         self.x_prenet = nn.Sequential(
             nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
             nn.ReLU(),
-            #nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step),track_running_stats=False),
-            nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-3),
+            nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step),track_running_stats=False),
+            #nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-3),
             nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
 
         self.net = []
         self.net.append(nn.Linear(3 * ld,en_width * ld))
         self.net.append(nn.ReLU())
-        #self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
-        self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-3))
+        self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
+        #self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-3))
         for l in range(en_layer-2):
             self.net.append(nn.Linear(en_width * ld, en_width * ld))
             self.net.append(nn.ReLU())
-            #self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-3))
+            self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
+            #self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-3))
         self.net.append(nn.Linear(en_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld,2*self.ld)
 
