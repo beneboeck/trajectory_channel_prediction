@@ -1917,12 +1917,16 @@ class Prior(nn.Module):
             new_state = forget_state + (self.choice(z) * self.candidates(z))
         transformed_z = self.net(z)
         if self.rnn_bool == True:
-            mu, logvar = (nn.Tanh()(self.hidden_to_out(new_state)) * transformed_z).chunk(2, dim=1)
+            mu, logpre = (nn.Tanh()(self.hidden_to_out(new_state)) * transformed_z).chunk(2, dim=1)
         else:
-            mu, logvar = transformed_z.chunk(2, dim=1)
+            mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
 
-        return mu, logvar, new_state
+        logpre[logpre > 4] = 4
+        if torch.sum(logpre[torch.abs(logpre) > 4]) != 0:
+            print('logpre was regularized')
+
+        return mu, logpre, new_state
 
 class Encoder(nn.Module):
     def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width):
@@ -2024,6 +2028,9 @@ class Decoder(nn.Module):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]
+            logpre_out[logpre_out > 4] = 4
+            if torch.sum(logpre_out[torch.abs(logpre_out) > 4]) != 0:
+                print('logpre_out was regularized')
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
