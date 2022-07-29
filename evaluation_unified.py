@@ -245,10 +245,10 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             h_hat_last = h_hat[:, -1, :]
 
         if cov_type == 'DFT':
-            h_hat_realed = torch.zeros((h_hat.size(0),2,h_hat.size(1),h_hat.size(2)),dtype=torch.cfloat).to(device)
+            h_hat_realed = torch.zeros((h_hat.size(0),2,h_hat.size(1),h_hat.size(2)),dtype=torch.cfloat)
             h_hat_realed[:,0,:,:] = torch.real(h_hat)
             h_hat_realed[:,1,:,:] = torch.imag(h_hat)
-            h_hat = torch.tensor(apply_IDFT(h_hat_realed.permute(0,1,3,2))).permute(0,1,3,2)
+            h_hat = torch.tensor(apply_IDFT(h_hat_realed.permute(0,1,3,2))).permute(0,1,3,2).to(device)
             h_hat = h_hat[:,0,:,:] + 1j * h_hat[:,1,:,:]
             h_hat_last = h_hat[:,-1,:]
 
