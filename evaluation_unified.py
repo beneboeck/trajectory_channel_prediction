@@ -367,10 +367,10 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,sna
         samples2 = samples2.detach()
 
         if cov_type == 'DFT':
-            mu_out = apply_IDFT(mu_out)
-            mu_out2 = apply_IDFT(mu_out2)
-            samples = apply_IDFT(samples)
-            samples2 = apply_IDFT(samples2)
+            mu_out = torch.tensor(apply_IDFT(mu_out))
+            mu_out2 = torch.tensor(apply_IDFT(mu_out2))
+            samples = torch.tensor(apply_IDFT(samples))
+            samples2 = torch.tensor(apply_IDFT(samples2))
 
         mu_out_MMD = mu_out.reshape(batchsize, -1)
         samples_MMD = samples.view(batchsize, -1)
