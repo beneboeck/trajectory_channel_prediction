@@ -147,7 +147,7 @@ data_val = np.concatenate((x_val_n,y_val_n),axis=3)
 data_val = data_val - np.mean(data_val,axis=(0,3))[None,:,:,None]
 data_val = data_val/np.sqrt(np.mean(np.sum(data_val**2,axis=(1,2)))) * np.sqrt(32)
 
-x_val = np.mean(np.sum(data_val[:,:,:,-1],axis=(1,2)))
+x_val = np.mean(np.sum(data_val[:,:,:,-1]**2,axis=(1,2)))
 SNR_db = 5
 SNR_eff = 10**(SNR_db/10)
 sig_n_val = math.sqrt(x/(32 * SNR_eff))
@@ -165,7 +165,7 @@ data_test = np.concatenate((x_test_n,y_test_n),axis=3)
 data_test = data_test - np.mean(data_test,axis=(0,3))[None,:,:,None]
 data_test = data_val/np.sqrt(np.mean(np.sum(data_test**2,axis=(1,2)))) * np.sqrt(32)
 
-x_test = np.mean(np.sum(data_test[:,:,:,-1],axis=(1,2)))
+x_test = np.mean(np.sum(data_test[:,:,:,-1]**2,axis=(1,2)))
 SNR_db = 5
 SNR_eff = 10**(SNR_db/10)
 sig_n_test = math.sqrt(x/(32 * SNR_eff))
