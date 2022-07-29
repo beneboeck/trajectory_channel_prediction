@@ -124,9 +124,9 @@ data = np.concatenate((x_train_n,y_train_n),axis=3)
 data = data - np.mean(data,axis=(0,3))[None,:,:,None]
 data = data/np.sqrt(np.mean(np.sum(data**2,axis=(1,2)))) * np.sqrt(32)
 
-x = np.mean(np.sum(data[:,:,:,-1]**2,axis=(1,2)))
+x_train = np.mean(np.sum(data[:,:,:,-1]**2,axis=(1,2)))
 SNR_eff = 10**(SNR_db/10)
-sig_n_train = math.sqrt(x/(32 * SNR_eff))
+sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
 
 data_DFT = apply_DFT(data)
 noisy_data = data + sig_n_train/math.sqrt(2) * np.random.randn(*data.shape)
@@ -150,7 +150,7 @@ data_val = data_val/np.sqrt(np.mean(np.sum(data_val**2,axis=(1,2)))) * np.sqrt(3
 x_val = np.mean(np.sum(data_val[:,:,:,-1]**2,axis=(1,2)))
 SNR_db = 5
 SNR_eff = 10**(SNR_db/10)
-sig_n_val = math.sqrt(x/(32 * SNR_eff))
+sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
 
 data_val_DFT = apply_DFT(data_val)
 noisy_data_val = data_val + sig_n_val/math.sqrt(2) * np.random.randn(*data_val.shape)
@@ -168,7 +168,7 @@ data_test = data_val/np.sqrt(np.mean(np.sum(data_test**2,axis=(1,2)))) * np.sqrt
 x_test = np.mean(np.sum(data_test[:,:,:,-1]**2,axis=(1,2)))
 SNR_db = 5
 SNR_eff = 10**(SNR_db/10)
-sig_n_test = math.sqrt(x/(32 * SNR_eff))
+sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
 data_test_DFT = apply_DFT(data_test)
 noisy_data_test = data_test + sig_n_test/math.sqrt(2) * np.random.randn(*data_test.shape)
 noisy_data_test_DFT = data_test_DFT + sig_n_test/math.sqrt(2) * np.random.randn(*data_test.shape)

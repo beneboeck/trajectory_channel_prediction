@@ -219,12 +219,12 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             L,U = torch.linalg.eigh(Gamma)
 
             Cov_out = U @ torch.diag_embed(1/L).cfloat() @ U.mH
-            print('Toeplitz')
-            print(torch.max(torch.abs(B_out)))
-            print(torch.max(torch.abs(Cov_out)))
+            #print('Toeplitz')
+            #print(torch.max(torch.abs(B_out)))
+            #print(torch.max(torch.abs(Cov_out)))
 
             L_noisy = torch.diag_embed(1/(1/L + sig_n**2)).cfloat()
-            print(torch.max(torch.abs(L_noisy)))
+            #print(torch.max(torch.abs(L_noisy)))
             h_hat = mu_compl + torch.einsum('ijkl,ijl->ijk',Cov_out @ (U @ L_noisy @ U.mH), (noisy_sample_compl - mu_compl))
             h_hat_last = h_hat[:,-1,:]
 
@@ -244,17 +244,18 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
             #print(h_hat.size())
             h_hat_last = h_hat[:, -1, :]
 
-        if cov_type == 'DFT':
-            h_hat_realed = torch.zeros((h_hat.size(0),2,h_hat.size(1),h_hat.size(2)),dtype=torch.cfloat)
-            h_hat_realed[:,0,:,:] = torch.real(h_hat)
-            h_hat_realed[:,1,:,:] = torch.imag(h_hat)
-            h_hat = torch.tensor(apply_IDFT(h_hat_realed.permute(0,1,3,2))).permute(0,1,3,2).to(device)
-            h_hat = h_hat[:,0,:,:] + 1j * h_hat[:,1,:,:]
-            h_hat_last = h_hat[:,-1,:]
+        #if cov_type == 'DFT':
+        #    h_hat_realed = torch.zeros((h_hat.size(0),2,h_hat.size(1),h_hat.size(2)),dtype=torch.cfloat)
+        #    h_hat_realed[:,0,:,:] = torch.real(h_hat)
+        #    h_hat_realed[:,1,:,:] = torch.imag(h_hat)
+        #    h_hat = torch.tensor(apply_IDFT(h_hat_realed.permute(0,1,3,2))).permute(0,1,3,2).to(device)
+        #    h_hat = h_hat[:,0,:,:] + 1j * h_hat[:,1,:,:]
+        #    h_hat_last = h_hat[:,-1,:]
 
         h_last = x_compl[:, -1, :]
 
-        print(torch.max(torch.abs(mu_compl)))
+
+        #print(torch.max(torch.abs(mu_compl)))
 
         NMSE_list.append(torch.mean(torch.sum(torch.abs(h_last - h_hat_last) ** 2, dim=1) / torch.sum(torch.abs(h_last) ** 2,dim=1)).detach().to('cpu'))
 
