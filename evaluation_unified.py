@@ -263,10 +263,10 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
     return NMSE
 
 
-def computing_MMD(setup,model,n_iterations,n_permutations,normed,dataset_val,snapshots,dir_path,device):
+def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_val,snapshots,dir_path,device):
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
     alpha = 0.05
-    batchsize=400
+    batchsize=bs_mmd
     H = np.zeros(n_iterations)
     H2 = np.zeros(n_iterations)
 

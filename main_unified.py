@@ -25,7 +25,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 15
+G_EPOCHS = 3
 LEARNING_RATE = 2e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
@@ -33,6 +33,7 @@ DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
 n_iterations = 40
 n_permutations = 100
+bs_mmd = 1000
 normed=False
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
@@ -65,6 +66,8 @@ glob_var_file.write('G_EPOCHS: ' +str(G_EPOCHS) +'\n')
 glob_var_file.write(f'VELOCITY: {VELOCITY}\n')
 glob_var_file.write(f'Learning Rate: {LEARNING_RATE}\n')
 glob_var_file.write(f'SNR_db: {SNR_db}\n')
+glob_var_file.write(f'n_iterations: {n_iterations}\n')
+glob_var_file.write(f'n_permutations: {n_permutations}\n')
 
 log_file.write('Date: ' +date +'\n')
 log_file.write('Time: ' + time + '\n')
@@ -183,7 +186,7 @@ model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_wi
 if cov_type == 'DFT':
     dataloader = dataloader_DFT
     dataloader_val = dataloader_val_DFT
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed, dataset_val, SNAPSHOTS)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
