@@ -474,7 +474,7 @@ def computing_LS_sample_covariance_estimator(dataset_val,sig_n):
     sMean = torch.mean(h_hat_LS,dim=0)
     sCov_y = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS - sMean),torch.conj(h_hat_LS - sMean)),dim=0)
     inv_matrix = torch.linalg.inv(sCov_y)
-    h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat)[None,:,:] @ inv_matrix,(h_hat_LS - sMean[None,:]))
+    h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat) @ inv_matrix,(h_hat_LS - sMean[None,:]))
     NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
 
     return NMSE_LS,NMSE_sCov
