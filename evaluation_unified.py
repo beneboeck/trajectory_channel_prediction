@@ -468,7 +468,7 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_
 
 def computing_LS_sample_covariance_estimator(dataset_val,sig_n):
     h_hat_LS = dataset_val.y[:,0,:,-1] + 1j * dataset_val.y[:,1,:,-1]
-    h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,0,:,-1]
+    h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,1,:,-1]
     NMSE_LS = torch.mean(torch.linalg.norm(h - h_hat_LS,dim = 1) ** 2)/torch.mean(torch.linalg.norm(h,dim=1)**2)
 
     sMean = torch.mean(h_hat_LS,dim=0)

@@ -25,7 +25,7 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 3
+G_EPOCHS = 1
 LEARNING_RATE = 2e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
@@ -208,3 +208,7 @@ print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
 
 glob_var_file.write('\nResults\n')
+glob_var_file.write(f'NMSE estimation: {eval_NMSE_estimation[-1]:.4f}\n')
+glob_var_file.write(f'NMSE prediction: {eval_NMSE[-1]:.4f}\n')
+glob_var_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
+glob_var_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
