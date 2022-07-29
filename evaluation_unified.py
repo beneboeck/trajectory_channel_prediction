@@ -465,3 +465,17 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_
     TPR1 = H.sum() / n_iterations
     TPR2 = H2.sum() / n_iterations
     return TPR1, TPR2
+
+def computing_LS_sample_covariance_estimator(dataset_val,sig_n):
+    h_hat_LS = dataset_val.y[:,0,:,-1] + 1j * dataset_val.y[:,1,:,-1]
+    h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,0,:,-1]
+    NMSE_LS = torch.mean(torch.linalg.norm(h - h_hat_LS,dim = 1) ** 2)/torch.mean(torch.linalg.norm(h,dim=1)**2)
+
+    sMean = torch.mean(h_hat_LS,dim=0)
+    sCov = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS - sMean),torch.conj(h_hat_LS - sMean)),dim=0)
+    inv_matrix = torch.linalg.inv(sCov + sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat))
+    h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',sCov @ inv_matrix,(h_hat_LS - sMean[None,:]))
+    NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
+
+    return NMSE_LS,NMSE_sCov
+

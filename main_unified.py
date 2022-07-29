@@ -31,14 +31,12 @@ FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'Quadriga'
 VELOCITY = 2
-n_iterations = 40
-n_permutations = 100
+n_iterations = 75
+n_permutations = 300
 bs_mmd = 1000
 normed=False
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
-cov_type = 'DFT'
-rnn_bool = True
 print('Setup')
 print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)
 
@@ -186,12 +184,15 @@ model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_wi
 if cov_type == 'DFT':
     dataloader = dataloader_DFT
     dataloader_val = dataloader_val_DFT
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
 save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
-save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE')
+save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE prediction')
+save_risk_single(eval_NMSE_estimation,dir_path,'Evaluation - NMSE estimation')
+save_risk_single(eval_TPR1,dir_path,'Evaluation - TPR1 prior')
+save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
 
 torch.save(model.state_dict(),dir_path + '/model_dict')
 log_file.write('\nTESTING\n')
@@ -201,3 +202,9 @@ if  cov_type == 'DFT':
 NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
 print(f'NMSE test: {NMSE_test}')
 log_file.write(f'NMSE test: {NMSE_test}\n')
+
+NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
+print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
+log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
+
+glob_var_file.write('\nResults\n')

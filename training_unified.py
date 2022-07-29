@@ -84,31 +84,32 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
         KL_list.append(KL.detach().to('cpu'))
         RR_list.append(RR.detach().to('cpu'))
         with torch.no_grad():
-            model.eval()
-            NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
-            NMSE_estimation = ev.channel_estimation(setup, model, dataloader_val, sig_n, dir_path, device)
-            TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots, dir_path,device)
-            eval_risk.append(Risk.detach().to('cpu'))
-            eval_NMSE.append(NMSE)
-            eval_NMSE_estimation.append(NMSE_estimation)
-            eval_TPR1.append(TPR1)
-            eval_TPR2.append(TPR2)
-            model.train()
-            print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
-            log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
-            if i > 300:
-                x_range = torch.arange(30)
-                x = torch.ones(30, 2)
-                x[:, 0] = x_range
-                beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-30:])[:, None]
-                slope = beta[0]
-                print('slope')
-                print(slope)
-                log_file.write(f'slope of Evaluation ELBO: {slope}\n')
+            if i%5 == 0:
+                model.eval()
+                NMSE, Risk = ev.eval_val(setup,model, dataloader_val,cov_type, lamba, device, dir_path)
+                NMSE_estimation = ev.channel_estimation(setup, model, dataloader_val, sig_n, dir_path, device)
+                TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots, dir_path,device)
+                eval_risk.append(Risk.detach().to('cpu'))
+                eval_NMSE.append(NMSE)
+                eval_NMSE_estimation.append(NMSE_estimation)
+                eval_TPR1.append(TPR1)
+                eval_TPR2.append(TPR2)
+                model.train()
+                print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
+                log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
+                if i > 300:
+                    x_range = torch.arange(30)
+                    x = torch.ones(30, 2)
+                    x[:, 0] = x_range
+                    beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-30:])[:, None]
+                    slope = beta[0]
+                    print('slope')
+                    print(slope)
+                    log_file.write(f'slope of Evaluation ELBO: {slope}\n')
 
-        if slope > 0:
-            log_file.write('BREAKING CONDITION, slope positive\n')
-            log_file.write(f'number epochs: {i}')
-            break
+            if slope > 0:
+                log_file.write('BREAKING CONDITION, slope positive\n')
+                log_file.write(f'number epochs: {i}')
+                break
 
-    return risk_list,KL_list,RR_list,eval_risk,eval_NMSE
+    return risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2
