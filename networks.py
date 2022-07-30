@@ -1925,7 +1925,7 @@ class Prior(nn.Module):
         logpre = (2.3 - 1.1)/2 * nn.Tanh()(logpre) + (2.3 - 1.1)/2 + 1.1
 
         logpre2 = logpre.clone()
-        if torch.sum(logpre[torch.abs(logpre) > 2.3]) != 0:
+        if torch.sum(logpre[torch.abs(logpre) > 2.4]) != 0:
             print(torch.max(torch.abs(logpre)))
             print('logpre was regularized')
             print(torch.max(torch.abs(logpre)))
