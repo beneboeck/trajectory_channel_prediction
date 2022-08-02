@@ -2260,7 +2260,7 @@ class HMVAE(nn.Module):
         batchsize = sample.size(0)
         z = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
         hidden_state_inf = torch.zeros(batchsize, self.ld, knowledge).to(self.device)
-        hidden_state_prior = torch.zeros(batchsize,self.ld, knowledge).to(self.device)
+        hidden_state_prior = torch.zeros(batchsize,self.ld, self.snapshots).to(self.device)
         z_init = torch.ones(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
         if self.memory > 0:
             x_start = torch.ones(batchsize, 2, 32, self.memory).to(self.device)
