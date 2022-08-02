@@ -98,7 +98,7 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
                 model.train()
                 print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
                 log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
-                if (i > 50) & (lr_adaption == False):
+                if (i > 40) & (lr_adaption == False):
                     x_range_lr = torch.arange(5)
                     x_lr = torch.ones(5, 2)
                     x_lr[:, 0] = x_range_lr
@@ -108,10 +108,12 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
                     print(slope_lr)
                     log_file.write(f'slope of Evaluation ELBO (for learning rate): {slope_lr}\n')
                     if slope_lr > 0:
+                        print('LEARNING RATE IS ADAPTED!')
+                        log_file.write(f'LEARNING RATE IS ADAPTED!\n')
                         optimizer.param_groups[0]['lr'] = optimizer.param_groups[0]['lr']/5
                         lr_adaption = True
 
-                if (i > 400) & (lr_adaption == True):
+                if (i > 300) & (lr_adaption == True):
                     x_range = torch.arange(15)
                     x = torch.ones(15, 2)
                     x[:, 0] = x_range
