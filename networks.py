@@ -1901,12 +1901,12 @@ class Prior(nn.Module):
         self.net.append(nn.Linear(ld,pr_width * ld))
         self.net.append(nn.ReLU())
         #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-        #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
+        #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-4))
         for l in range(pr_layer-2):
             self.net.append(nn.Linear(pr_width * ld, pr_width * ld))
             self.net.append(nn.ReLU())
             #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-            #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-3))
+            #self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-4))
         self.net.append(nn.Linear(pr_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld, 2 * self.ld)
         self.net = nn.Sequential(*self.net)
@@ -1954,19 +1954,19 @@ class Encoder(nn.Module):
             nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
             nn.ReLU(),
             #nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step),track_running_stats=False),
-            #nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-3),
+            #nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
             nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
 
         self.net = []
         self.net.append(nn.Linear(3 * ld,en_width * ld))
         self.net.append(nn.ReLU())
         #self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
-        #self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-3))
+        #self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-4))
         for l in range(en_layer-2):
             self.net.append(nn.Linear(en_width * ld, en_width * ld))
             self.net.append(nn.ReLU())
             #self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
-            #self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-3))
+            #self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-4))
         self.net.append(nn.Linear(en_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld,2*self.ld)
 
@@ -2021,12 +2021,12 @@ class Decoder(nn.Module):
         self.net.append(nn.Linear(ld*(memory+1),net_in_dim))
         self.net.append(nn.ReLU())
         #self.net.append(nn.BatchNorm1d(net_in_dim,track_running_stats=False))
-        #self.net.append(nn.BatchNorm1d(net_in_dim, eps=1e-3))
+        #self.net.append(nn.BatchNorm1d(net_in_dim, eps=1e-4))
         for l in range(de_layer-2):
             self.net.append(nn.Linear(net_in_dim,net_out_dim))
             self.net.append(nn.ReLU())
             #self.net.append(nn.BatchNorm1d(net_out_dim,track_running_stats=False))
-            #self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-3))
+            #self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-4))
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
         self.net.append(nn.Linear(net_in_dim,output_dim))
@@ -2056,9 +2056,9 @@ class Decoder(nn.Module):
             alpha_0 = torch.squeeze(Reshape(1, 1, 1)(alpha_0))
             alpha_0 = torch.exp(alpha_0)
             alpha_intermediate = alpha_0.clone()
-            if torch.sum(alpha_intermediate[alpha_0 > 300]) > 0:
+            if torch.sum(alpha_intermediate[alpha_0 > 3000]) > 0:
                 print('alpha regularized')
-            alpha_intermediate[alpha_0 > 300] = 300
+            alpha_intermediate[alpha_0 > 3000] = 3000
             alpha_0 = alpha_intermediate.clone()
             alpha_rest = Reshape(1, 1, 62)(alpha_rest)
             if batchsize != 1:
@@ -2286,7 +2286,7 @@ class HMVAE(nn.Module):
         _, _, hidden_state_prior[:, :, 0] = self.prior_model[0](z_init, z_init)
         for unit in range(1,knowledge):
             z_input = z[:,:,unit-1].clone()
-            _,_,hidden_state_prior[:,:,1] = self.prior_model[unit](z_input,hidden_state_prior[:,:,unit-1].clone())
+            _,_,hidden_state_prior[:,:,unit] = self.prior_model[unit](z_input,hidden_state_prior[:,:,unit-1].clone())
         for idx in range(knowledge, self.snapshots):
             z_local, _, hidden_state_prior[:, :, idx] = self.prior_model[idx](z_input, hidden_state_prior[:, :, idx - 1].clone())
             z[:, :, idx] = z_local
