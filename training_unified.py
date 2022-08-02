@@ -49,6 +49,7 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
     eval_TPR1 = []
     eval_TPR2 = []
     slope = -1.
+    lr_adaption = False
 
     optimizer = torch.optim.Adam(lr=lr, params=model.parameters())
 
@@ -97,14 +98,27 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
                 model.train()
                 print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
                 log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
-                if i > 300:
-                    x_range = torch.arange(30)
-                    x = torch.ones(30, 2)
+                if (i > 50) & (lr_adaption == False):
+                    x_range_lr = torch.arange(5)
+                    x_lr = torch.ones(5, 2)
+                    x_lr[:, 0] = x_range_lr
+                    beta_lr = torch.linalg.inv(x_lr.T @ x_lr) @ x_lr.T @ torch.tensor(eval_risk[-5:])[:, None]
+                    slope_lr = beta_lr[0]
+                    print('slope lr')
+                    print(slope_lr)
+                    log_file.write(f'slope of Evaluation ELBO (for learning rate): {slope_lr}\n')
+                    if slope_lr > 0:
+                        optimizer.param_groups[0]['lr'] = optimizer.param_groups[0]['lr']/5
+                        lr_adaption = True
+
+                if (i > 400) & (lr_adaption == True):
+                    x_range = torch.arange(15)
+                    x = torch.ones(15, 2)
                     x[:, 0] = x_range
-                    beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-30:])[:, None]
+                    beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-15:])[:, None]
                     slope = beta[0]
-                    print('slope')
-                    print(slope)
+                    print('slope lr')
+                    print(slope_lr)
                     log_file.write(f'slope of Evaluation ELBO: {slope}\n')
 
             if slope > 0:
