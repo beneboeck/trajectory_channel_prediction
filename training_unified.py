@@ -119,8 +119,8 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
                     x[:, 0] = x_range
                     beta = torch.linalg.inv(x.T @ x) @ x.T @ torch.tensor(eval_risk[-15:])[:, None]
                     slope = beta[0]
-                    print('slope lr')
-                    print(slope_lr)
+                    print('slope')
+                    print(slope)
                     log_file.write(f'slope of Evaluation ELBO: {slope}\n')
 
             if slope > 0:
