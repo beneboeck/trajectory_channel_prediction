@@ -134,7 +134,7 @@ if DATASET_TYPE == 'my_Quadriga':
     pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
     pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
 
-H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0]))
+H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
 
 print(np.mean(np.sum(np.abs(H_test),axis=(1,2))))
 print(np.mean(H_test))
