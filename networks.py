@@ -585,16 +585,13 @@ class my_VAE(nn.Module):
         self.decoder_lin = nn.Sequential(*self.decoder_lin)
         self.decoder = []
         if conv_layer > 0:
-            print(dim_out)
             dim_out = dim_out / out_channels
-            print(dim_out)
         for i in range(conv_layer - 1):
             self.decoder.append(nn.ConvTranspose1d(out_channels, out_channels - step, k_size, 2))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(out_channels - step))
             out_channels = out_channels - step
             dim_out = (dim_out-1) * 2 + (k_size-1) + 1
-            print(dim_out)
         #Lout=(Lin−1)×stride−2×padding + dilation×(kernel_size−1) + output_padding + 1
 
 
@@ -603,13 +600,12 @@ class my_VAE(nn.Module):
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(2))
             dim_out = (dim_out - 1) * 2 + (k_size - 1) + 1
-            print(dim_out)
 
         self.decoder = nn.Sequential(*self.decoder)
         if cov_type == 'DFT':
-            self.final_layer = nn.Linear(int(dim_out), 96)
+            self.final_layer = nn.Linear(int(2 * dim_out), 96)
         if cov_type == 'Toeplitz':
-            self.final_layer = nn.Linear(int(dim_out),64 + 63)
+            self.final_layer = nn.Linear(int(2 * dim_out),64 + 63)
 
     def encode(self, x):
         out = self.encoder(x)
@@ -627,13 +623,9 @@ class my_VAE(nn.Module):
         out = self.decoder_input(z)
         bs = out.size(0)
         out = self.decoder_lin(out)
-        print('here')
-        print(out.size())
         if self.conv_layer > 0:
             out = out.view(bs,self.out_channels,-1)
         out = self.decoder(out)
-        print('test')
-        print(out.size())
         out = nn.Flatten()(out)
 
         out = self.final_layer(out)
