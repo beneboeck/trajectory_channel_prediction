@@ -567,7 +567,7 @@ class my_VAE(nn.Module):
 
         self.decoder_lin = []
         if conv_layer > 0:
-            self.decoder_input = nn.Linear(self.latent_dim,32 / (2 ** conv_layer) * out_channels)
+            self.decoder_input = nn.Linear(self.latent_dim,int(32 / (2 ** conv_layer) * out_channels))
             for i in range(total_layer-conv_layer):
                 self.decoder_lin.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
                 self.decoder_lin.append(nn.ReLU())
