@@ -627,6 +627,7 @@ class my_VAE(nn.Module):
         if self.conv_layer > 0:
             out = out.view(bs,self.out_channels,-1)
         out = self.decoder(out)
+        print('test')
         print(out.size())
         out = nn.Flatten()(out)
 
