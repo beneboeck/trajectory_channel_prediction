@@ -529,7 +529,8 @@ class my_VAE(nn.Module):
         self.total_layer = total_layer
         self.out_channels = out_channels
         self.k_size = k_size
-        step = int(math.floor((out_channels - 2)/conv_layer))
+        if conv_layer > 0:
+            step = int(math.floor((out_channels - 2)/conv_layer))
         self.encoder = []
         in_channels = 2
         for i in range(conv_layer-1):
