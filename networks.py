@@ -518,11 +518,11 @@ class my_VAE(nn.Module):
         self.device = device
         self.B_mask = torch.tril(rand_matrix)
         self.B_mask[self.B_mask != 0] = 1
-        self.B_mask = self.B_mask[None, None, :, :].to(self.device)
+        self.B_mask = self.B_mask[None, :, :].to(self.device)
 
         self.C_mask = torch.tril(rand_matrix, diagonal=-1)
         self.C_mask[self.C_mask != 0] = 1
-        self.C_mask = self.C_mask[None, None, :, :].to(self.device)
+        self.C_mask = self.C_mask[None, :, :].to(self.device)
         self.latent_dim = ld
         self.conv_layer = conv_layer
         self.cov_type = cov_type
