@@ -546,38 +546,38 @@ class my_VAE(nn.Module):
         if conv_layer > 0:
             self.encoder.append(nn.Flatten())
             for i in range(total_layer-conv_layer):
-                self.encoder.append(nn.Linear(32/(2**conv_layer) * out_channels,32/(2**conv_layer) * out_channels))
+                self.encoder.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(32/(2**conv_layer) * out_channels))
+                self.encoder.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
 
                 self.fc_mu = nn.Linear(32 / (2 ** conv_layer) * out_channels, self.latent_dim)
                 self.fc_var = nn.Linear(32 / (2 ** conv_layer) * out_channels, self.latent_dim)
         else:
-            self.encoder.append(nn.Linear(in_linear,out_channels/4 * in_linear))
+            self.encoder.append(nn.Linear(int(in_linear,out_channels/4 * in_linear)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(out_channels/4 * in_linear))
+            self.encoder.append(nn.BatchNorm1d(int(out_channels/4 * in_linear)))
             for i in range(1,total_layer - conv_layer - 1):
-                self.encoder.append(nn.Linear(out_channels / 4 * in_linear, out_channels / 4 * in_linear))
+                self.encoder.append(nn.Linear(int(out_channels / 4 * in_linear, out_channels / 4 * in_linear)))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(out_channels / 4 * in_linear))
+                self.encoder.append(nn.BatchNorm1d(int(out_channels / 4 * in_linear)))
 
-                self.fc_mu = nn.Linear(out_channels / 4 * in_linear, self.latent_dim)
-                self.fc_var = nn.Linear(out_channels / 4 * in_linear, self.latent_dim)
+                self.fc_mu = nn.Linear(int(out_channels / 4 * in_linear), self.latent_dim)
+                self.fc_var = nn.Linear(int(out_channels / 4 * in_linear), self.latent_dim)
         self.encoder = nn.Sequential(*self.encoder)
 
         self.decoder_lin = []
         if conv_layer > 0:
             self.decoder_input = nn.Linear(self.latent_dim,32 / (2 ** conv_layer) * out_channels)
             for i in range(total_layer-conv_layer):
-                self.decoder_lin.append(nn.Linear(32/(2**conv_layer) * out_channels,32/(2**conv_layer) * out_channels))
+                self.decoder_lin.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(32/(2**conv_layer) * out_channels))
+                self.decoder_lin.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
         else:
-            self.decoder_input = nn.Linear(self.latent_dim, out_channels / 4 * in_linear)
+            self.decoder_input = nn.Linear(self.latent_dim, int(out_channels / 4 * in_linear))
             for i in range(1,total_layer - conv_layer - 1):
-                self.decoder_lin.append(nn.Linear(out_channels / 4 * in_linear, out_channels / 4 * in_linear))
+                self.decoder_lin.append(nn.Linear(int(out_channels / 4 * in_linear), int(out_channels / 4 * in_linear)))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(out_channels / 4 * in_linear))
+                self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 4 * in_linear)))
 
         self.decoder_lin = nn.Sequential(*self.decoder_lin)
         self.decoder = []
