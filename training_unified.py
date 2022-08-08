@@ -91,6 +91,7 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
 
             if (model_type == 'Single'):
                 sample = sample[:,:,:,-1]
+                print(sample.size())
                 mu_out, Gamma, mu, log_var = model(sample)
                 Risk, RR, KL = risk_free_bits(lamba,sample,mu,log_var,mu_out,Gamma)
 
