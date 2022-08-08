@@ -550,8 +550,8 @@ class my_VAE(nn.Module):
                 self.encoder.append(nn.ReLU())
                 self.encoder.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
 
-                self.fc_mu = nn.Linear(32 / (2 ** conv_layer) * out_channels, self.latent_dim)
-                self.fc_var = nn.Linear(32 / (2 ** conv_layer) * out_channels, self.latent_dim)
+                self.fc_mu = nn.Linear(int(32 / (2 ** conv_layer) * out_channels), self.latent_dim)
+                self.fc_var = nn.Linear(int(32 / (2 ** conv_layer) * out_channels), self.latent_dim)
         else:
             self.encoder.append(nn.Linear(int(in_linear,out_channels/4 * in_linear)))
             self.encoder.append(nn.ReLU())
