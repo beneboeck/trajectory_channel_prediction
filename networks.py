@@ -617,7 +617,9 @@ class my_VAE(nn.Module):
         if self.conv_layer > 0:
             out = out.view(bs,self.out_channels,-1)
         out = self.decoder(out)
-        out = torch.squeeze(out)
+        print(out.size())
+        out = nn.Flatten()(out)
+
         out = self.final_layer(out)
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
