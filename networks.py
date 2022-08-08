@@ -600,7 +600,7 @@ class my_VAE(nn.Module):
             self.decoder.append(nn.ConvTranspose1d(out_channels, 2, k_size, 2))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(2))
-            dim_out = (dim_out - 1) * 2 + (k_size - 1) + 1
+            #dim_out = (dim_out - 1) * 2 + (k_size - 1) + 1
 
         self.decoder = nn.Sequential(*self.decoder)
         if cov_type == 'DFT':
