@@ -565,7 +565,7 @@ class my_VAE(nn.Module):
             self.fc_mu = nn.Linear(int(out_channels / 4 * in_linear), self.latent_dim)
             self.fc_var = nn.Linear(int(out_channels / 4 * in_linear), self.latent_dim)
         self.encoder = nn.Sequential(*self.encoder)
-
+        dim_out = 0
         self.decoder_lin = []
         if conv_layer > 0:
             self.decoder_input = nn.Linear(self.latent_dim,int(32 / (2 ** conv_layer) * out_channels))
@@ -573,31 +573,40 @@ class my_VAE(nn.Module):
                 self.decoder_lin.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
                 self.decoder_lin.append(nn.ReLU())
                 self.decoder_lin.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
+            dim_out = int(32/(2**conv_layer) * out_channels)
         else:
             self.decoder_input = nn.Linear(self.latent_dim, int(out_channels / 4 * in_linear))
             for i in range(1,total_layer - conv_layer - 1):
                 self.decoder_lin.append(nn.Linear(int(out_channels / 4 * in_linear), int(out_channels / 4 * in_linear)))
                 self.decoder_lin.append(nn.ReLU())
                 self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 4 * in_linear)))
+            dim_out = int(out_channels / 4 * in_linear)
 
         self.decoder_lin = nn.Sequential(*self.decoder_lin)
         self.decoder = []
+        if conv_layer > 0:
+            dim_out = dim_out / out_channels
         for i in range(conv_layer - 1):
-            self.decoder.append(nn.ConvTranspose1d(out_channels, out_channels - step, k_size, 2, output_padding = 1))
+            self.decoder.append(nn.ConvTranspose1d(out_channels, out_channels - step, k_size, 2))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(out_channels - step))
             out_channels = out_channels - step
+            dim_out = (dim_out-1) * 2 + (k_size-1) + 1
+
+        #Lout=(Lin−1)×stride−2×padding + dilation×(kernel_size−1) + output_padding + 1
+
 
         if conv_layer > 0:
-            self.decoder.append(nn.ConvTranspose1d(out_channels, 2, k_size, 2, output_padding = 1))
+            self.decoder.append(nn.ConvTranspose1d(out_channels, 2, k_size, 2))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(2))
+            dim_out = (dim_out - 1) * 2 + (k_size - 1) + 1
 
         self.decoder = nn.Sequential(*self.decoder)
         if cov_type == 'DFT':
-            self.final_layer = nn.Linear(64, 96)
+            self.final_layer = nn.Linear(int(dim_out), 96)
         if cov_type == 'Toeplitz':
-            self.final_layer = nn.Linear(64,64 + 63)
+            self.final_layer = nn.Linear(int(dim_out),64 + 63)
 
     def encode(self, x):
         out = self.encoder(x)
