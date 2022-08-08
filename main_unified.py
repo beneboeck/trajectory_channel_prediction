@@ -246,9 +246,10 @@ save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
 torch.save(model.state_dict(),dir_path + '/model_dict')
 log_file.write('\nTESTING\n')
 print('testing')
-NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
-print(f'NMSE test: {NMSE_test}')
-log_file.write(f'NMSE test: {NMSE_test}\n')
+if MODEL_TYPE == 'Trajectory':
+    NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
+    print(f'NMSE test: {NMSE_test}')
+    log_file.write(f'NMSE test: {NMSE_test}\n')
 
 NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
 print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
