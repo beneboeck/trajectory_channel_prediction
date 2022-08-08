@@ -511,24 +511,40 @@ class HMVAE(nn.Module):
         return out, z, eps, mu_inf, logvar_inf
 
 
-class my_VAE_DFT(nn.Module):
-    def __init__(self,ld,conv_layer,total_layer,out_channels,k_size):
+class my_VAE(nn.Module):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,device):
         super().__init__()
+        rand_matrix = torch.randn(32, 32)
+        self.device = device
+        self.B_mask = torch.tril(rand_matrix)
+        self.B_mask[self.B_mask != 0] = 1
+        self.B_mask = self.B_mask[None, None, :, :].to(self.device)
 
+        self.C_mask = torch.tril(rand_matrix, diagonal=-1)
+        self.C_mask[self.C_mask != 0] = 1
+        self.C_mask = self.C_mask[None, None, :, :].to(self.device)
         self.latent_dim = ld
+        self.conv_layer = conv_layer
+        self.cov_type = cov_type
+        self.total_layer = total_layer
+        self.out_channels = out_channels
+        self.k_size = k_size
         step = int(math.floor((out_channels - 2)/conv_layer))
         self.encoder = []
         in_channels = 2
         for i in range(conv_layer-1):
             self.encoder.append(nn.Conv1d(in_channels,in_channels + step,k_size,2,int((k_size-1)/2)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(2 + step))
+            self.encoder.append(nn.BatchNorm1d(in_channels + step))
             in_channels = in_channels + step
         if conv_layer > 0:
             self.encoder.append(nn.Conv1d(in_channels,out_channels,k_size,2,int((k_size-1)/2)))
+            self.encoder.append(nn.ReLU())
+            self.encoder.append(nn.BatchNorm1d(out_channels))
 
         in_linear = 64
         if conv_layer > 0:
+            self.encoder.append(nn.Flatten())
             for i in range(total_layer-conv_layer):
                 self.encoder.append(nn.Linear(32/(2**conv_layer) * out_channels,32/(2**conv_layer) * out_channels))
                 self.encoder.append(nn.ReLU())
@@ -547,46 +563,100 @@ class my_VAE_DFT(nn.Module):
 
                 self.fc_mu = nn.Linear(out_channels / 4 * in_linear, self.latent_dim)
                 self.fc_var = nn.Linear(out_channels / 4 * in_linear, self.latent_dim)
+        self.encoder = nn.Sequential(*self.encoder)
 
+        self.decoder_lin = []
+        if conv_layer > 0:
+            self.decoder_input = nn.Linear(self.latent_dim,32 / (2 ** conv_layer) * out_channels)
+            for i in range(total_layer-conv_layer):
+                self.decoder_lin.append(nn.Linear(32/(2**conv_layer) * out_channels,32/(2**conv_layer) * out_channels))
+                self.decoder_lin.append(nn.ReLU())
+                self.decoder_lin.append(nn.BatchNorm1d(32/(2**conv_layer) * out_channels))
+        else:
+            self.decoder_input = nn.Linear(self.latent_dim, out_channels / 4 * in_linear)
+            for i in range(1,total_layer - conv_layer - 1):
+                self.decoder_lin.append(nn.Linear(out_channels / 4 * in_linear, out_channels / 4 * in_linear))
+                self.decoder_lin.append(nn.ReLU())
+                self.decoder_lin.append(nn.BatchNorm1d(out_channels / 4 * in_linear))
 
-        self.decoder_input = nn.Linear(self.latent_dim, 5 * 128)
+        self.decoder_lin = nn.Sequential(*self.decoder_lin)
+        self.decoder = []
+        for i in range(conv_layer - 1):
+            self.decoder.append(nn.ConvTranspose1d(out_channels, out_channels - step, k_size, 2, int((k_size - 1) / 2)))
+            self.decoder.append(nn.ReLU())
+            self.decoder.append(nn.BatchNorm1d(out_channels - step))
+            out_channels = out_channels - step
 
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose1d(128,32,7,2,1),
-            nn.BatchNorm1d(32),
-            nn.ReLU(),
-            nn.ConvTranspose1d(32, 8, 7, 2, 1),
-            nn.BatchNorm1d(8),
-            nn.ReLU(),
-            nn.ConvTranspose1d(8, 1, 7, 2, 1),
-            nn.BatchNorm1d(1),
-            nn.ReLU(),
-        )
+        if conv_layer > 0:
+            self.decoder.append(nn.ConvTranspose1d(out_channels, in_channels, k_size, 2, int((k_size - 1) / 2)))
+            self.decoder.append(nn.ReLU())
+            self.decoder.append(nn.BatchNorm1d(in_channels + step))
 
-        self.final_layer = nn.Linear(61, 96)
+        self.decoder = nn.Sequential(*self.decoder)
+        if cov_type == 'DFT':
+            self.final_layer = nn.Linear(64, 96)
+        if cov_type == 'Toeplitz':
+            self.final_layer = nn.Linear(64,64 + 63)
 
     def encode(self, x):
         out = self.encoder(x)
         out = nn.Flatten()(out)
-        mu, log_std = self.fc_mu(out), self.fc_var(out)
-        return mu, log_std
+        mu, log_var = self.fc_mu(out), self.fc_var(out)
+        return mu, log_var
 
-    def reparameterize(self, log_std, mu):
-        std = torch.exp(log_std)
-        eps = torch.randn_like(std)
+    def reparameterize(self, log_var, mu):
+        std = torch.exp(0.5 * log_var)
+        eps = torch.randn_like(log_var)
         return mu + eps * std
 
     def decode(self,z):
+        batchsize = z.size(0)
         out = self.decoder_input(z)
         bs = out.size(0)
-        out = out.view(bs,128,-1)
+        out = self.decoder_lin(out)
+        if self.conv_layer > 0:
+            out = out.view(bs,self.out_channels,-1)
         out = self.decoder(out)
         out = torch.squeeze(out)
         out = self.final_layer(out)
-        mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
-        return mu_real,mu_imag,log_pre
+        if self.cov_type == 'DFT':
+            mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
+            mu_out = torch.zeros(batchsize,2,32).to(self.device)
+            mu_out[:,0,:] = mu_real
+            mu_out[:,1,:] = mu_imag
+            return mu_out, log_pre
 
-    def estimating(self,x):
+        if self.cov_type == 'Toeplitz':
+            mu_real, mu_imag,alpha = out[:,:32],out[:,32:64],out[:,64:]
+            alpha_0 = alpha[:, 0][:, None]
+            alpha_rest = alpha[:, 1:]
+            alpha_0 = torch.exp(alpha_0)
+            alpha_intermediate = alpha_0.clone()
+            if torch.sum(alpha_intermediate[alpha_0 > 3000]) > 0:
+                print('alpha regularized')
+            alpha_intermediate[alpha_0 > 3000] = 3000
+            alpha_0 = alpha_intermediate.clone()
+            alpha_rest = torch.squeeze(alpha_rest)
+            alpha_rest = 0.022 * alpha_0 * nn.Tanh()(alpha_rest)
+            alpha_rest = torch.complex(alpha_rest[:, :31], alpha_rest[:, 31:])
+            Alpha = torch.cat((alpha_0, alpha_rest), dim=1)
+            Alpha_prime = torch.cat((torch.zeros(batchsize, 1).to(self.device), Alpha[:, 1:].flip(1)), dim=1)
+            values = torch.cat((Alpha, Alpha[:, 1:].flip(1)), dim=1)
+            i, j = torch.ones(32, 32).nonzero().T
+            values = values[:, j - i].reshape(batchsize, 32, 32)
+            B = values * self.B_mask
+
+            values_prime = torch.cat((Alpha_prime, Alpha_prime[:, 1:].flip(1)), dim=1)
+            i, j = torch.ones(32, 32).nonzero().T
+            values_prime2 = values_prime[:, j - i].reshape(batchsize, 32, 32)
+            C = torch.conj(values_prime2 * self.C_mask)
+            mu_out = torch.zeros(batchsize,2,32).to(self.device)
+            mu_out[:,0,:] = mu_real
+            mu_out[:,1,:] = mu_imag
+            return mu_out,B,C
+
+    def estimating(self,x,estimated_snapshot):
+        x = x[:,:,:,estimated_snapshot]
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         mu_real,mu_imag,log_pre = self.decode(z)
@@ -595,9 +665,14 @@ class my_VAE_DFT(nn.Module):
         return mu_out, Cov_out
 
     def forward(self, x):
-        mu, log_std = self.encode(x)
-        z = self.reparameterize(log_std, mu)
-        mu_real,mu_imag,log_pre = self.decode(z)
-        mu_out = mu_real + 1j * mu_imag
-        Gamma = torch.diag_embed(torch.exp(log_pre)) + 0j
-        return mu_out,Gamma, mu, log_std
+        mu, log_var = self.encode(x)
+        z = self.reparameterize(log_var, mu)
+        if self.cov_type == 'DFT':
+            mu_out,log_pre = self.decode(z)
+            Gamma = torch.diag_embed(torch.exp(log_pre)) + 0j
+            return mu_out,Gamma,mu,log_var
+        if self.cov_type == 'Toeplitz':
+            mu_out, B, C = self.decode(z)
+            alpha_0 = B[:, 0, 0]
+            Gamma = 1 / alpha_0[:, None,None] * (torch.matmul(B, torch.conj(B).permute(0,2,1)) - torch.matmul(C,torch.conj(C).permute(0,2,1)))
+            return mu_out,Gamma, mu, log_var

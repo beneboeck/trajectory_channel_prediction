@@ -37,6 +37,17 @@ def risk_kalman_VAE_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_p
 
     return RR + KL,RR,KL
 
+def risk_free_bits(lamba,x,mu,log_var,mu_out,Gamma):
+    x = torch.complex(torch.squeeze(x[:,:,:32]), torch.squeeze(x[:,:,32:]))
+    Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
+    M, pivots = torch.lu(Gamma)
+    P, L, U = torch.lu_unpack(M, pivots)
+    diagU = torch.diagonal(U, dim1=1, dim2=2)
+    log_detGamma = torch.sum(torch.log(torch.abs(diagU)), dim=1)
+    argument = torch.einsum('ij,ij->i', torch.conj(x - mu_out), torch.einsum('ijk,ik->ij', Gamma, x - mu_out))
+    Rec_err = torch.real(torch.mean(- log_detGamma + argument))
+    KL =  torch.mean(torch.sum(torch.max(lamba,-0.5 * (1 + log_var - mu ** 2 - (log_var).exp())),dim=1))
+    return Rec_err + KL,Rec_err,KL
 
 def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader_val, epochs, risk_type, lamba,
                       device, log_file,dir_path, dataset):

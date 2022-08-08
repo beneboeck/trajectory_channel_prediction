@@ -25,11 +25,12 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 30
+G_EPOCHS = 4
 LEARNING_RATE = 8e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 20 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'my_Quadriga'
+MODEL_TYPE = 'Single' # Trajectory
 VELOCITY = 2
 n_iterations = 1#75
 n_permutations = 1#300
@@ -37,10 +38,13 @@ bs_mmd = 1000
 normed=False
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
-print('Setup')
-print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)
-
+print('Trajectory Setup')
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type]
+print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type)
+print('Single Setup')
+LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type_VAE = network_architecture_search_VAE()
+setup_VAE = [LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type_VAE]
+print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type_VAE)
 SNR_db = 5
 
 #LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = 16,10,True,3,8,4,9,5,12,'DFT'
@@ -135,14 +139,44 @@ if DATASET_TYPE == 'my_Quadriga':
     pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
 
 H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
+H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
+H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-print(np.mean(np.sum(np.abs(H_test),axis=(1,2))))
-print(np.mean(H_test))
-print(np.std(H_test))
+print(np.mean(np.sum(np.abs(H_train),axis=(1,2))))
+print(np.mean(H_train))
+print(np.std(H_train))
 
-# x_train = np.mean(np.sum(data[:,:,:,-1]**2,axis=(1,2)))
-# SNR_eff = 10**(SNR_db/10)
-# sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
+H_test_dft = apply_DFT(H_test)
+H_val_dft = apply_DFT(H_val)
+H_train_dft = apply_DFT(H_train)
+
+
+x_train = np.mean(np.sum(H_train[:,:,:,-1]**2,axis=(1,2)))
+SNR_eff = 10**(SNR_db/10)
+sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
+
+x_test = np.mean(np.sum(H_test[:,:,:,-1]**2,axis=(1,2)))
+SNR_eff = 10**(SNR_db/10)
+sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
+
+x_val = np.mean(np.sum(H_val[:,:,:,-1]**2,axis=(1,2)))
+SNR_eff = 10**(SNR_db/10)
+sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
+
+n_H_train = H_train + sig_n_train/math.sqrt(2) * np.random.randn(*H_train.shape)
+n_H_test = H_test + sig_n_test/math.sqrt(2) * np.random.randn(*H_test.shape)
+n_H_val = H_val + sig_n_val/math.sqrt(2) * np.random.randn(*H_val.shape)
+n_H_train_dft = H_train_dft + sig_n_train/math.sqrt(2) * np.random.randn(*H_train_dft.shape)
+n_H_test_dft = H_test_dft + sig_n_test/math.sqrt(2) * np.random.randn(*H_test_dft.shape)
+n_H_val_dft = H_val_dft + sig_n_val/math.sqrt(2) * np.random.randn(*H_val_dft.shape)
+
+dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft)
+dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft)
+dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
+
+dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size=BATCHSIZE)
+dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
+dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size=BATCHSIZE)
 #
 # data_DFT = apply_DFT(data)
 # noisy_data = data + sig_n_train/math.sqrt(2) * np.random.randn(*data.shape)
@@ -193,37 +227,35 @@ print(np.std(H_test))
 # dataset_test_DFT = ds.dataset(data_test_DFT,noisy_data_test_DFT)
 # dataloader_test = DataLoader(dataset_test,batch_size=4 * BATCHSIZE,shuffle=True)
 # dataloader_test_DFT = DataLoader(dataset_test_DFT,batch_size=4 * BATCHSIZE,shuffle=True)
-#
-# model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,device).to(device)
-#
-# if cov_type == 'DFT':
-#     dataloader = dataloader_DFT
-#     dataloader_val = dataloader_val_DFT
-# risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(setup,LEARNING_RATE,cov_type, model, dataloader,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
-# model.eval()
-# save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
-#
-# save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
-# save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE prediction')
-# save_risk_single(eval_NMSE_estimation,dir_path,'Evaluation - NMSE estimation')
-# save_risk_single(eval_TPR1,dir_path,'Evaluation - TPR1 prior')
-# save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
-#
-# torch.save(model.state_dict(),dir_path + '/model_dict')
-# log_file.write('\nTESTING\n')
-# print('testing')
-# if  cov_type == 'DFT':
-#     dataloader_test = dataloader_test_DFT
-# NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
-# print(f'NMSE test: {NMSE_test}')
-# log_file.write(f'NMSE test: {NMSE_test}\n')
-#
-# NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
-# print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
-# log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
-#
-# glob_var_file.write('\nResults\n')
-# glob_var_file.write(f'NMSE estimation: {eval_NMSE_estimation[-1]:.4f}\n')
-# glob_var_file.write(f'NMSE prediction: {eval_NMSE[-1]:.4f}\n')
-# glob_var_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
-# glob_var_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
+
+if MODEL_TYPE == 'Trajectory':
+    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,device).to(device)
+if MODEL_TYPE == 'Single':
+    model = mg.my_VAE(cov_type_VAE,LD_VAE,conv_layer,total_layer,out_channel,k_size,device)
+
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
+model.eval()
+save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
+
+save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
+save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE prediction')
+save_risk_single(eval_NMSE_estimation,dir_path,'Evaluation - NMSE estimation')
+save_risk_single(eval_TPR1,dir_path,'Evaluation - TPR1 prior')
+save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
+
+torch.save(model.state_dict(),dir_path + '/model_dict')
+log_file.write('\nTESTING\n')
+print('testing')
+NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
+print(f'NMSE test: {NMSE_test}')
+log_file.write(f'NMSE test: {NMSE_test}\n')
+
+NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
+print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
+log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
+
+glob_var_file.write('\nResults\n')
+glob_var_file.write(f'NMSE estimation: {eval_NMSE_estimation[-1]:.4f}\n')
+glob_var_file.write(f'NMSE prediction: {eval_NMSE[-1]:.4f}\n')
+glob_var_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
+glob_var_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')

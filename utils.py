@@ -14,7 +14,7 @@ def apply_DFT(sample_set):
     F = np.zeros((n_ant,n_ant),dtype=np.cfloat)
     for m in range(n_ant):
         for n in range(n_ant):
-            F[m,n] = 1/np.sqrt(n_ant) * np.exp(-1j * 2 * math.pi * (m * n)/n_ant)
+            F[m,n] = 1/np.sqrt(n_ant) * np.exp(1j * 2 * math.pi * (m * n)/n_ant)
 
     sample_set_compl = sample_set[:,0,:,:] + 1j * sample_set[:,1,:,:]
     transformed_set = np.einsum('mn,knl -> kml',F,sample_set_compl)
@@ -30,7 +30,7 @@ def apply_IDFT(sample_set):
     F = np.zeros((n_ant,n_ant),dtype=np.cfloat)
     for m in range(n_ant):
         for n in range(n_ant):
-            F[m,n] = 1/np.sqrt(n_ant) * np.exp(1j * 2 * math.pi * (m * n)/n_ant)
+            F[m,n] = 1/np.sqrt(n_ant) * np.exp(-1j * 2 * math.pi * (m * n)/n_ant)
 
     sample_set_compl = sample_set[:,0,:,:] + 1j * sample_set[:,1,:,:]
     transformed_set = np.einsum('mn,knl -> kml',F,sample_set_compl)
@@ -53,6 +53,15 @@ def network_architecture_search():
 
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type
 
+def network_architecture_search_VAE():
+    LD = np.random.choice([6,10,14,18]).item()
+    conv_layer = np.random.choice([0,1,2,3]).item()
+    total_layer = np.random.choice([3,4,5]).item()
+    out_channel = np.random.choice([64,128]).item()
+    k_size = np.random.choice([5,7,9]).item()
+    cov_type = np.random.choice(['Toeplitz','diagonal','DFT']).item()
+
+    return LD,conv_layer,total_layer,out_channel,k_size,cov_type
 
 def save_risk(risk_list,RR_list,KL_list,model_path,title):
     risk = np.array(risk_list)

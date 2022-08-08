@@ -37,8 +37,19 @@ def risk_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_prior,logpre
 
     return RR + KL,RR,KL
 
+def risk_free_bits(lamba,x,mu,log_var,mu_out,Gamma):
+    x = torch.complex(torch.squeeze(x[:,:,:32]), torch.squeeze(x[:,:,32:]))
+    Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
+    M, pivots = torch.lu(Gamma)
+    P, L, U = torch.lu_unpack(M, pivots)
+    diagU = torch.diagonal(U, dim1=1, dim2=2)
+    log_detGamma = torch.sum(torch.log(torch.abs(diagU)), dim=1)
+    argument = torch.einsum('ij,ij->i', torch.conj(x - mu_out), torch.einsum('ijk,ik->ij', Gamma, x - mu_out))
+    Rec_err = torch.real(torch.mean(- log_detGamma + argument))
+    KL =  torch.mean(torch.sum(torch.max(lamba,-0.5 * (1 + log_var - mu ** 2 - (log_var).exp())),dim=1))
+    return Rec_err + KL,Rec_err,KL
 
-def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
+def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
 
     risk_list= []
     KL_list = []
@@ -60,20 +71,29 @@ def training_gen_NN(setup,lr, cov_type,model, loader,dataloader_val, epochs, lam
         print('epoch')
         print(i)
         for ind, samples in enumerate(loader):
-            sample = samples[0]
+            if cov_type == 'DFT':
+                sample = samples[2]
+            else:
+                sample = samples[0]
             sample = sample.to(device)
 
-            if (cov_type == 'Toeplitz'):
+            if (model_type == 'Trajectory') & (cov_type == 'Toeplitz'):
                 out, z, eps, mu_inf, log_var = model(sample)
                 mu_out, B_out, C_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
-            if (cov_type == 'diagonal') | (cov_type == 'DFT'):
+            if (model_type == 'Trajectory') & (cov_type == 'DFT'):
                 out, z, eps, mu_inf, log_var = model(sample)
                 mu_out, logpre_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
+
+            if (model_type == 'Single'):
+                sample = sample[:,:,:,-1]
+                mu_out, Gamma, mu, log_var = model(sample)
+                Risk, RR, KL = risk_free_bits(lamba,sample,mu,log_var,mu_out,Gamma)
+
 
             optimizer.zero_grad()
             Risk.backward()

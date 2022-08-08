@@ -7,23 +7,31 @@ from utils import *
 from torch.utils.data import DataLoader
 from mmd_utils import *
 
-def eval_val(setup,model,dataloader_val,cov_type, lamba,device, dir_path):
+def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_path):
 
     iterator = iter(dataloader_val)
     samples = iterator.next()
-    sample = samples[0].to(device)
+    if cov_type == 'DFT':
+        sample = samples[2].to(device)
+    else:
+        sample = samples[0].to(device)
 
-    if (cov_type == 'Toeplitz'):
+    if (model_type == 'Trajectory') & (cov_type == 'Toeplitz'):
         out, z, eps, mu_inf, log_var = model(sample)
         mu_out, B_out, C_out = out
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
-    if (cov_type == 'diagonal') | (cov_type == 'DFT'):
+    if (model_type == 'Trajectory') & (cov_type == 'DFT'):
         out, z, eps, mu_inf, log_var = model(sample)
         mu_out, logpre_out = out
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
+
+    if model_type == 'Single':
+        sample = sample[:, :, :, -1]
+        mu_out, Gamma, mu, log_var = model(sample)
+        Risk, RR, KL = tr.risk_free_bits(lamba, sample, mu, log_var, mu_out, Gamma)
 
 
     NMSE = channel_prediction(setup,model,dataloader_val,16,dir_path,device,'evaluation')
@@ -88,7 +96,10 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
-        sample = sample[0].to(device)
+        if cov_type == 'DFT':
+            sample = sample[2].to(device)
+        else:
+            sample = sample[0].to(device)
         predicted_samples, ground_truth = model.predicting(sample, knowledge) # BS,2,N_ANT,SNAPSHOTS - KNOWLEDGE
         NMSE = torch.mean(torch.sum(torch.abs(ground_truth - predicted_samples) ** 2, dim=(1,2,3)) / torch.sum(torch.abs(ground_truth) ** 2,dim=(1,2,3))).detach().to('cpu')
         NMSE_list.append(NMSE)
@@ -283,7 +294,10 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
     NMSE_list = []
     estimated_snapshot = -1
     for ind, samples in enumerate(dataloader_val):
-        sample = samples[0].to(device) # BS, 2, N_ANT, SNAPSHOTS
+        if cov_type == 'DFT':
+            sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
+        else:
+            sample = samples[0].to(device)
         received_signal = samples[1].to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
         received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
