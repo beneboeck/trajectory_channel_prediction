@@ -583,13 +583,13 @@ class my_VAE(nn.Module):
         self.decoder_lin = nn.Sequential(*self.decoder_lin)
         self.decoder = []
         for i in range(conv_layer - 1):
-            self.decoder.append(nn.ConvTranspose1d(out_channels, out_channels - step, k_size, 2, output_padding = int((k_size - 1) / 2)))
+            self.decoder.append(nn.ConvTranspose1d(out_channels, out_channels - step, k_size, 2, output_padding = 1))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(out_channels - step))
             out_channels = out_channels - step
 
         if conv_layer > 0:
-            self.decoder.append(nn.ConvTranspose1d(out_channels, 2, k_size, 2, output_padding =int((k_size - 1) / 2)))
+            self.decoder.append(nn.ConvTranspose1d(out_channels, 2, k_size, 2, output_padding = 1))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(2))
 
