@@ -669,9 +669,17 @@ class my_VAE(nn.Module):
         x = x[:,:,:,estimated_snapshot]
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
-        mu_real,mu_imag,log_pre = self.decode(z)
-        mu_out = mu_real + 1j * mu_imag
-        Cov_out = torch.diag_embed(1 / (torch.exp(log_pre))) + 0j
+        if self.cov_type == 'DFT':
+            mu_out,log_pre = self.decode(z)
+            mu_out = mu_out[:,0,:] + 1j * mu_out[:,1,:]
+            Cov_out = torch.diag_embed(1 / (torch.exp(log_pre))) + 0j
+        if self.cov_type == 'Toeplitz':
+            mu_out,B,C = self.decode(z)
+            alpha_0 = B[:, 0, 0]
+            Gamma = 1 / alpha_0[:, None, None] * (torch.matmul(B, torch.conj(B).permute(0, 2, 1)) - torch.matmul(C,torch.conj(C).permute(0,2,1)))
+            Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
+            L, U = torch.linalg.eigh(Gamma)
+            Cov_out = U @ torch.diag_embed(1 / L).cfloat() @ U.mH
         return mu_out, Cov_out
 
     def forward(self, x):
