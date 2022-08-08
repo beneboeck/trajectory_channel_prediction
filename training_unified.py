@@ -39,6 +39,7 @@ def risk_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_prior,logpre
 
 def risk_free_bits(lamba,x,mu,log_var,mu_out,Gamma):
     x = torch.complex(x[:,0,:], x[:,1,:])
+    mu_out = torch.complex(mu_out[:,0,:],mu_out[:,1,:])
     Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
     M, pivots = torch.lu(Gamma)
     P, L, U = torch.lu_unpack(M, pivots)
