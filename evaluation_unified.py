@@ -298,9 +298,10 @@ def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
     for ind, samples in enumerate(dataloader_val):
         if cov_type == 'DFT':
             sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
+            received_signal = samples[3].to(device)
         else:
             sample = samples[0].to(device)
-        received_signal = samples[1].to(device)
+            received_signal = samples[1].to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
         received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
         mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
