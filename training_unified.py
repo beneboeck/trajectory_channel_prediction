@@ -115,8 +115,10 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
                     eval_TPR1.append(TPR1)
                     eval_TPR2.append(TPR2)
                 else:
-                    eval_TPR1.append(0)
-                    eval_TPR2.append(0)
+                    TPR1 = 0
+                    TPR2 = 0
+                    eval_TPR1.append(TPR1)
+                    eval_TPR2.append(TPR2)
                 eval_risk.append(Risk.detach().to('cpu'))
                 eval_NMSE.append(NMSE)
                 eval_NMSE_estimation.append(NMSE_estimation)
