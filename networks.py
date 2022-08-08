@@ -554,11 +554,11 @@ class my_VAE(nn.Module):
             self.fc_mu = nn.Linear(int(32 / (2 ** conv_layer) * out_channels), self.latent_dim)
             self.fc_var = nn.Linear(int(32 / (2 ** conv_layer) * out_channels), self.latent_dim)
         else:
-            self.encoder.append(nn.Linear(int(in_linear,out_channels/4 * in_linear)))
+            self.encoder.append(nn.Linear(int(in_linear),int(out_channels/4 * in_linear)))
             self.encoder.append(nn.ReLU())
             self.encoder.append(nn.BatchNorm1d(int(out_channels/4 * in_linear)))
             for i in range(1,total_layer - conv_layer - 1):
-                self.encoder.append(nn.Linear(int(out_channels / 4 * in_linear, out_channels / 4 * in_linear)))
+                self.encoder.append(nn.Linear(int(out_channels / 4 * in_linear),int( out_channels / 4 * in_linear)))
                 self.encoder.append(nn.ReLU())
                 self.encoder.append(nn.BatchNorm1d(int(out_channels / 4 * in_linear)))
 
