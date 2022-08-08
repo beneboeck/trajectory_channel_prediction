@@ -603,9 +603,13 @@ class my_VAE(nn.Module):
 
         self.decoder = nn.Sequential(*self.decoder)
         if cov_type == 'DFT':
-            self.final_layer = nn.Linear(int(2 * dim_out), 96)
+            if self.conv_layer > 0:
+                self.final_layer = nn.Linear(int(2 * dim_out), 96)
+                self.final_layer = nn.Linear(int(dim_out), 96)
         if cov_type == 'Toeplitz':
-            self.final_layer = nn.Linear(int(2 * dim_out),64 + 63)
+            if self.conv_layer > 0:
+                self.final_layer = nn.Linear(int(2 * dim_out),64 + 63)
+                self.final_layer = nn.Linear(int(dim_out), 96)
 
     def encode(self, x):
         out = self.encoder(x)
