@@ -22,7 +22,7 @@ glob_var_file = open(dir_path + '/glob_var_file.txt','w')
 log_file = open(dir_path + '/log_file.txt','w')
 m_file = open(dir_path + '/m_file.txt','w')
 
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
 G_EPOCHS = 11
@@ -30,7 +30,7 @@ LEARNING_RATE = 8e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 16 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Trajectory' # Trajectory
+MODEL_TYPE = 'Single' # Trajectory
 VELOCITY = 2
 n_iterations = 1#75
 n_permutations = 1#300
@@ -53,6 +53,8 @@ SNR_db = 5
 
 glob_var_file.write('Date: ' +date +'\n')
 glob_var_file.write('Time: ' + time + '\n')
+glob_var_file.write(f'\nMODEL_TYPE: {MODEL_TYPE}\n\n')
+
 glob_var_file.write(f'Latent Dim: {LD}\n')
 glob_var_file.write(f'Memory: {memory}\n')
 glob_var_file.write(f'RNN Bool: {rnn_bool}\n')
@@ -63,6 +65,14 @@ glob_var_file.write(f'Pr_Width: {pr_width}\n')
 glob_var_file.write(f'De_Layer: {de_layer}\n')
 glob_var_file.write(f'De_Width: {de_width}\n')
 glob_var_file.write(f'Cov_Type: {cov_type}\n')
+
+glob_var_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
+glob_var_file.write(f'conv_layer: {conv_layer}\n')
+glob_var_file.write(f'total_layer: {total_layer}\n')
+glob_var_file.write(f'out_channel: {out_channel}\n')
+glob_var_file.write(f'k_size: {k_size}\n')
+glob_var_file.write(f'cov_type: {cov_type_VAE}\n')
+
 glob_var_file.write('BATCHSIZE: ' + str(BATCHSIZE) +'\n')
 glob_var_file.write('G_EPOCHS: ' +str(G_EPOCHS) +'\n')
 glob_var_file.write(f'VELOCITY: {VELOCITY}\n')
