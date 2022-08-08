@@ -668,6 +668,8 @@ class my_VAE(nn.Module):
         return mu_out, Cov_out
 
     def forward(self, x):
+        if self.conv_layer == 0:
+            x = nn.Flatten()(x)
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         if self.cov_type == 'DFT':
