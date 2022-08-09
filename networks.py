@@ -572,7 +572,8 @@ class Michael_VAE_DFT(nn.Module):
         mu_out[:,1,:] = mu_imag
         return mu_out,log_pre
 
-    def estimating(self,x):
+    def estimating(self,x,estimated_snapshot):
+        x = x[:,:,estimated_snapshot]
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         mu_real,mu_imag,log_pre = self.decode(z)
