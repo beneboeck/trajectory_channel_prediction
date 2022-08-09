@@ -91,7 +91,6 @@ def training_gen_NN(GLOBAL_ARCHITECTURE, iteration, lr, model, loader,dataloader
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_kalman_VAE_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
 
-
             if (risk_type == 'kMemoryHiddenMarkovVAE_diagonal'):
                 mu_out, logpre_out, z, eps, mu_inf, log_var = model(sample)
                 mu_prior, logpre_prior = model.feed_prior(z)

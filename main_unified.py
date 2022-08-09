@@ -184,9 +184,9 @@ dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft)
 dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft)
 dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
 
-dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size=BATCHSIZE)
+dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= 8 * BATCHSIZE)
 dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
-dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size=BATCHSIZE)
+dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= 8 * BATCHSIZE)
 #
 # data_DFT = apply_DFT(data)
 # noisy_data = data + sig_n_train/math.sqrt(2) * np.random.randn(*data.shape)
@@ -241,7 +241,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size=BATCHSIZE)
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,device).to(device)
 if MODEL_TYPE == 'Single':
-    model = mg.my_VAE(cov_type_VAE,LD_VAE,conv_layer,total_layer,out_channel,k_size,device)
+    model = mg.my_VAE(cov_type_VAE,LD_VAE,conv_layer,total_layer,out_channel,k_size,device).to(device)
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()
