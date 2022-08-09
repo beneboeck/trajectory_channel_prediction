@@ -173,9 +173,7 @@ end
 %%%%%%%
 
 
-%% Generating Builder
-h_cb = l.init_builder();
-size(h_cb.AoD)
+
 
 %% (D) channel coefficients
 
