@@ -510,6 +510,81 @@ class HMVAE(nn.Module):
 
         return out, z, eps, mu_inf, logvar_inf
 
+class Michael_VAE_DFT(nn.Module):
+    def __init__(self,LD):
+        super().__init__()
+        self.latent_dim = LD
+
+        self.encoder = nn.Sequential(
+            nn.Conv1d(1,8,7,2,1),
+            nn.BatchNorm1d(8),
+            nn.ReLU(),
+            nn.Conv1d(8,32,7,2,1),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+            nn.Conv1d(32,128,7,2,1),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+        )
+
+        self.fc_mu = nn.Linear(5 * 128, self.latent_dim)
+        self.fc_var = nn.Linear(5 * 128, self.latent_dim)
+
+
+        self.decoder_input = nn.Linear(self.latent_dim, 5 * 128)
+
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose1d(128,32,7,2,1),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+            nn.ConvTranspose1d(32, 8, 7, 2, 1),
+            nn.BatchNorm1d(8),
+            nn.ReLU(),
+            nn.ConvTranspose1d(8, 1, 7, 2, 1),
+            nn.BatchNorm1d(1),
+            nn.ReLU(),
+        )
+
+        self.final_layer = nn.Linear(61, 96)
+
+    def encode(self, x):
+        out = self.encoder(x)
+        out = nn.Flatten()(out)
+        mu, log_std = self.fc_mu(out), self.fc_var(out)
+        return mu, log_std
+
+    def reparameterize(self, log_var, mu):
+        std = torch.exp(0.5 * log_var)
+        eps = torch.randn_like(std)
+        return mu + eps * std
+
+    def decode(self,z):
+        out = self.decoder_input(z)
+        bs = out.size(0)
+        out = out.view(bs,128,-1)
+        out = self.decoder(out)
+        out = torch.squeeze(out)
+        out = self.final_layer(out)
+        mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
+        return mu_real,mu_imag,log_pre
+
+    def estimating(self,x):
+        mu, log_var = self.encode(x)
+        z = self.reparameterize(log_var, mu)
+        mu_real,mu_imag,log_pre = self.decode(z)
+        mu_out = mu_real + 1j * mu_imag
+        Cov_out = torch.diag_embed(1 / (torch.exp(log_pre))) + 0j
+        return mu_out, Cov_out
+
+    def forward(self, x):
+        x = nn.Flatten()(x)
+        mu, log_var = self.encode(x)
+        z = self.reparameterize(log_var, mu)
+        mu_real,mu_imag,log_pre = self.decode(z)
+        mu_out = mu_real + 1j * mu_imag
+        Gamma = torch.diag_embed(torch.exp(log_pre)) + 0j
+        return mu_out,Gamma, mu, log_var
+
 
 class my_VAE(nn.Module):
     def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,device):

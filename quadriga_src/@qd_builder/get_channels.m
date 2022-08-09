@@ -269,8 +269,8 @@ else
         end
         
         %% MY CODE 09.08.2022
-        saving_angles_AoD = zeros(32,n_paths,no_snap_process);
-        saving_angles_EoD = zeros(32,n_paths,no_snap_process);
+        %saving_angles_AoD = zeros(32,n_paths,no_snap_process);
+        %saving_angles_EoD = zeros(32,n_paths,no_snap_process);
 
         % Do for each snapshot
         for i_snapshot = 1 : no_snap_process          % Track positions
@@ -291,8 +291,8 @@ else
                 eod = permute(eod,[4,2,1,3]);
                 aoa = permute(aoa,[3,2,1,4]);
                 eoa = permute(eoa,[3,2,1,4]);
-                saving_angles_AoD(:,:,i_snapshot) = aod;
-                saving_angles_EoD(:,:,i_snapshot) = eod;
+                %saving_angles_AoD(:,:,i_snapshot) = aod;
+                %saving_angles_EoD(:,:,i_snapshot) = eod;
             end
             
             % Interpolate the antenna patterns for thr NLOS paths

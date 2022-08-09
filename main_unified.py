@@ -36,6 +36,7 @@ n_iterations = 1#75
 n_permutations = 1#300
 bs_mmd = 1000
 normed=False
+author = 'Michael'
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
 print('Trajectory Setup')
@@ -54,6 +55,7 @@ SNR_db = 5
 glob_var_file.write('Date: ' +date +'\n')
 glob_var_file.write('Time: ' + time + '\n')
 glob_var_file.write(f'\nMODEL_TYPE: {MODEL_TYPE}\n\n')
+glob_var_file.write(f'\AUTHER: {author}\n\n')
 
 glob_var_file.write(f'Latent Dim: {LD}\n')
 glob_var_file.write(f'Memory: {memory}\n')
@@ -242,6 +244,8 @@ if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type_VAE,LD_VAE,conv_layer,total_layer,out_channel,k_size,device).to(device)
+    if author == 'Michael':
+        model = mg.Michael_VAE_DFT(16)
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()
