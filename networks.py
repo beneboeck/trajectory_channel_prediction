@@ -578,6 +578,7 @@ class Michael_VAE_DFT(nn.Module):
 
     def forward(self, x):
         x = nn.Flatten()(x)
+        x = x[:,None,:]
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         mu_real,mu_imag,log_pre = self.decode(z)
