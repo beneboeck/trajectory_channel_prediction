@@ -567,9 +567,9 @@ class Michael_VAE_DFT(nn.Module):
         out = torch.squeeze(out)
         out = self.final_layer(out)
         mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
-        mu_out = torch.zeros(bs,2,32,16).to(self.device)
-        mu_out[:,0,:,:] = mu_real
-        mu_out[:,1,:,:] = mu_imag
+        mu_out = torch.zeros(bs,2,32).to(self.device)
+        mu_out[:,0,:] = mu_real
+        mu_out[:,1,:] = mu_imag
         return mu_out,log_pre
 
     def estimating(self,x):
