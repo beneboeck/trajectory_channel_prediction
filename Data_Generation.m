@@ -5,7 +5,7 @@ clc
 
 %% (A) global variables
 
-no_trajectories = 1000;                             % Number of simulated trajectories
+no_trajectories = 100;                             % Number of simulated trajectories
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
@@ -102,7 +102,7 @@ for i = 1:no_trajectories
     initial_positions(i,1) = mtRadius(i) * cos(mtPhase(i)*(2*pi)/(360));
     initial_positions(i,2) = mtRadius(i) * sin(mtPhase(i)*(2*pi)/(360));
     initial_positions(i,3) = mtHeight;
-    l.rx_track(i).scenario{1} = '3GPP_3D_UMi_NLOS';
+    l.rx_track(i).scenario{1} = '3GPP_3D_UMi_LOS';
 end
 
 %ab = l.rx_track(3).positions;
@@ -174,8 +174,9 @@ end
 
 
 %% Generating Builder
-h_cb = l.init_builder();
-size(h_cb.AoD)
+[C,builder] = l.get_channels;
+size(builder.AoD)
+size(builder.AoA)
 
 %% (D) channel coefficients
 
