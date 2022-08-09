@@ -245,7 +245,7 @@ if MODEL_TYPE == 'Trajectory':
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type_VAE,LD_VAE,conv_layer,total_layer,out_channel,k_size,device).to(device)
     if author == 'Michael':
-        model = mg.Michael_VAE_DFT(16).to(device)
+        model = mg.Michael_VAE_DFT(16,device).to(device)
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()

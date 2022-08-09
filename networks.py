@@ -511,9 +511,10 @@ class HMVAE(nn.Module):
         return out, z, eps, mu_inf, logvar_inf
 
 class Michael_VAE_DFT(nn.Module):
-    def __init__(self,LD):
+    def __init__(self,LD,device):
         super().__init__()
         self.latent_dim = LD
+        self.device = device
 
         self.encoder = nn.Sequential(
             nn.Conv1d(1,8,7,2,1),
@@ -566,6 +567,9 @@ class Michael_VAE_DFT(nn.Module):
         out = torch.squeeze(out)
         out = self.final_layer(out)
         mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
+        mu_out = torch.zeros(bs,2,32,16).to(self.device)
+        mu_out[:,0,:,:] = mu_real
+        mu_out[:,1,:,:] = mu_imag
         return mu_real,mu_imag,log_pre
 
     def estimating(self,x):
@@ -582,6 +586,7 @@ class Michael_VAE_DFT(nn.Module):
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         mu_real,mu_imag,log_pre = self.decode(z)
+        mu_out =
         mu_out = mu_real + 1j * mu_imag
         Gamma = torch.diag_embed(torch.exp(log_pre)) + 0j
         return mu_out,Gamma, mu, log_var
