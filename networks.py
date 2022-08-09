@@ -573,7 +573,8 @@ class Michael_VAE_DFT(nn.Module):
         return mu_out,log_pre
 
     def estimating(self,x,estimated_snapshot):
-        x = x[:,:,estimated_snapshot]
+        x = x[:,:,:,estimated_snapshot]
+        x = nn.Flatten()(x)
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         mu_real,mu_imag,log_pre = self.decode(z)
