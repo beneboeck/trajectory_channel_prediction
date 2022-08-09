@@ -25,8 +25,8 @@ m_file = open(dir_path + '/m_file.txt','w')
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
-G_EPOCHS = 31
-LEARNING_RATE = 4e-5
+G_EPOCHS = 500
+LEARNING_RATE = 5e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 16 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'my_Quadriga'

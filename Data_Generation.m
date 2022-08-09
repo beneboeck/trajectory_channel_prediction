@@ -5,7 +5,7 @@ clc
 
 %% (A) global variables
 
-no_trajectories = 5000;                             % Number of simulated trajectories
+no_trajectories = 30000;                             % Number of simulated trajectories
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
@@ -32,7 +32,9 @@ lengthTrajectory = mtVelocity .* durationTrajectory; % Length of the Trajectorie
 spatialDensity = lengthTrajectory ./ (durationTrajectory/snapshotDensity);       % Snapshot density in [m]
 noSnapshots = durationTrajectory/snapshotDensity + 1;                            % Number of Snapshots
 figure;
-hist(mtVelocity,100)
+hist(mtVelocity,200)
+set(gca,'FontSize',18)
+xlabel('$v$','Interpreter','Latex','FontSize',25)
 
 %% (B) simulation parameters
 
@@ -212,17 +214,20 @@ path_gains_test = path_gains(4501:end,:);
 
 
 
-save('../Simulations//trajectory_channel_prediction/data/H_real_train10.mat','H_real_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_val10.mat','H_real_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_test10.mat','H_real_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_train10.mat','H_real_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_val10.mat','H_real_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_test10.mat','H_real_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_imag_train10.mat','H_imag_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_imag_val10.mat','H_imag_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_imag_test10.mat','H_imag_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_train10.mat','H_imag_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_val10.mat','H_imag_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_test10.mat','H_imag_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/path_gains_train10.mat','path_gains_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/path_gains_val10.mat','path_gains_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/path_gains_test10.mat','path_gains_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_train10.mat','path_gains_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_val10.mat','path_gains_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_test10.mat','path_gains_test','-v7.3');
+
+
+
 %save('../data/ULA_R1_H_imag_DRESDEN_NLOS_5000_trajectories_4_test.mat','H_imag','-v7.3');
 %save('../data/ULA_R1_initial_positions_DRESDEN_NLOS_5000_trajectories_4_test.mat','initial_positions','-v7.3')
 %save('../data/ULA_R1_path_gains_DRESDEN_NLOS_5000_trajectories_4_test.mat','path_gains','-v7.3')
