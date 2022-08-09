@@ -30,13 +30,13 @@ LEARNING_RATE = 5e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device) # is negligible if free bits isn't used
 SNAPSHOTS = 16 # 96 / 192 should be taken for all models expect the modelbased one
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Single' # Trajectory
+MODEL_TYPE = 'Trajectory' # Trajectory
 VELOCITY = 2
 n_iterations = 1#75
 n_permutations = 1#300
 bs_mmd = 1000
 normed=False
-author = 'Michael'
+author = 'Bene'
 
 LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type = network_architecture_search()
 print('Trajectory Setup')
