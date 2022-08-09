@@ -586,7 +586,6 @@ class Michael_VAE_DFT(nn.Module):
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         mu_out,log_pre = self.decode(z)
-        mu_out = mu_real + 1j * mu_imag
         Gamma = torch.diag_embed(torch.exp(log_pre)) + 0j
         return mu_out,Gamma, mu, log_var
 
