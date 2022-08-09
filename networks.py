@@ -570,7 +570,7 @@ class Michael_VAE_DFT(nn.Module):
         mu_out = torch.zeros(bs,2,32,16).to(self.device)
         mu_out[:,0,:,:] = mu_real
         mu_out[:,1,:,:] = mu_imag
-        return mu_real,mu_imag,log_pre
+        return mu_out,log_pre
 
     def estimating(self,x):
         mu, log_var = self.encode(x)
@@ -585,8 +585,7 @@ class Michael_VAE_DFT(nn.Module):
         x = x[:,None,:]
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
-        mu_real,mu_imag,log_pre = self.decode(z)
-        mu_out =
+        mu_out,log_pre = self.decode(z)
         mu_out = mu_real + 1j * mu_imag
         Gamma = torch.diag_embed(torch.exp(log_pre)) + 0j
         return mu_out,Gamma, mu, log_var
