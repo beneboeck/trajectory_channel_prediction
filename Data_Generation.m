@@ -102,7 +102,7 @@ for i = 1:no_trajectories
     initial_positions(i,1) = mtRadius(i) * cos(mtPhase(i)*(2*pi)/(360));
     initial_positions(i,2) = mtRadius(i) * sin(mtPhase(i)*(2*pi)/(360));
     initial_positions(i,3) = mtHeight;
-    l.rx_track(i).scenario{1} = '3GPP_3D_UMi_LOS';
+    l.rx_track(i).scenario{1} = '3GPP_38.901_UMi_NLOS';
 end
 
 %ab = l.rx_track(3).positions;
