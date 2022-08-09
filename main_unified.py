@@ -22,7 +22,7 @@ glob_var_file = open(dir_path + '/glob_var_file.txt','w')
 log_file = open(dir_path + '/log_file.txt','w')
 m_file = open(dir_path + '/m_file.txt','w')
 
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 
 BATCHSIZE = 50
 G_EPOCHS = 500
