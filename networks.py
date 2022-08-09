@@ -578,8 +578,8 @@ class Michael_VAE_DFT(nn.Module):
         x = x[:,None,:]
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
-        mu_real,mu_imag,log_pre = self.decode(z)
-        mu_out = mu_real + 1j * mu_imag
+        mu_out,log_pre = self.decode(z)
+        mu_out = mu_out[:, 0, :] + 1j * mu_out[:, 1, :]
         Cov_out = torch.diag_embed(1 / (torch.exp(log_pre))) + 0j
         return mu_out, Cov_out
 
