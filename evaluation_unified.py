@@ -112,7 +112,7 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
         if cov_type == 'DFT':
             sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
             received_signal = samples[3].to(device)
-        else:
+        if cov_type == 'Toeplitz':
             sample = samples[0].to(device)
             received_signal = samples[1].to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
@@ -129,7 +129,7 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
 
 
 def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_val,snapshots,dir_path,device):
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
+    cov_type = setup[9]
     alpha = 0.05
     batchsize=bs_mmd
     H = np.zeros(n_iterations)
