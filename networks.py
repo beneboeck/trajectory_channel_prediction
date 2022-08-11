@@ -74,12 +74,18 @@ class Prior(nn.Module):
         return mu, logpre2, new_state
 
 class Encoder(nn.Module):
-    def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type):
+    def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,device):
         super().__init__()
         self.rnn_bool = rnn_bool
         self.ld = ld
         self.prepro = prepro
         self.cov_type = cov_type
+        self.device = device
+        self.F = torch.zeros((n_ant, n_ant), dtype=torch.cfloat).to(self.device)
+        for m in range(n_ant):
+            for n in range(n_ant):
+                self.F[m, n] = 1 / torch.sqrt(n_ant) * torch.exp(1j * 2 * math.pi * (m * n) / n_ant)
+
         if rnn_bool == True:
             self.forget = nn.Sequential(
                 nn.Linear(ld, ld),
@@ -122,8 +128,12 @@ class Encoder(nn.Module):
 
     def forward(self,x,z,h):
         if (self.prepro == 'DFT') & (self.cov_type == 'Toeplitz'):
-            x = apply_DFT(x)
-        x = nn.Flatten()(x)
+            x = x[:, 0, :, :] + 1j * x[:, 1, :, :]
+            transformed_set = np.einsum('mn,knl -> kml', self.F, x)
+            x_new = torch.zeros((x.size())).to(self.device)
+            x_new[:, 0, :, :] = torch.real(transformed_set)
+            x_new[:, 1, :, :] = torch.imag(transformed_set)
+        x = nn.Flatten()(x_new)
         if self.rnn_bool == True:
             forget_state = h * self.forget(z)
             new_state = forget_state + (self.choice(z) * self.candidates(z))
@@ -249,7 +259,7 @@ class HMVAE(nn.Module):
         self.cov_type = cov_type
         self.BN = BN
 
-        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type) for i in range(snapshots)])
+        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,self.device) for i in range(snapshots)])
         self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN) for i in range(snapshots)])
 
