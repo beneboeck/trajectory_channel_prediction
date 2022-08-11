@@ -129,6 +129,7 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
 
 
 def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_val,snapshots,dir_path,device):
+    LD = setup[0]
     cov_type = setup[9]
     alpha = 0.05
     batchsize=bs_mmd
