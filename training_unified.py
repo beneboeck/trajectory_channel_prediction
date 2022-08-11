@@ -109,7 +109,7 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
             if i%5 == 0:
                 model.eval()
                 NMSE, Risk = ev.eval_val(model_type,setup,model, dataloader_val,cov_type, lamba, device, dir_path)
-                NMSE_estimation = ev.channel_estimation(setup, model, dataloader_val, sig_n, dir_path, device)
+                NMSE_estimation = ev.channel_estimation(model, dataloader_val, sig_n,cov_type, dir_path, device)
                 if model_type == 'Trajectory':
                     TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots, dir_path,device)
                     eval_TPR1.append(TPR1)

@@ -105,8 +105,7 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
     plt.close('all')
 
 
-def channel_estimation(setup,model,dataloader_val,sig_n,dir_path,device):
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
+def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []
     estimated_snapshot = -1
     for ind, samples in enumerate(dataloader_val):
