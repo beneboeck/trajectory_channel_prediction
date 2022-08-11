@@ -51,16 +51,14 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
         NMSE = torch.mean(torch.sum(torch.abs(ground_truth - predicted_samples) ** 2, dim=(1,2,3)) / torch.sum(torch.abs(ground_truth) ** 2,dim=(1,2,3))).detach().to('cpu')
         NMSE_list.append(NMSE)
 
-    if PHASE == 'testing':
-        prediction_visualization(setup,ground_truth,predicted_samples,dir_path)
+    #if PHASE == 'testing':
+    #    prediction_visualization(setup,ground_truth,predicted_samples,dir_path)
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
 
 
 def prediction_visualization(setup,samples,complete_x_list,dir_path):
     cov_type = setup[9]
-    samples = samples[:,:,:,None]
-    complete_x_list = complete_x_list[:,:,:,None]
     if cov_type == 'DFT':
         samples = apply_IDFT(samples)
         complete_x_list = apply_IDFT(complete_x_list)
@@ -73,9 +71,9 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
         sample = samples[n, :, :, :]
         sample = sample[None, :, :, :]
 
-        mu_out = complete_x_list[n, :, :, :]
+        mu_out = complete_x_list[n, :, :]
         mu_out = torch.squeeze(mu_out).to('cpu').detach()
-        mu_out = torch.complex(mu_out[0, :, :], mu_out[1, :, :])
+        mu_out = torch.complex(mu_out[0, :], mu_out[1, :])
         abs_out = torch.abs(mu_out)
         angle_out = torch.angle(mu_out)
 
