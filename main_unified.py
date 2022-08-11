@@ -72,16 +72,16 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'BN use: {BN}\n')
     glob_file.write(f'preopro: {prepro}\n')
 if MODEL_TYPE == 'Single':
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type_VAE = network_architecture_search_VAE()
-    setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type_VAE]
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type = network_architecture_search_VAE()
+    setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type]
     print('Single Setup')
-    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type_VAE)
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
     glob_file.write(f'conv_layer: {conv_layer}\n')
     glob_file.write(f'total_layer: {total_layer}\n')
     glob_file.write(f'out_channel: {out_channel}\n')
     glob_file.write(f'k_size: {k_size}\n')
-    glob_file.write(f'cov_type: {cov_type_VAE}\n')
+    glob_file.write(f'cov_type: {cov_type}\n')
 
 #LOADING AND PREPARING DATA + DEFINING THE MODEL
 
