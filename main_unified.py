@@ -15,7 +15,7 @@ import math
 # GLOBAL PARAMETERS
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 11
+G_EPOCHS = 2
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
@@ -154,7 +154,7 @@ torch.save(model.state_dict(),dir_path + '/model_dict')
 log_file.write('\nTESTING\n')
 print('testing')
 if MODEL_TYPE == 'Trajectory':
-    NMSE_test = ev.channel_prediction(setup,model,dataloader_test,16,dir_path,device,'testing')
+    NMSE_test = ev.channel_prediction(setup,model,dataloader_test,15,dir_path,device,'testing')
     print(f'NMSE test: {NMSE_test}')
     log_file.write(f'NMSE test: {NMSE_test}\n')
 
