@@ -15,14 +15,14 @@ import math
 # GLOBAL PARAMETERS
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 2
+G_EPOCHS = 500
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Single' # Trajectory, Single
-n_iterations = 1#75
-n_permutations = 1#300
+MODEL_TYPE = 'Trajectory' # Trajectory, Single
+n_iterations = 75
+n_permutations = 300
 bs_mmd = 1000
 normed = False
 author = 'Bene'
