@@ -128,9 +128,9 @@ class Encoder(nn.Module):
 
     def forward(self,x,z,h):
         if (self.prepro == 'DFT') & (self.cov_type == 'Toeplitz'):
+            x_new = torch.zeros((x.size())).to(self.device)
             x = x[:, 0, :, :] + 1j * x[:, 1, :, :]
             transformed_set = torch.einsum('mn,knl -> kml', self.F, x)
-            x_new = torch.zeros((x.size())).to(self.device)
             x_new[:, 0, :, :] = torch.real(transformed_set)
             x_new[:, 1, :, :] = torch.imag(transformed_set)
             x = nn.Flatten()(x_new)
