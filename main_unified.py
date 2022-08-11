@@ -73,7 +73,7 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'preopro: {prepro}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type_VAE = network_architecture_search_VAE()
-    setup_VAE = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type_VAE]
+    setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type_VAE]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type_VAE)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
