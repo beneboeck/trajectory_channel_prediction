@@ -84,7 +84,7 @@ class Encoder(nn.Module):
         self.F = torch.zeros((n_ant, n_ant), dtype=torch.cfloat).to(self.device)
         for m in range(n_ant):
             for n in range(n_ant):
-                self.F[m, n] = 1 / torch.sqrt(n_ant) * torch.exp(1j * 2 * math.pi * (m * n) / n_ant)
+                self.F[m, n] = 1 / torch.sqrt(torch.tensor(n_ant)) * torch.exp(1j * 2 * math.pi * (m * n) / n_ant)
 
         if rnn_bool == True:
             self.forget = nn.Sequential(

@@ -28,9 +28,9 @@ H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensi
 H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
 path_gains_total = zeros(no_runs * no_trajectories,durationTrajectory/snapshotDensity+1);
 
-for i = [1:no_runs]
+for o = [1:no_runs]
     disp('run')
-    i
+    o
 
     %velocity computation (velocity is drawn from a rayleigh distribution as
     %abs(complexGauss(0,sig = 2)) (mean somewhere around 2.5m/s and at most 8m/s)
@@ -211,9 +211,9 @@ for i = [1:no_runs]
 
     %% (E) textfile 
 
-    H_real((i-1) * no_trajectories + 1: i * no_trajectories,:,:) = real(H);
-    H_imag((i-1) * no_trajectories + 1: i * no_trajectories,:,:) = imag(H);
-    path_gains_total((i-1) * no_trajectories + 1: i * no_trajectories,:) = path_gains;
+    H_real((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = real(H);
+    H_imag((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = imag(H);
+    path_gains_total((o-1) * no_trajectories + 1: o * no_trajectories,:) = path_gains;
 end
 
 
