@@ -74,6 +74,7 @@ if MODEL_TYPE == 'Trajectory':
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type = network_architecture_search_VAE()
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type]
+    setup = [10,0,3,64,9,'Toeplitz']
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
