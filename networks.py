@@ -704,7 +704,7 @@ class my_VAE(nn.Module):
             if self.conv_layer > 0:
                 self.final_layer = nn.Linear(int(2 * dim_out),64 + 63)
             else:
-                self.final_layer = nn.Linear(int(dim_out), 96)
+                self.final_layer = nn.Linear(int(dim_out), 64 + 63)
 
     def encode(self, x):
         out = self.encoder(x)
