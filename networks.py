@@ -133,7 +133,8 @@ class Encoder(nn.Module):
             x_new = torch.zeros((x.size())).to(self.device)
             x_new[:, 0, :, :] = torch.real(transformed_set)
             x_new[:, 1, :, :] = torch.imag(transformed_set)
-        x = nn.Flatten()(x_new)
+            x = nn.Flatten()(x_new)
+        x = nn.Flatten()(x)
         if self.rnn_bool == True:
             forget_state = h * self.forget(z)
             new_state = forget_state + (self.choice(z) * self.candidates(z))
