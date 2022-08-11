@@ -134,7 +134,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 if MODEL_TYPE == 'Single':
-    model = mg.my_VAE(cov_type_VAE,LD_VAE,conv_layer,total_layer,out_channel,k_size,device).to(device)
+    model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,device).to(device)
     if author == 'Michael':
         model = mg.Michael_VAE_DFT(16,device).to(device)
 
