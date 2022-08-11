@@ -58,7 +58,9 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
 
 
 def prediction_visualization(setup,samples,complete_x_list,dir_path):
-    cov_type = setup[-1]
+    cov_type = setup[9]
+    samples = samples[:,:,:,None]
+    complete_x_list = complete_x_list[:,:,:,None]
     if cov_type == 'DFT':
         samples = apply_IDFT(samples)
         complete_x_list = apply_IDFT(complete_x_list)
