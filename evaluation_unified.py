@@ -40,12 +40,12 @@ def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_p
     return NMSE, Risk
 
 def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHASE):
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type = setup
+    cov_type = setup[9]
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
         if cov_type == 'DFT':
             sample = sample[2].to(device)
-        else:
+        if cov_type == 'Toeplitz':
             sample = sample[0].to(device)
         predicted_samples, ground_truth = model.predicting(sample, knowledge) # BS,2,N_ANT,SNAPSHOTS - KNOWLEDGE
         NMSE = torch.mean(torch.sum(torch.abs(ground_truth - predicted_samples) ** 2, dim=(1,2,3)) / torch.sum(torch.abs(ground_truth) ** 2,dim=(1,2,3))).detach().to('cpu')
