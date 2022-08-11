@@ -97,7 +97,7 @@ if DATASET_TYPE == 'my_Quadriga':
     H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
     H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-    print(np.mean(np.sum(np.abs(H_train),axis=(1,2))))
+    print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
     print(np.mean(H_train))
     print(np.std(H_train))
 
