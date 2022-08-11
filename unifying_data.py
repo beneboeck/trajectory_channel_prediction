@@ -27,10 +27,14 @@ pg_train = torch.zeros(10 * 4000,16)
 pg_val = torch.zeros(10 * 500,16)
 pg_test = torch.zeros(10 * 500,16)
 
-for i in range(1,11):
-    H_test[(i-1) * 500 : i * 500,:,:,:],pg_test[(i-1) * 500 : i * 500,:] = returning_H(i,'test')
-    H_train[(i-1) * 4000 : i * 4000,:,:,:],pg_train[(i-1) * 4000 : i * 4000,:] = returning_H(i, 'train')
-    H_val[(i-1) * 500 : i * 500,:,:,:],pg_val[(i-1) * 500 : i * 500,:] = returning_H(i, 'val')
+#for i in range(1,11):
+#    H_test[(i-1) * 500 : i * 500,:,:,:],pg_test[(i-1) * 500 : i * 500,:] = returning_H(i,'test')
+#    H_train[(i-1) * 4000 : i * 4000,:,:,:],pg_train[(i-1) * 4000 : i * 4000,:] = returning_H(i, 'train')
+#    H_val[(i-1) * 500 : i * 500,:,:,:],pg_val[(i-1) * 500 : i * 500,:] = returning_H(i, 'val')
+H_test,pg_test = returning_H('500_100','test')
+H_train,pg_train = returning_H('500_100', 'train')
+H_val,pg_val = returning_H('500_100', 'val')
+
 
 H_train = np.array(H_train)
 H_val = np.array(H_val)

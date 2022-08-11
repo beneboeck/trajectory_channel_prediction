@@ -6,11 +6,11 @@ clc
 %% (A) global variables
 
 no_runs = 500;                                     % Number of total simulations
-no_trajectories = 100;                             % Number of simulated trajectories per simulation
+no_trajectories = 10;                             % Number of simulated trajectories per simulation
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
-antennaHeight = 10;                                 % Antenna height of the bs station in [m]
+antennaHeight = 25;                                 % Antenna height of the bse station in [m]
 antennaSpacing = 1/2;                               % Antenna spacing in multiples of the wave length
 noV = 32;                                            % Number of vertical antenna elements
 noH = 1;                                            % Number of horizontal antenn elements
@@ -24,13 +24,22 @@ mtHeight = 1.5;                                     % Height of the MTs
 snapshotDensity = 0.5e-3;                           % Snapshot density in [s]
 durationTrajectory = 7.5e-3;                         % Duration of one Trajectory
 
-H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
-H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
-path_gains_total = zeros(no_runs * no_trajectories,durationTrajectory/snapshotDensity+1);
+H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+path_gains = zeros(no_runs * no_trajectories,durationTrajectory/snapshotDensity);
+
+H_real_train = zeros(0.8 * no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+H_real_val = zeros(0.1 * no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+H_real_test = zeros(0.1 * no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+H_imag_train = zeros(0.8 * no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+H_imag_val = zeros(0.1 * no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+H_imag_test = zeros(0.1 * no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity);
+path_gains_train = zeros(0.8 * no_runs * no_trajectories,durationTrajectory/snapshotDensity);
+path_gains_val = zeros(0.1 * no_runs * no_trajectories,durationTrajectory/snapshotDensity);
+path_gains_test = zeros(0.1 * no_runs * no_trajectories,durationTrajectory/snapshotDensity);
+
 
 for i = [1:no_runs]
-    disp('run')
-    i
 
     %velocity computation (velocity is drawn from a rayleigh distribution as
     %abs(complexGauss(0,sig = 2)) (mean somewhere around 2.5m/s and at most 8m/s)
@@ -213,7 +222,7 @@ for i = [1:no_runs]
 
     H_real((i-1) * no_trajectories + 1: i * no_trajectories,:,:) = real(H);
     H_imag((i-1) * no_trajectories + 1: i * no_trajectories,:,:) = imag(H);
-    path_gains_total((i-1) * no_trajectories + 1: i * no_trajectories,:) = path_gains;
+    path_gains((i-1) * no_trajectories + 1: i * no_trajectories,:) = path_gains;
 end
 
 
@@ -225,23 +234,23 @@ H_imag_train = H_imag(1:0.8 * no_runs * no_trajectories,:,:);
 H_imag_val = H_imag(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:,:);
 H_imag_test = H_imag(0.9 * no_runs * no_trajectories + 1:end,:,:);
 
-path_gains_train = path_gains_total(1:0.8 * no_runs * no_trajectories,:);
-path_gains_val = path_gains_total(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:);
-path_gains_test = path_gains_total(0.9 * no_runs * no_trajectories + 1:end,:);
+path_gains_train = path_gains(1:0.8 * no_runs * no_trajectories,:);
+path_gains_val = path_gains(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:);
+path_gains_test = path_gains(0.9 * no_runs * no_trajectories + 1:end,:);
 
 
 
-save('../Simulations//trajectory_channel_prediction/data/H_real_train500_100.mat','H_real_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_val500_100.mat','H_real_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_test500_100.mat','H_real_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_train10.mat','H_real_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_val10.mat','H_real_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_test10.mat','H_real_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_imag_train500_100.mat','H_imag_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_train10.mat','H_imag_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_val10.mat','H_imag_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_test10.mat','H_imag_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/path_gains_train500_100.mat','path_gains_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/path_gains_val500_100.mat','path_gains_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/path_gains_test500_100.mat','path_gains_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_train10.mat','path_gains_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_val10.mat','path_gains_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_test10.mat','path_gains_test','-v7.3');
 
 
 

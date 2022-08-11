@@ -7,6 +7,7 @@ from torch.nn.utils import weight_norm
 import h5py
 from scipy import linalg as la
 import math
+from utils import *
 import time
 
 class Reshape(nn.Module):
@@ -29,7 +30,7 @@ class ReshapeDouble(nn.Module):
         return x.view(-1, self.channel1,self.channel2, self.x_size, self.y_size)
 
 class Prior(nn.Module):
-    def __init__(self,ld,rnn_bool,pr_layer,pr_width):
+    def __init__(self,ld,rnn_bool,pr_layer,pr_width,BN):
         super().__init__()
         self.rnn_bool = rnn_bool
         self.ld = ld
@@ -47,13 +48,13 @@ class Prior(nn.Module):
         self.net = []
         self.net.append(nn.Linear(ld,pr_width * ld))
         self.net.append(nn.ReLU())
-        #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-        self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-4))
+        if BN:
+            self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-4))
         for l in range(pr_layer-2):
             self.net.append(nn.Linear(pr_width * ld, pr_width * ld))
             self.net.append(nn.ReLU())
-            #self.net.append(nn.BatchNorm1d(pr_width * ld,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-4))
+            if BN:
+                self.net.append(nn.BatchNorm1d(pr_width * ld, eps=1e-4))
         self.net.append(nn.Linear(pr_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld, 2 * self.ld)
         self.net = nn.Sequential(*self.net)
@@ -68,22 +69,17 @@ class Prior(nn.Module):
         else:
             mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
-
         logpre = (2.3 - 1.1)/2 * nn.Tanh()(logpre) + (2.3 - 1.1)/2 + 1.1
-
         logpre2 = logpre.clone()
-        if torch.sum(logpre[torch.abs(logpre) > 2.4]) != 0:
-            print(torch.max(torch.abs(logpre)))
-            print('logpre was regularized')
-            print(torch.max(torch.abs(logpre)))
-            logpre2[logpre > 4] = 4
         return mu, logpre2, new_state
 
 class Encoder(nn.Module):
-    def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width):
+    def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type):
         super().__init__()
         self.rnn_bool = rnn_bool
         self.ld = ld
+        self.prepro = prepro
+        self.cov_type = cov_type
         if rnn_bool == True:
             self.forget = nn.Sequential(
                 nn.Linear(ld, ld),
@@ -97,29 +93,36 @@ class Encoder(nn.Module):
 
         step = round((n_ant * 2 * (memory+1) - 2*ld)/2)
 
-        self.x_prenet = nn.Sequential(
-            nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
-            nn.ReLU(),
-            #nn.BatchNorm1d(int(n_ant * 2 * (memory+1) - step),track_running_stats=False),
-            nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
-            nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
+        if BN:
+            self.x_prenet = nn.Sequential(
+                nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
+                nn.ReLU(),
+                nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
+                nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
+        else:
+            self.x_prenet = nn.Sequential(
+                nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
+                nn.ReLU(),
+                nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
 
         self.net = []
         self.net.append(nn.Linear(3 * ld,en_width * ld))
         self.net.append(nn.ReLU())
-        #self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
-        self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-4))
+        if BN:
+            self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-4))
         for l in range(en_layer-2):
             self.net.append(nn.Linear(en_width * ld, en_width * ld))
             self.net.append(nn.ReLU())
-            #self.net.append(nn.BatchNorm1d(en_width * ld,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-4))
+            if BN:
+                self.net.append(nn.BatchNorm1d(en_width * ld, eps=1e-4))
         self.net.append(nn.Linear(en_width * ld,2 * ld))
         self.hidden_to_out = nn.Linear(self.ld,2*self.ld)
 
         self.net = nn.Sequential(*self.net)
 
     def forward(self,x,z,h):
+        if (self.prepro == 'DFT') & (self.cov_type == 'Toeplitz'):
+            x = apply_DFT(x)
         x = nn.Flatten()(x)
         if self.rnn_bool == True:
             forget_state = h * self.forget(z)
@@ -142,7 +145,7 @@ class Encoder(nn.Module):
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
-    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,device):
+    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,device):
         super().__init__()
         self.cov_type = cov_type
         self.n_ant = n_ant
@@ -167,13 +170,13 @@ class Decoder(nn.Module):
         net_out_dim = int(de_width * ld * (memory+1) - step)
         self.net.append(nn.Linear(ld*(memory+1),net_in_dim))
         self.net.append(nn.ReLU())
-        #self.net.append(nn.BatchNorm1d(net_in_dim,track_running_stats=False))
-        self.net.append(nn.BatchNorm1d(net_in_dim, eps=1e-4))
+        if BN:
+            self.net.append(nn.BatchNorm1d(net_in_dim, eps=1e-4))
         for l in range(de_layer-2):
             self.net.append(nn.Linear(net_in_dim,net_out_dim))
             self.net.append(nn.ReLU())
-            #self.net.append(nn.BatchNorm1d(net_out_dim,track_running_stats=False))
-            self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-4))
+            if BN:
+                self.net.append(nn.BatchNorm1d(net_out_dim, eps=1e-4))
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
         self.net.append(nn.Linear(net_in_dim,output_dim))
@@ -188,10 +191,6 @@ class Decoder(nn.Module):
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
             logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
-            if torch.sum(logpre_out[torch.abs(logpre_out) > 4]) != 0:
-                print('logpre_out was regularized')
-            if torch.sum(logpre_out == 0) > 0:
-                print('logpre_out wirklich 0')
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
@@ -239,7 +238,7 @@ class Decoder(nn.Module):
             return mu_out, B, C
 
 class HMVAE(nn.Module):
-    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,device):
+    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,device):
         super().__init__()
         # attributes
         self.memory = memory
@@ -248,10 +247,11 @@ class HMVAE(nn.Module):
         self.ld = ld
         self.device = device
         self.cov_type = cov_type
+        self.BN = BN
 
-        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width) for i in range(snapshots)])
-        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,self.device) for i in range(snapshots)])
-        self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width) for i in range(snapshots)])
+        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type) for i in range(snapshots)])
+        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.device) for i in range(snapshots)])
+        self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN) for i in range(snapshots)])
 
     def reparameterize(self, log_var, mu):
             std = torch.exp(0.5 * log_var)

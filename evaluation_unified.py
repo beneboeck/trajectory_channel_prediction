@@ -247,16 +247,6 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_
         del mu_out2, mu_out, samples, samples2
         torch.cuda.empty_cache()
 
-            # valentina_mu_out = np.array(mu_out_MMD.to('cpu'))
-            # valentina_samples = np.array(samples_MMD.to('cpu'))
-            # valentina_mu_out2 = np.array(mu_out2_MMD.to('cpu'))
-            # valentina_samples2 = np.array(samples2_MMD.to('cpu'))
-
-            # np.savetxt('/home/ga42kab/lrz-nashome/mu_out.txt',valentina_mu_out)
-            # np.savetxt('/home/ga42kab/lrz-nashome/samples.txt', valentina_samples)
-            # np.savetxt('/home/ga42kab/lrz-nashome/mu_out2.txt', valentina_mu_out2)
-            # np.savetxt('/home/ga42kab/lrz-nashome/samples2.txt', valentina_samples2)
-
         if normed == True:
             mu_out_MMD = mu_out_MMD / torch.linalg.norm(mu_out_MMD, axis=1, keepdims=True)
             samples_MMD = samples_MMD / torch.linalg.norm(samples_MMD, dim=1, keepdim=True)
@@ -272,9 +262,6 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_
         Dxy2 = Pdist2(samples2_MMD, mu_out2_MMD)
         sigma02 = Dxy2.median()
 
-            # print('###########')
-            # code.interact(local=locals())
-
         del Dxy2
         torch.cuda.empty_cache()
 
@@ -289,11 +276,11 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_
 
         for i in range(n_permutations):
             ind = np.random.choice(nxy, nxy, replace=False)
-                # divide into new X, Y
+            # divide into new X, Y
             indx = ind[:batchsize]
             indy = ind[batchsize:]
 
-                # take the part of the matrix that corresponds to the decision
+            # take the part of the matrix that corresponds to the decision
             Kx = Kxyxy[np.ix_(indx, indx)]
             Ky = Kxyxy[np.ix_(indy, indy)]
             Kxy = Kxyxy[np.ix_(indx, indy)]
