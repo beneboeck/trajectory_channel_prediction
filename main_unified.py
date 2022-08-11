@@ -155,15 +155,28 @@ log_file.write('\nTESTING\n')
 print('testing')
 if MODEL_TYPE == 'Trajectory':
     NMSE_test = ev.channel_prediction(setup,model,dataloader_test,15,dir_path,device,'testing')
+    TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test, SNAPSHOTS, dir_path, device)
     print(f'NMSE prediction test: {NMSE_test}')
     log_file.write(f'NMSE prediction test: {NMSE_test}\n')
+
+NMSE_test_est = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
 
 NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
 print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
 
 glob_file.write('\nResults\n')
+glob_file.write('EVALUATION SET\n')
 glob_file.write(f'NMSE estimation: {eval_NMSE_estimation[-1]:.4f}\n')
 glob_file.write(f'NMSE prediction: {eval_NMSE[-1]:.4f}\n')
 glob_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
 glob_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
+
+glob_file.write('Test SET\n')
+glob_file.write(f'NMSE estimation: {NMSE_test_est}\n')
+if MODEL_TYPE == 'Trajectory':
+    glob_file.write(f'NMSE prediction: {NMSE_test}\n')
+    glob_file.write(f'TPR prior: {TPR1}\n')
+    glob_file.write(f'TPR inf: {TPR2}\n')
+
+
