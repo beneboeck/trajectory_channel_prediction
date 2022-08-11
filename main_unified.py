@@ -20,7 +20,7 @@ LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Trajectory' # Trajectory, Single
+MODEL_TYPE = 'Single' # Trajectory, Single
 n_iterations = 1#75
 n_permutations = 1#300
 bs_mmd = 1000
@@ -173,10 +173,10 @@ glob_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
 glob_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
 
 glob_file.write('Test SET\n')
-glob_file.write(f'NMSE estimation: {NMSE_test_est}\n')
+glob_file.write(f'NMSE estimation: {NMSE_test_est:.4f}\n')
 if MODEL_TYPE == 'Trajectory':
-    glob_file.write(f'NMSE prediction: {NMSE_test}\n')
-    glob_file.write(f'TPR prior: {TPR1}\n')
-    glob_file.write(f'TPR inf: {TPR2}\n')
+    glob_file.write(f'NMSE prediction: {NMSE_test:.4f}\n')
+    glob_file.write(f'TPR prior: {TPR1:.4f}\n')
+    glob_file.write(f'TPR inf: {TPR2:.4f}\n')
 
 
