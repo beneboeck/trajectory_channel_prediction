@@ -155,8 +155,8 @@ log_file.write('\nTESTING\n')
 print('testing')
 if MODEL_TYPE == 'Trajectory':
     NMSE_test = ev.channel_prediction(setup,model,dataloader_test,15,dir_path,device,'testing')
-    print(f'NMSE test: {NMSE_test}')
-    log_file.write(f'NMSE test: {NMSE_test}\n')
+    print(f'NMSE prediction test: {NMSE_test}')
+    log_file.write(f'NMSE prediction test: {NMSE_test}\n')
 
 NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
 print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
