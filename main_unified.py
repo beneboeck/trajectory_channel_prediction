@@ -131,6 +131,7 @@ dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_t
 dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
 dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
+# CREATING THE MODELS
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 if MODEL_TYPE == 'Single':
