@@ -15,14 +15,14 @@ import math
 # GLOBAL PARAMETERS
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 7
+G_EPOCHS = 700
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
 MODEL_TYPE = 'Single' # Trajectory, Single
-n_iterations = 1#75
-n_permutations = 1#300
+n_iterations = 75
+n_permutations = 300
 bs_mmd = 1000
 normed = False
 author = 'Bene'
@@ -74,9 +74,6 @@ if MODEL_TYPE == 'Trajectory':
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_VAE()
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
-    prepro = 'DFT'
-    cov_type = 'Toeplitz'
-    setup = [10,0,3,64,9,'Toeplitz','DFT']
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
