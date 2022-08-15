@@ -713,7 +713,6 @@ class my_VAE(nn.Module):
 
     def encode(self, x):
         if (self.cov_type == 'Toeplitz') & (self.prepro == 'DFT'):
-            print('hier')
             x_new = torch.zeros((x.size())).to(self.device)
             x = x[:, 0, :] + 1j * x[:, 1, :]
             transformed_set = torch.einsum('mn,kn -> km', self.F, x)
