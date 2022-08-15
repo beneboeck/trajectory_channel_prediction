@@ -62,8 +62,9 @@ def network_architecture_search_VAE():
     out_channel = np.random.choice([64,128]).item()
     k_size = np.random.choice([5,7,9]).item()
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
+    prepro = np.random.choice(['None', 'DFT']).item()
 
-    return LD,conv_layer,total_layer,out_channel,k_size,cov_type
+    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro
 
 def save_risk(risk_list,RR_list,KL_list,model_path,title):
     risk = np.array(risk_list)

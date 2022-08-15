@@ -605,10 +605,15 @@ class Michael_VAE_DFT(nn.Module):
 
 
 class my_VAE(nn.Module):
-    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,device):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,device):
         super().__init__()
         rand_matrix = torch.randn(32, 32)
         self.device = device
+        self.prepro = prepro
+        self.F = torch.zeros((32, 32), dtype=torch.cfloat).to(self.device)
+        for m in range(32):
+            for n in range(32):
+                self.F[m, n] = 1 / torch.sqrt(torch.tensor(32)) * torch.exp(torch.tensor(1j * 2 * math.pi * (m * n) / 32))
         self.B_mask = torch.tril(rand_matrix)
         self.B_mask[self.B_mask != 0] = 1
         self.B_mask = self.B_mask[None, :, :].to(self.device)
@@ -707,6 +712,14 @@ class my_VAE(nn.Module):
                 self.final_layer = nn.Linear(int(dim_out), 64 + 63)
 
     def encode(self, x):
+        if (self.cov_type == 'Toeplitz') & (self.prepro == 'DFT'):
+            print('hier')
+            x_new = torch.zeros((x.size())).to(self.device)
+            x = x[:, 0, :] + 1j * x[:, 1, :]
+            transformed_set = torch.einsum('mn,kn -> km', self.F, x)
+            x_new[:, 0, :] = torch.real(transformed_set)
+            x_new[:, 1, :] = torch.imag(transformed_set)
+            x = x_new
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
