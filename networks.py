@@ -719,6 +719,8 @@ class my_VAE(nn.Module):
             x_new[:, 0, :] = torch.real(transformed_set)
             x_new[:, 1, :] = torch.imag(transformed_set)
             x = x_new
+        if self.conv_layer == 0:
+            x = nn.Flatten()(x)
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
@@ -797,8 +799,6 @@ class my_VAE(nn.Module):
         return mu_out, Cov_out
 
     def forward(self, x):
-        if self.conv_layer == 0:
-            x = nn.Flatten()(x)
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         if self.cov_type == 'DFT':
