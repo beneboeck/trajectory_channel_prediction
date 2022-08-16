@@ -13,7 +13,7 @@ import evaluation_unified as ev
 import math
 
 # GLOBAL PARAMETERS
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 700
 LEARNING_RATE = 6e-5
