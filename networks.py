@@ -780,8 +780,6 @@ class my_VAE(nn.Module):
 
     def estimating(self,x,estimated_snapshot):
         x = x[:,:,:,estimated_snapshot]
-        if self.conv_layer == 0:
-            x = nn.Flatten()(x)
         mu, log_var = self.encode(x)
         z = self.reparameterize(log_var, mu)
         if self.cov_type == 'DFT':
