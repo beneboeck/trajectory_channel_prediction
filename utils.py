@@ -40,8 +40,8 @@ def apply_IDFT(sample_set):
     return realed_set
 
 def network_architecture_search():
-    LD = np.random.choice([6,10,14,18]).item()
-    memory = np.random.choice(range(11)).item()
+    LD = np.random.choice([10,14,18]).item()
+    memory = np.random.choice(range(6,11)).item()
     rnn_bool = np.random.choice([False,True]).item()
     BN = np.random.choice([False, True]).item()
     en_layer = np.random.choice([2,3]).item()

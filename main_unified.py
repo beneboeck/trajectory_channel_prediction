@@ -20,7 +20,7 @@ LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Single' # Trajectory, Single
+MODEL_TYPE = 'Trajectory' # Trajectory, Single
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -56,6 +56,8 @@ print('global var successful')
 # NETWORK ARCHITECTURE SEARCH
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro = network_architecture_search()
+    ## ACHTUNG, NACHAENDERUNG!!!!!!
+    cov_type = 'DFT'
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro)
