@@ -58,7 +58,8 @@ if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
     cov_type = 'Toeplitz'
-    prepro = 'None'
+    prepro = 'DFT'
+    rnn_bool = True
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro)
