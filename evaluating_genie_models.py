@@ -80,13 +80,13 @@ LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,0,4,
 model_DFT_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_DFT_VAE.load_state_dict(torch.load(path_DFT_VAE,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,0,4,64,5,'DFT','DFT'
-model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
-model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
+LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,3,5,128,5,'Toeplitz','None'
+model_TN_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
+model_TN_VAE.load_state_dict(torch.load(path_TN_VAE,map_location=device))
 
-cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',14,'False',1,2,6,2,8,4,8,True,'DFT'
-model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
-model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
+LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,2,5,64,7,'Toeplitz','DFT'
+model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
+model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
 
 
 if DATASET_TYPE == 'my_Quadriga':
