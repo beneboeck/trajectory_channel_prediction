@@ -127,6 +127,28 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
 
+def channel_estimation_all(model,dataloader_val,sig_n,cov_type,dir_path,device):
+    NMSE_list = []
+    estimated_snapshot = -1
+    for ind, samples in enumerate(dataloader_val):
+        if cov_type == 'DFT':
+            sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
+            received_signal = samples[3].to(device)
+        if cov_type == 'Toeplitz':
+            sample = samples[0].to(device)
+            received_signal = samples[1].to(device)
+        sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
+        received_signal_oi = torch.mean(received_signal[:,0,:,:] + 1j * received_signal[:,1,:,:],dim=3)
+        mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
+        L,U = torch.linalg.eigh(Cov_out)
+        inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
+        h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
+        NMSE = torch.mean(torch.sum(torch.abs(sample_oi - h_hat) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
+        NMSE_list.append(NMSE)
+
+    NMSE = np.mean(np.array(NMSE_list))
+    return NMSE
+
 
 def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_val,snapshots,dir_path,device):
     LD = setup[0]
