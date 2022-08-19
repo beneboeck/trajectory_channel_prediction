@@ -354,3 +354,16 @@ def computing_LS_sample_covariance_estimator(dataset_val,sig_n):
 
     return NMSE_LS,NMSE_sCov
 
+def computing_LS_sample_covariance_estimator_all(dataset_val,sig_n):
+    h_hat_LS = torch.mean(dataset_val.y[:,0,:,:] + 1j * dataset_val.y[:,1,:,:],dim=2)
+    h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,1,:,-1]
+    NMSE_LS = torch.mean(torch.linalg.norm(h - h_hat_LS,dim = 1) ** 2)/torch.mean(torch.linalg.norm(h,dim=1)**2)
+
+    h_hat_LS_single = dataset_val.y[:,0,:,-1] + 1j * dataset_val.y[:,1,:,-1]
+    sMean = torch.mean(h_hat_LS_single,dim=0)
+    sCov_y = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS_single - sMean),torch.conj(h_hat_LS_single - sMean)),dim=0)
+    inv_matrix = torch.linalg.inv(sCov_y)
+    h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',(sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat)) @ inv_matrix,(h_hat_LS - sMean[None,:]))
+    NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
+
+    return NMSE_LS,NMSE_sCov

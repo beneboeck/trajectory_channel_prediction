@@ -142,3 +142,9 @@ for SNR_db in SNR_db_list:
     print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est:.6f}')
     NMSE_test_est_all = ev.channel_estimation_all(model_TD_VAE, dataloader_val, sig_n_test, 'Toeplitz', dir_path, device)
     print(f'SNR_db: {SNR_db}, NMSE_est_all: {NMSE_test_est_all:.6f}')
+
+    NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator_all(dataset_test, sig_n_test)
+    print(f'SNR_db: {SNR_db}, NMSE_est_LS_tot: {NMSE_LS:.6f}, NMSE_est_sCov_tot: {NMSE_sCov:.6f}')
+
+    NMSE_LS, NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_test, sig_n_test)
+    print(f'SNR_db: {SNR_db}, NMSE_est_LS: {NMSE_LS:.6f}, NMSE_est_sCov: {NMSE_sCov:.6f}')
