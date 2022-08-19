@@ -43,7 +43,7 @@ now = datetime.datetime.now()
 date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
-dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
+dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/evaluation/time_' + time
 os.mkdir (dir_path)
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
