@@ -113,21 +113,21 @@ cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_widt
 model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
-NMSE_DFT_Tra = ev.channel_prediction(setup,model_DFT_Tra,dataloader_test,15,dir_path,device,'testing')
+NMSE_DFT_Tra = ev.channel_prediction(setup,model_DFT_Tra,dataloader_test,13,dir_path,device,'testing')
 
 cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'Toeplitz',10,False,9,4,6,3,8,5,12,False,'None'
 model_TN_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 model_TN_Tra.load_state_dict(torch.load(path_TN_Tra,map_location=device))
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
-NMSE_TN_Tra = ev.channel_prediction(setup,model_TN_Tra,dataloader_test,15,dir_path,device,'testing')
+NMSE_TN_Tra = ev.channel_prediction(setup,model_TN_Tra,dataloader_test,13,dir_path,device,'testing')
 
 cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'Toeplitz',14,True,6,2,3,3,4,5,8,False,'DFT'
 model_TD_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 model_TD_Tra.load_state_dict(torch.load(path_TD_Tra,map_location=device))
 setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
-NMSE_TD_Tra = ev.channel_prediction(setup,model_TD_Tra,dataloader_test,15,dir_path,device,'testing')
+NMSE_TD_Tra = ev.channel_prediction(setup,model_TD_Tra,dataloader_test,13,dir_path,device,'testing')
 
-NMSE_keep_last = ev.keep_last(dataloader_test,15,device)
+NMSE_keep_last = ev.keep_last(dataloader_test,13,device)
 
 print(NMSE_DFT_Tra)
 print(NMSE_TN_Tra)
