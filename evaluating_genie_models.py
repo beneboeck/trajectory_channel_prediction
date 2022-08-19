@@ -104,9 +104,9 @@ for SNR_db in SNR_db_list:
         H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
         H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-        print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
-        print(np.mean(H_train))
-        print(np.std(H_train))
+        #print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
+        #print(np.mean(H_train))
+        #print(np.std(H_train))
 
         H_test_dft = apply_DFT(H_test)
         H_val_dft = apply_DFT(H_val)
@@ -138,5 +138,5 @@ for SNR_db in SNR_db_list:
     dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
 
-    NMSE_test_est = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_test_est = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test,'Toeplitz', dir_path, device)
     print(NMSE_test_est)
