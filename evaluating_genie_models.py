@@ -182,10 +182,10 @@ for SNR_db in SNR_db_list:
     NMSE_est_TD_VAE_tot.append(NMSE_TD_VAE_tot)
     NMSE_est_TN_VAE_tot.append(NMSE_TN_VAE_tot)
 
-    NMSE_est_LS.append(NMSE_LS)
-    NMSE_est_LS_tot.append(NMSE_LS_tot)
-    NMSE_est_sCov.append(NMSE_sCov)
-    NMSE_est_sCov_tot.append(NMSE_sCov_tot)
+    NMSE_est_LS.append(NMSE_LS.item())
+    NMSE_est_LS_tot.append(NMSE_LS_tot.item())
+    NMSE_est_sCov.append(NMSE_sCov.item())
+    NMSE_est_sCov_tot.append(NMSE_sCov_tot.item())
 
 csv_writer.writerow(NMSE_est_DFT_Tra)
 csv_writer.writerow(NMSE_est_TD_Tra)
