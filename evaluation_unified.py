@@ -138,7 +138,7 @@ def channel_estimation_all(model,dataloader_val,sig_n,cov_type,dir_path,device):
             sample = samples[0].to(device)
             received_signal = samples[1].to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
-        received_signal_oi = torch.mean(received_signal[:,0,:,:] + 1j * received_signal[:,1,:,:],dim=3)
+        received_signal_oi = torch.mean(received_signal[:,0,:,:] + 1j * received_signal[:,1,:,:],dim=2)
         mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
         L,U = torch.linalg.eigh(Cov_out)
         inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH

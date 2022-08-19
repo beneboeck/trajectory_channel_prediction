@@ -141,4 +141,4 @@ for SNR_db in SNR_db_list:
     NMSE_test_est = ev.channel_estimation(model_TD_VAE, dataloader_test, sig_n_test,'Toeplitz', dir_path, device)
     print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est:.6f}')
     NMSE_test_est_all = ev.channel_estimation_all(model_TD_VAE, dataloader_val, sig_n_test, 'Toeplitz', dir_path, device)
-    print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est_all:.6f}')
+    print(f'SNR_db: {SNR_db}, NMSE_est_all: {NMSE_test_est_all:.6f}')
