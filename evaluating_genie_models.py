@@ -27,7 +27,7 @@ n_permutations = 300
 bs_mmd = 1000
 normed = False
 author = 'Bene'
-SNR_db_list = [-10,-5,0,5,10,15,20]
+SNR_db_list = [-30,-10,-5,0,5,10,15,20]
 
 
 path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_00_tra/model_dict'
