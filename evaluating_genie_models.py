@@ -27,7 +27,7 @@ n_permutations = 300
 bs_mmd = 1000
 normed = False
 author = 'Bene'
-SNR_db_list = [-30,-10,-5,0,5,10,15,20]
+SNR_db_list = [-10,-5,0,5,10,15,20]
 
 
 path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_00_tra/model_dict'
@@ -138,5 +138,5 @@ for SNR_db in SNR_db_list:
     dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
 
-    NMSE_test_est = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test,'Toeplitz', dir_path, device)
-    print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est:.4f}')
+    NMSE_test_est = ev.channel_estimation(model_TN_Tra, dataloader_test, sig_n_test,'Toeplitz', dir_path, device)
+    print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est:.6f}')
