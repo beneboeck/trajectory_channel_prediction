@@ -139,4 +139,4 @@ for SNR_db in SNR_db_list:
 
 
     NMSE_test_est = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test,'Toeplitz', dir_path, device)
-    print(NMSE_test_est)
+    print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est:.4f}')
