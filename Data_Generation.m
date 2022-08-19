@@ -21,8 +21,8 @@ minRadius = 50;                                     % Minium distance of the tra
 maxRadius = 150;                                     % Maximum distance of the trajectory's initial position to the BS (2D)
 angleSpread = 45;                                   % Maximum angle spread between the trajectories' initial positions (2D)
 mtHeight = 1.5;                                     % Height of the MTs
-snapshotDensity = 0.5e-3;                           % Snapshot density in [s]
-durationTrajectory = 7.5e-3;                         % Duration of one Trajectory
+snapshotDensity = 6 * 0.5e-3;                           % Snapshot density in [s]
+durationTrajectory = 6 * 7.5e-3;                         % Duration of one Trajectory
 
 H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
 H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
@@ -200,10 +200,10 @@ for o = [1:no_runs]
         end
     end
     % comment: additional saves: PG_normalization_factor + initial_positions
-    %figure;
-    %a = squeeze(real(H(1,:,:)));
-    %a = a./max(a) * 256;
-    %image(a)
+    figure;
+    a = squeeze(real(H(1,:,:)));
+    a = a./max(a) * 256;
+    image(a)
     %set(gca,'FontSize',18)
     %title('3m/s, 0.5ms snapshots, 15ms trajectory','FontSize',18)
     %xlabel('Snapshots','FontSize',18)
@@ -231,17 +231,17 @@ path_gains_test = path_gains_total(0.9 * no_runs * no_trajectories + 1:end,:);
 
 
 
-save('../Simulations//trajectory_channel_prediction/data/H_real_train500_100.mat','H_real_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_val500_100.mat','H_real_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_test500_100.mat','H_real_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_train500_100.mat','H_real_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_val500_100.mat','H_real_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_test500_100.mat','H_real_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_imag_train500_100.mat','H_imag_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_train500_100.mat','H_imag_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/path_gains_train500_100.mat','path_gains_train','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/path_gains_val500_100.mat','path_gains_val','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/path_gains_test500_100.mat','path_gains_test','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_train500_100.mat','path_gains_train','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_val500_100.mat','path_gains_val','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains_test500_100.mat','path_gains_test','-v7.3');
 
 
 
