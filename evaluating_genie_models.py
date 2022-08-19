@@ -11,6 +11,7 @@ import training_unified as tr
 import networks as mg
 import evaluation_unified as ev
 import math
+import csv
 
 
 # GLOBAL PARAMETERS
@@ -48,6 +49,8 @@ os.mkdir (dir_path)
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
+csv_file = open(dir_path + '/csv_file.txt','w')
+csv_writer = csv.writer(csv_file)
 glob_file.write('Date: ' +date +'\n')
 glob_file.write('Time: ' + time + '\n\n')
 glob_file.write(f'\nMODEL_TYPE: {MODEL_TYPE}\n\n')
@@ -88,6 +91,23 @@ LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,2,5,
 model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
 
+csv_writer.write(SNR_db_list)
+
+NMSE_est_DFT_Tra = []
+NMSE_est_TD_Tra = []
+NMSE_est_TN_Tra = []
+
+NMSE_est_DFT_VAE = []
+NMSE_est_TD_VAE = []
+NMSE_est_TN_VAE = []
+NMSE_est_DFT_VAE_tot = []
+NMSE_est_TD_VAE_tot = []
+NMSE_est_TN_VAE_tot = []
+
+NMSE_est_LS = []
+NMSE_est_LS_tot = []
+NMSE_est_sCov = []
+NMSE_est_sCov_tot = []
 
 
 for SNR_db in SNR_db_list:
@@ -137,14 +157,50 @@ for SNR_db in SNR_db_list:
     dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
     dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
+    NMSE_DFT_Tra = ev.channel_estimation(model_DFT_Tra, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+    NMSE_TD_Tra = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TN_Tra = ev.channel_estimation(model_TN_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
 
-    NMSE_test_est = ev.channel_estimation(model_TD_VAE, dataloader_test, sig_n_test,'Toeplitz', dir_path, device)
-    print(f'SNR_db: {SNR_db}, NMSE_est: {NMSE_test_est:.6f}')
-    NMSE_test_est_all = ev.channel_estimation_all(model_TD_VAE, dataloader_val, sig_n_test, 'Toeplitz', dir_path, device)
-    print(f'SNR_db: {SNR_db}, NMSE_est_all: {NMSE_test_est_all:.6f}')
+    NMSE_DFT_VAE = ev.channel_estimation(model_DFT_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+    NMSE_DFT_VAE_tot = ev.channel_estimation_all(model_DFT_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+    NMSE_TD_VAE = ev.channel_estimation(model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TD_VAE_tot = ev.channel_estimation_all(model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TN_VAE = ev.channel_estimation(model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TN_VAE_tot = ev.channel_estimation_all(model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
 
-    NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator_all(dataset_test, sig_n_test)
-    print(f'SNR_db: {SNR_db}, NMSE_est_LS_tot: {NMSE_LS:.6f}, NMSE_est_sCov_tot: {NMSE_sCov:.6f}')
-
+    NMSE_LS_tot, NMSE_sCov_tot = ev.computing_LS_sample_covariance_estimator_all(dataset_test, sig_n_test)
     NMSE_LS, NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_test, sig_n_test)
-    print(f'SNR_db: {SNR_db}, NMSE_est_LS: {NMSE_LS:.6f}, NMSE_est_sCov: {NMSE_sCov:.6f}')
+
+    NMSE_est_DFT_Tra.append(NMSE_DFT_Tra)
+    NMSE_est_TD_Tra.append(NMSE_TD_Tra)
+    NMSE_est_TN_Tra.append(NMSE_TN_Tra)
+
+    NMSE_est_DFT_VAE.append(NMSE_DFT_VAE)
+    NMSE_est_TD_VAE.append(NMSE_TD_VAE)
+    NMSE_est_TN_VAE.append(NMSE_TN_VAE)
+    NMSE_est_DFT_VAE_tot.append(NMSE_DFT_VAE_tot)
+    NMSE_est_TD_VAE_tot.append(NMSE_TD_VAE_tot)
+    NMSE_est_TN_VAE_tot.append(NMSE_TN_VAE_tot)
+
+    NMSE_est_LS.append(NMSE_LS)
+    NMSE_est_LS_tot.append(NMSE_LS_tot)
+    NMSE_est_sCov.append(NMSE_sCov)
+    NMSE_est_sCov_tot.append(NMSE_sCov_tot)
+
+csv_writer.write(NMSE_est_DFT_Tra)
+csv_writer.write(NMSE_est_TD_Tra)
+csv_writer.write(NMSE_est_TN_Tra)
+
+csv_writer.write(NMSE_est_DFT_VAE)
+csv_writer.write(NMSE_est_TD_VAE)
+csv_writer.write(NMSE_est_TN_VAE)
+csv_writer.write(NMSE_est_DFT_VAE_tot)
+csv_writer.write(NMSE_est_TD_VAE_tot)
+csv_writer.write(NMSE_est_TN_VAE_tot)
+
+csv_writer.write(NMSE_est_LS)
+csv_writer.write(NMSE_est_LS_tot)
+csv_writer.write(NMSE_est_sCov)
+csv_writer.write(NMSE_est_sCov_tot)
+
+csv_file.close()
