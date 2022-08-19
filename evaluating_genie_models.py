@@ -91,7 +91,7 @@ LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,2,5,
 model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
 
-csv_writer.write(SNR_db_list)
+csv_writer.writerow(SNR_db_list)
 
 NMSE_est_DFT_Tra = []
 NMSE_est_TD_Tra = []
@@ -187,20 +187,20 @@ for SNR_db in SNR_db_list:
     NMSE_est_sCov.append(NMSE_sCov)
     NMSE_est_sCov_tot.append(NMSE_sCov_tot)
 
-csv_writer.write(NMSE_est_DFT_Tra)
-csv_writer.write(NMSE_est_TD_Tra)
-csv_writer.write(NMSE_est_TN_Tra)
+csv_writer.writerow(NMSE_est_DFT_Tra)
+csv_writer.writerow(NMSE_est_TD_Tra)
+csv_writer.writerow(NMSE_est_TN_Tra)
 
-csv_writer.write(NMSE_est_DFT_VAE)
-csv_writer.write(NMSE_est_TD_VAE)
-csv_writer.write(NMSE_est_TN_VAE)
-csv_writer.write(NMSE_est_DFT_VAE_tot)
-csv_writer.write(NMSE_est_TD_VAE_tot)
-csv_writer.write(NMSE_est_TN_VAE_tot)
+csv_writer.writerow(NMSE_est_DFT_VAE)
+csv_writer.writerow(NMSE_est_TD_VAE)
+csv_writer.writerow(NMSE_est_TN_VAE)
+csv_writer.writerow(NMSE_est_DFT_VAE_tot)
+csv_writer.writerow(NMSE_est_TD_VAE_tot)
+csv_writer.writerow(NMSE_est_TN_VAE_tot)
 
-csv_writer.write(NMSE_est_LS)
-csv_writer.write(NMSE_est_LS_tot)
-csv_writer.write(NMSE_est_sCov)
-csv_writer.write(NMSE_est_sCov_tot)
+csv_writer.writerow(NMSE_est_LS)
+csv_writer.writerow(NMSE_est_LS_tot)
+csv_writer.writerow(NMSE_est_sCov)
+csv_writer.writerow(NMSE_est_sCov_tot)
 
 csv_file.close()
