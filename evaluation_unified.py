@@ -367,3 +367,15 @@ def computing_LS_sample_covariance_estimator_all(dataset_val,sig_n):
     NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
 
     return NMSE_LS,NMSE_sCov
+
+def keep_last(dataloader,knowledge,device):
+    NMSE_list = []
+    for ind,sample in enumerate(dataloader):
+        sample = sample[0].to(device)
+        n_snaps = sample.size(3)
+        ground_truth = sample[:,:,:,knowledge:]
+        predicted_samples = sample[:,:,:,knowledge-1].repeat(1,1,1,n_snaps - knowledge)
+        NMSE = torch.mean(torch.sum(torch.abs(ground_truth - predicted_samples) ** 2, dim=(1,2,3)) / torch.sum(torch.abs(ground_truth) ** 2,dim=(1,2,3))).detach().to('cpu')
+        NMSE_list.append(NMSE)
+    NMSE = np.mean(np.array(NMSE_list))
+    return NMSE
