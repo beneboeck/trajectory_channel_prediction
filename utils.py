@@ -56,11 +56,11 @@ def network_architecture_search():
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro
 
 def network_architecture_search_VAE():
-    LD = np.random.choice([6,10,14,18]).item()
+    LD = np.random.choice([40,48,56]).item()
     conv_layer = np.random.choice([0,1,2,3]).item()
     total_layer = np.random.choice([3,4,5]).item()
     out_channel = np.random.choice([64,128]).item()
-    k_size = np.random.choice([5,7,9]).item()
+    k_size = np.random.choice([7,9]).item()
     cov_type = np.random.choice(['Toeplitz','Toeplitz','DFT']).item()
     prepro = np.random.choice(['None', 'DFT']).item()
 
