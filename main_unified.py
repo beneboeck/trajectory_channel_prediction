@@ -20,7 +20,7 @@ LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Trajectory' #Trajectory,Single
+MODEL_TYPE = 'Single' #Trajectory,Single
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -76,8 +76,6 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'preopro: {prepro}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_VAE()
-    cov_type = 'Toeplitz'
-    prepro = 'DFT'
     out_channel = 128
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
