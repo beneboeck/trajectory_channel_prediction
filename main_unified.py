@@ -13,14 +13,14 @@ import evaluation_unified as ev
 import math
 
 # GLOBAL PARAMETERS
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 700
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Single' #Trajectory,Single
+MODEL_TYPE = 'Trajectory' #Trajectory,Single
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -57,9 +57,8 @@ print('global var successful')
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
-    cov_type = 'Toeplitz'
-    prepro = 'DFT'
-    rnn_bool = True
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 24,6,True,3,4,2,3,5,8,'Toeplitz',False,'DFT'
+
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro)
