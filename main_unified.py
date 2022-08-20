@@ -57,7 +57,7 @@ print('global var successful')
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 24,6,True,3,4,2,3,5,8,'Toeplitz',False,'DFT'
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 32,6,True,3,4,2,3,5,8,'Toeplitz',False,'DFT'
 
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
     print('Trajectory Setup')
