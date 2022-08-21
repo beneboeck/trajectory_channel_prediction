@@ -744,6 +744,9 @@ class my_VAE(nn.Module):
         out = self.final_layer(out)
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
+            log_pre2 = log_pre[log_pre < torch.log(torch.tensor(10e-4)).to(self.device)] = torch.log(torch.tensor(10e-4)).to(self.device)
+            log_pre2 = log_pre2[log_pre > torch.log(torch.tensor(1)).to(self.device)] = torch.log(torch.tensor(1)).to(self.device)
+            log_pre = log_pre2.clone()
             mu_out = torch.zeros(batchsize,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
