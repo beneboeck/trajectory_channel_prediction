@@ -11,11 +11,13 @@ import training_unified as tr
 import networks as mg
 import evaluation_unified as ev
 import math
+from os.path import exists
+import csv
 
 # GLOBAL PARAMETERS
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 700
+G_EPOCHS = 2
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
@@ -33,9 +35,21 @@ now = datetime.datetime.now()
 date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
+
+overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
+if not(exists(overall_path + MODEL_TYPE + 'NAS_file.csv')):
+    csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','w')
+    csv_writer = csv.writer(csv_file)
+    if MODEL_TYPE == 'Trajectory':
+        csv_writer.writerow(['LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf'])
+    if MODEL_TYPE == 'Single':
+        csv_writer.writerow(['LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est'])
+    csv_file.close()
+
+csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','a')
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
 glob_file.write('Date: ' +date +'\n')
@@ -160,10 +174,21 @@ print('testing')
 if MODEL_TYPE == 'Trajectory':
     NMSE_test = ev.channel_prediction(setup,model,dataloader_test,15,dir_path,device,'testing')
     TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test, SNAPSHOTS, dir_path, device)
+    NMSE_val = ev.channel_prediction(setup, model, dataloader_val, 15, dir_path, device, 'testing')
+    TPR1_val, TPR2_val = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val, SNAPSHOTS,dir_path, device)
     print(f'NMSE prediction test: {NMSE_test}')
     log_file.write(f'NMSE prediction test: {NMSE_test}\n')
 
+NMSE_val_est = ev.channel_estimation(model,dataloader_val,sig_n_val,cov_type,dir_path,device)
 NMSE_test_est = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
+
+if MODEL_TYPE == 'Trajectory':
+    csv_writer.writerow([LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val])
+if MODEL_TYPE == 'Single':
+    csv_writer.writerow([LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est])
+
+csv_file.close()
+
 
 NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
 print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
