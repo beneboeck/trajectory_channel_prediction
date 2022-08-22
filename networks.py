@@ -69,7 +69,8 @@ class Prior(nn.Module):
         else:
             mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
-        logpre = (2.3 - 1.1)/2 * nn.Tanh()(logpre) + (2.3 - 1.1)/2 + 1.1
+        #logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 2.3
+        logpre = (8 - 0.1)/2 * nn.Tanh()(logpre) + (8 - 0.1)/2 + 0.1
         logpre2 = logpre.clone()
         return mu, logpre2, new_state
 
@@ -146,13 +147,8 @@ class Encoder(nn.Module):
             mu, logvar = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
 
-        logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
-        logvar2 = logvar.clone()
-        if torch.sum(logvar[torch.abs(logvar) > 5]) != 0:
-            print(torch.max(torch.abs(logvar)))
-            print('logvar was regularized')
-            print(torch.max(torch.abs(logvar)))
-            logvar2[logvar > 4] = 4
+        #logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
+        logvar = (8 + 0.1) / 2 * nn.Tanh()(logvar) + (8 + 0.1) / 2 - 8
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
@@ -201,7 +197,8 @@ class Decoder(nn.Module):
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
-            logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            logpre_out = (8 - 0.1) / 2 * nn.Tanh()(logpre_out) + (8 - 0.1) / 2 + 0.1
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
