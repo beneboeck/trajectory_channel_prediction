@@ -17,7 +17,7 @@ import csv
 # GLOBAL PARAMETERS
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 2
+G_EPOCHS = 1
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
@@ -41,15 +41,16 @@ dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_
 os.mkdir (dir_path)
 
 if not(exists(overall_path + MODEL_TYPE + 'NAS_file.csv')):
-    csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','w')
-    csv_writer = csv.writer(csv_file)
+    csvfile = open(overall_path + MODEL_TYPE + 'NAS_file.csv','w')
+    csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf'])
     if MODEL_TYPE == 'Single':
         csv_writer.writerow(['LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est'])
-    csv_file.close()
+    csvfile.close()
 
 csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','a')
+csv_writer = csv.writer(csv_file)
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
 glob_file.write('Date: ' +date +'\n')
