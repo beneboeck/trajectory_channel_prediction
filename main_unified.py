@@ -36,7 +36,7 @@ date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
 
-overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/'
+overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
