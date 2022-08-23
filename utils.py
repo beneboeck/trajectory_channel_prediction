@@ -40,10 +40,10 @@ def apply_IDFT(sample_set):
     return realed_set
 
 def network_architecture_search():
-    LD = np.random.choice([10,14,18]).item()
+    LD = np.random.choice([16,24,32,40]).item()
     memory = np.random.choice(range(6,11)).item()
     rnn_bool = np.random.choice([False,True]).item()
-    BN = np.random.choice([False, True]).item()
+    BN = np.random.choice([False]).item()
     en_layer = np.random.choice([2,3]).item()
     en_width = np.random.choice([4,6,8]).item()
     pr_layer = np.random.choice([2,3,4]).item()
@@ -56,7 +56,7 @@ def network_architecture_search():
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro
 
 def network_architecture_search_VAE():
-    LD = np.random.choice([32,40,48,56]).item()
+    LD = np.random.choice([24,32,40,48,56]).item()
     conv_layer = np.random.choice([0,1,2,3]).item()
     total_layer = np.random.choice([3,4,5]).item()
     out_channel = np.random.choice([64,128]).item()
