@@ -49,8 +49,6 @@ if not(exists(overall_path + MODEL_TYPE + 'NAS_file.csv')):
         csv_writer.writerow(['LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est'])
     csvfile.close()
 
-csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','a')
-csv_writer = csv.writer(csv_file)
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
 glob_file.write('Date: ' +date +'\n')
@@ -183,6 +181,8 @@ if MODEL_TYPE == 'Trajectory':
 NMSE_val_est = ev.channel_estimation(model,dataloader_val,sig_n_val,cov_type,dir_path,device)
 NMSE_test_est = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
 
+csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','a')
+csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val])
 if MODEL_TYPE == 'Single':

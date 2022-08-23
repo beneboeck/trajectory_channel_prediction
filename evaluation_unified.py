@@ -138,15 +138,17 @@ def channel_estimation_all(model,dataloader_val,sig_n,cov_type,dir_path,device):
             sample = samples[0].to(device)
             received_signal = samples[1].to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
-        received_signal_oi = torch.mean(received_signal[:,0,:,:] + 1j * received_signal[:,1,:,:],dim=2)
-        mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
-        L,U = torch.linalg.eigh(Cov_out)
-        inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
-        h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
-        NMSE = torch.mean(torch.sum(torch.abs(sample_oi - h_hat) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
-        NMSE_list.append(NMSE)
-
-    NMSE = np.mean(np.array(NMSE_list))
+        NMSE_final = 10e5
+        for i in range(16):
+            received_signal_oi = torch.mean(received_signal[:,0,:,i:] + 1j * received_signal[:,1,:,i:],dim=2)
+            mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
+            L,U = torch.linalg.eigh(Cov_out)
+            inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
+            h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
+            NMSE = torch.mean(torch.sum(torch.abs(sample_oi - h_hat) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
+            if NMSE < NMSE_final:
+                NMSE_final = NMSE
+    NMSE = np.array(NMSE_final)
     return NMSE
 
 
@@ -355,18 +357,24 @@ def computing_LS_sample_covariance_estimator(dataset_val,sig_n):
     return NMSE_LS,NMSE_sCov
 
 def computing_LS_sample_covariance_estimator_all(dataset_val,sig_n):
-    h_hat_LS = torch.mean(dataset_val.y[:,0,:,:] + 1j * dataset_val.y[:,1,:,:],dim=2)
-    h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,1,:,-1]
-    NMSE_LS = torch.mean(torch.linalg.norm(h - h_hat_LS,dim = 1) ** 2)/torch.mean(torch.linalg.norm(h,dim=1)**2)
+    NMSE_LS_end = 10e5
+    NMSE_sCov_end = 10e5
+    for i in range(16):
+        h_hat_LS = torch.mean(dataset_val.y[:,0,:,i:] + 1j * dataset_val.y[:,1,:,i:],dim=2)
+        h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,1,:,-1]
+        NMSE_LS = torch.mean(torch.linalg.norm(h - h_hat_LS,dim = 1) ** 2)/torch.mean(torch.linalg.norm(h,dim=1)**2)
 
-    h_hat_LS_single = dataset_val.y[:,0,:,-1] + 1j * dataset_val.y[:,1,:,-1]
-    sMean = torch.mean(h_hat_LS_single,dim=0)
-    sCov_y = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS_single - sMean),torch.conj(h_hat_LS_single - sMean)),dim=0)
-    inv_matrix = torch.linalg.inv(sCov_y)
-    h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',(sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat)) @ inv_matrix,(h_hat_LS - sMean[None,:]))
-    NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
-
-    return NMSE_LS,NMSE_sCov
+        h_hat_LS_single = dataset_val.y[:,0,:,-1] + 1j * dataset_val.y[:,1,:,-1]
+        sMean = torch.mean(h_hat_LS_single,dim=0)
+        sCov_y = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS_single - sMean),torch.conj(h_hat_LS_single - sMean)),dim=0)
+        inv_matrix = torch.linalg.inv(sCov_y)
+        h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',(sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat)) @ inv_matrix,(h_hat_LS - sMean[None,:]))
+        NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
+        if NMSE_LS < NMSE_LS_end:
+            NMSE_LS_end = NMSE_LS
+        if NMSE_sCov < NMSE_sCov_end:
+            NMSE_sCov_end = NMSE_sCov
+    return NMSE_LS_end,NMSE_sCov_end
 
 def keep_last(dataloader,knowledge,device):
     NMSE_list = []

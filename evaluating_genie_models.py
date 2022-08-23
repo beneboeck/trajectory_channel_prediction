@@ -34,9 +34,9 @@ SNR_db_list = [-10,-5,0,5,10,15,20]
 path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_00_tra/model_dict'
 path_TN_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_09_50_tra/model_dict'
 path_TD_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_08_tra/model_dict'
-path_DFT_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_15_29_single/model_dict'
-path_TN_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_24_single/model_dict'
-path_TD_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_21_single/model_dict'
+path_DFT_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_20_25_single/model_dict'
+path_TN_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_23_28_single/model_dict'
+path_TD_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_20_06_single/model_dict'
 
 
 # CREATING FILES AND DIRECTORY
@@ -79,15 +79,15 @@ cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_widt
 model_TD_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 model_TD_Tra.load_state_dict(torch.load(path_TD_Tra,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,0,4,64,5,'DFT','DFT'
+LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 56,3,4,128,9,'DFT','None'
 model_DFT_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_DFT_VAE.load_state_dict(torch.load(path_DFT_VAE,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,3,5,128,5,'Toeplitz','None'
+LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 40,3,3,128,7,'Toeplitz','None'
 model_TN_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_TN_VAE.load_state_dict(torch.load(path_TN_VAE,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 18,2,5,64,7,'Toeplitz','DFT'
+LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 48,3,5,128,9,'Toeplitz','DFT'
 model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
 
