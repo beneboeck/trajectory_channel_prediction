@@ -17,7 +17,7 @@ import csv
 # GLOBAL PARAMETERS
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 1
+G_EPOCHS = 2
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
@@ -40,13 +40,13 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + 'NAS_file.csv')):
-    csvfile = open(overall_path + MODEL_TYPE + 'NAS_file.csv','w')
+if not(exists(overall_path + MODEL_TYPE + 'NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + 'NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
-        csv_writer.writerow(['LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf'])
+        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf'])
     if MODEL_TYPE == 'Single':
-        csv_writer.writerow(['LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est'])
+        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est'])
     csvfile.close()
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
@@ -181,12 +181,12 @@ if MODEL_TYPE == 'Trajectory':
 NMSE_val_est = ev.channel_estimation(model,dataloader_val,sig_n_val,cov_type,dir_path,device)
 NMSE_test_est = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
 
-csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.csv','a')
+csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
-    csv_writer.writerow([LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val])
+    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val])
 if MODEL_TYPE == 'Single':
-    csv_writer.writerow([LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est])
+    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est])
 
 csv_file.close()
 

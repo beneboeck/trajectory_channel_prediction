@@ -28,7 +28,7 @@ n_permutations = 300
 bs_mmd = 1000
 normed = False
 author = 'Bene'
-SNR_db_list = [-10,-5,0,5,10,15,20,30,40]
+SNR_db_list = [-10,-5,0,5,10,15,20]
 
 
 path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_00_tra/model_dict'
@@ -90,6 +90,13 @@ model_TN_VAE.load_state_dict(torch.load(path_TN_VAE,map_location=device))
 LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 48,3,5,128,9,'Toeplitz','DFT'
 model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
+
+model_TD_VAE.eval()
+model_TN_VAE.eval()
+model_DFT_VAE.eval()
+model_TD_Tra.eval()
+model_TN_Tra.eval()
+model_DFT_Tra.eval()
 
 csv_writer.writerow(SNR_db_list)
 
