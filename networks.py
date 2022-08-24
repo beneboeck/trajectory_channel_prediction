@@ -1010,7 +1010,6 @@ class Decoder(nn.Module):
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
             #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
-            logpre_out = (8 - 0.1) / 2 * nn.Tanh()(logpre_out) + (8 - 0.1) / 2 + 0.1
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
