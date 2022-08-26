@@ -1005,19 +1005,7 @@ class Decoder(nn.Module):
         out = self.net(z)
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
-            if torch.sum(logpre_out[logpre_out > 7] != 0):
-                print('logpre_out 7')
-                test = logpre_out[logpre_out > 7]
-                print(torch.mean(torch.sum(test,dim=1)))
-                print(test.size())
-            if torch.sum(logpre_out[logpre_out < -0.5]):
-                print('logpre_out 0.5')
-                test = logpre_out[logpre_out < - 0.5]
-                print(torch.mean(torch.sum(test)))
-                print(test.size())
-            else:
-                print('normal')
-            logpre_out = (0.5 + 7) / 2 * nn.Tanh()(logpre_out) + (0.5 + 7) / 2 - 0.5
+            logpre_out = (0.5 + 10) / 2 * nn.Tanh()(logpre_out) + (0.5 + 10) / 2 - 0.5
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
