@@ -1317,6 +1317,7 @@ class HMVAE(nn.Module):
 
         else:
             Cov_out = torch.diag_embed(1 / (torch.exp(logpre_out.permute(0, 2, 1)))).cfloat()
+            print(torch.linalg.det(Cov_out))
 
         mu_out = mu_out[:,0,:,:] + 1j * mu_out[:,1,:,:]
 

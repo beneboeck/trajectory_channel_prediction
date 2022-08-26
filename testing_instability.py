@@ -63,6 +63,7 @@ print('global var successful')
 
 # DEFINING THE MODELS
 cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',14,False,8,2,6,2,8,4,8,True,'DFT'
+setup = [cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro]
 model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
 
