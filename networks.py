@@ -881,7 +881,7 @@ class Prior(nn.Module):
             mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
         #logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 2.3
-        logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
+        logpre = (10 + 3.5)/2 * nn.Tanh()(logpre) + (10 + 3.5)/2 - 3.5
         logpre2 = logpre.clone()
         return mu, logpre2, new_state
 
@@ -959,7 +959,7 @@ class Encoder(nn.Module):
             new_state = torch.zeros(z.size())
 
         #logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
-        logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
+        logvar = (10 + 3.5) / 2 * nn.Tanh()(logvar) + (10 + 3.5) / 2 - 10
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
@@ -1005,7 +1005,7 @@ class Decoder(nn.Module):
         out = self.net(z)
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
-            logpre_out = (0.5 + 15) / 2 * nn.Tanh()(logpre_out) + (0.5 + 15) / 2 - 0.5
+            logpre_out = (0.5 + 9.21) / 2 * nn.Tanh()(logpre_out) + (0.5 + 9.21) / 2 - 0.5
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
@@ -1018,13 +1018,11 @@ class Decoder(nn.Module):
             batchsize = out.size(0)
             alpha_0 = alpha[:, 0][:, None]
             alpha_rest = alpha[:, 1:]
+            if torch.sum(alpha_0[alpha_0 > 9996]) > 0:
+                print('alpha regularized')
+            alpha_0 = (9.21 + 0.7)/2 * nn.Tanh()(alpha_0) - 0.7 + (9.21 + 0.7)/2
             alpha_0 = torch.squeeze(Reshape(1, 1, 1)(alpha_0))
             alpha_0 = torch.exp(alpha_0)
-            alpha_intermediate = alpha_0.clone()
-            if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
-                print('alpha regularized')
-            alpha_intermediate[alpha_0 > 5000] = 5000
-            alpha_0 = alpha_intermediate.clone()
             alpha_rest = Reshape(1, 1, 62)(alpha_rest)
             if batchsize != 1:
                 alpha_0 = torch.squeeze(alpha_0)[:, None, None]
@@ -1039,10 +1037,6 @@ class Decoder(nn.Module):
             alpha_rest = torch.complex(alpha_rest[:, :, :31], alpha_rest[:, :, 31:])
             Alpha = torch.cat((alpha_0, alpha_rest), dim=2)
             Alpha_prime = torch.cat((torch.zeros(batchsize, 1, 1).to(self.device), Alpha[:, :, 1:].flip(2)), dim=2)
-
-            if batchsize > 100:
-                del alpha_0, alpha_rest, alpha_intermediate
-                torch.cuda.empty_cache()
 
             values = torch.cat((Alpha, Alpha[:, :, 1:].flip(2)), dim=2)
             i, j = torch.ones(32, 32).nonzero().T
