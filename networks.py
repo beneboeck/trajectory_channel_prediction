@@ -1183,6 +1183,7 @@ class HMVAE(nn.Module):
                 logpre_out = torch.zeros(batchsize,self.n_ant,self.snapshots).to(self.device)
 
             for i in range(self.memory):
+                print(i)
                 z_input = torch.cat((z_init[:, :, :self.memory - i], z[:, :, :i + 1]), dim=2)
                 if self.cov_type == 'Toeplitz':
                     mu_out_local, B_out_local, C_out_local = self.decoder[i](z_input)
@@ -1196,6 +1197,7 @@ class HMVAE(nn.Module):
                 # logpre_out_local[logpre_out_local > 9] = 9
 
             for unit in range(self.memory, self.snapshots):
+                print(unit)
                 z_input = z[:, :, unit - self.memory:unit + 1].clone()
                 if self.cov_type == 'Toeplitz':
                     mu_out_local, B_out_local, C_out_local = self.decoder[unit](z_input)
