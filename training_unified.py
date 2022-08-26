@@ -89,7 +89,7 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
                 mu_out, logpre_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
                 Risk, RR, KL = risk_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
-                if Risk > 100000:
+                if Risk > 500000:
                     raise ValueError
 
             if (model_type == 'Single'):
