@@ -1009,6 +1009,8 @@ class Decoder(nn.Module):
                 print('logpre_out 7')
             if torch.sum(logpre_out[logpre_out < -0.5]):
                 print('logpre_out 0.5')
+            else:
+                print('normal')
             logpre_out = (0.5 + 7) / 2 * nn.Tanh()(logpre_out) + (0.5 + 7) / 2 - 0.5
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]

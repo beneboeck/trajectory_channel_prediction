@@ -113,3 +113,5 @@ dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
 dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
 NMSE_DFT_Tra = ev.channel_estimation(model_DFT_Tra, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+
+print(NMSE_DFT_Tra)
