@@ -31,7 +31,7 @@ author = 'Bene'
 SNR_db = 5
 
 
-path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_31_DFT_unstable_but_actually_really_nice/model_dict'
+path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_11_04_DFT_stable/model_dict'
 
 
 # CREATING FILES AND DIRECTORY
@@ -62,7 +62,7 @@ log_file.write('global variables successfully defined\n\n')
 print('global var successful')
 
 # DEFINING THE MODELS
-cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',14,False,8,2,6,2,8,4,8,True,'DFT'
+cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',24,True,9,2,6,2,4,5,8,False,'DFT'
 setup = [cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro]
 model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))

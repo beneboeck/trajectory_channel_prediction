@@ -1008,7 +1008,7 @@ class Decoder(nn.Module):
             if torch.sum(logpre_out[logpre_out > 7] != 0):
                 print('logpre_out 7')
                 test = logpre_out[logpre_out > 7]
-                print(torch.mean(torch.sum(test)))
+                print(torch.mean(torch.sum(test,dim=1)))
                 print(test.size())
             if torch.sum(logpre_out[logpre_out < -0.5]):
                 print('logpre_out 0.5')
