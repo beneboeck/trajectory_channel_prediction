@@ -31,7 +31,7 @@ author = 'Bene'
 SNR_db = 5
 
 
-path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_31_unstable_but_actually_really_nice/model_dict'
+path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_17_31_DFT_unstable_but_actually_really_nice/model_dict'
 
 
 # CREATING FILES AND DIRECTORY
