@@ -846,12 +846,12 @@ class my_tra_VAE(nn.Module):
         if conv_layer > 0:
             self.encoder.append(nn.Flatten())
             for i in range(total_layer-conv_layer):
-                self.encoder.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
+                self.encoder.append(nn.Linear(int(32*16/(4**conv_layer) * out_channels),int(32*16/(4**conv_layer) * out_channels)))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
+                self.encoder.append(nn.BatchNorm1d(int(32*16/(4**conv_layer) * out_channels)))
 
-            self.fc_mu = nn.Linear(int(32 / (2 ** conv_layer) * out_channels), self.latent_dim)
-            self.fc_var = nn.Linear(int(32 / (2 ** conv_layer) * out_channels), self.latent_dim)
+            self.fc_mu = nn.Linear(int(32*16 / (4 ** conv_layer) * out_channels), self.latent_dim)
+            self.fc_var = nn.Linear(int(32*16 / (4 ** conv_layer) * out_channels), self.latent_dim)
         else:
             self.encoder.append(nn.Linear(int(in_linear),int(out_channels/4 * in_linear)))
             self.encoder.append(nn.ReLU())
