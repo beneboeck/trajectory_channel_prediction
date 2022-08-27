@@ -15,14 +15,14 @@ from os.path import exists
 import csv
 
 # GLOBAL PARAMETERS
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 3
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -71,7 +71,7 @@ if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 14,1,False,2,8,2,6,4,8,'DFT',True,'DFT'
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 14,10,True,3,8,3,9,5,8,'DFT',False,'None'
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 32,10,True,3,4,3,3,4,6,'DFT',False,'None'
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro)
