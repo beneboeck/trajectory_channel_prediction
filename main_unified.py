@@ -15,14 +15,14 @@ from os.path import exists
 import csv
 
 # GLOBAL PARAMETERS
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 3
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'Trajectory' #Trajectory,Single
+MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -100,6 +100,18 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'k_size: {k_size}\n')
     glob_file.write(f'cov_type: {cov_type}\n')
     glob_file.write(f'prepro: {prepro}\n')
+if MODEL_TYPE == 'TraSingle':
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_TraVAE()
+    setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
+    print('Single Setup')
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
+    glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
+    glob_file.write(f'conv_layer: {conv_layer}\n')
+    glob_file.write(f'total_layer: {total_layer}\n')
+    glob_file.write(f'out_channel: {out_channel}\n')
+    glob_file.write(f'k_size: {k_size}\n')
+    glob_file.write(f'cov_type: {cov_type}\n')
+    glob_file.write(f'prepro: {prepro}\n')
 
 #LOADING AND PREPARING DATA + DEFINING THE MODEL
 
@@ -156,6 +168,8 @@ if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
     if author == 'Michael':
         model = mg.Michael_VAE_DFT(16,device).to(device)
+if MODEL_TYPE == 'TraSingle':
+    model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro, device).to(device)
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()

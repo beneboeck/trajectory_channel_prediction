@@ -33,6 +33,11 @@ def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_p
         mu_out, Gamma, mu, log_var = model(sample)
         Risk, RR, KL = tr.risk_free_bits(lamba, sample, mu, log_var, mu_out, Gamma)
 
+    if (model_type == 'TraSingle'):
+        single_sample = sample[:, :, :, -1]
+        mu_out, Gamma, mu, log_var = model(sample)
+        Risk, RR, KL = tr.risk_free_bits(lamba, single_sample, mu, log_var, mu_out, Gamma)
+
     if model_type == 'Trajectory':
         NMSE = channel_prediction(setup,model,dataloader_val,15,dir_path,device,'evaluation')
     else:
