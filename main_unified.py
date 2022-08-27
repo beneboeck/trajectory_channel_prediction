@@ -160,7 +160,7 @@ dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
 dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_test))
 dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
 dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
-
+print('here')
 # CREATING THE MODELS
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
@@ -170,6 +170,7 @@ if MODEL_TYPE == 'Single':
         model = mg.Michael_VAE_DFT(16,device).to(device)
 if MODEL_TYPE == 'TraSingle':
     model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS, device).to(device)
+    print('model generated')
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()

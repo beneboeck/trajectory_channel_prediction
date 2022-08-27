@@ -96,6 +96,7 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
                 Risk, RR, KL = risk_free_bits(lamba,sample,mu,log_var,mu_out,Gamma)
 
             if (model_type == 'TraSingle'):
+                print('epochs')
                 single_sample = sample[:,:,:,-1]
                 mu_out,Gamma,mu, log_var = model(sample)
                 Risk,RR,KL = risk_free_bits(lamba,single_sample,mu,log_var,mu_out,Gamma)
