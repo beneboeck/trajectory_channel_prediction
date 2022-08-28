@@ -215,14 +215,14 @@ class Decoder(nn.Module):
             net_out_dim = int(net_out_dim - step)
 
         if self.cnn_bool:
-            self.net.append(Reshape(2 * 4**self.n_conv,32/(4**self.n_conv),k/(4**self.n_conv)))
+            self.net.append(Reshape(2 * 4**self.n_conv,int(32/(4**self.n_conv)),int(k/(4**self.n_conv))))
             in_channels = 2 * 4**self.n_conv
             out_channels = 2 * 4**(self.n_conv-1)
             for l in range(self.n_conv):
-                self.net.append(nn.ConvTranspose2d(in_channels,out_channels,7,2,3))
+                self.net.append(nn.ConvTranspose2d(int(in_channels),int(out_channels),7,2,3))
                 self.net.append(nn.ReLU())
                 in_channels = out_channels
-                out_channels = out_channels/4
+                out_channels = int(out_channels/4)
                 self.net.append(nn.Flatten())
 
             self.net.append(nn.Linear(k * 32 * 2,output_dim))
