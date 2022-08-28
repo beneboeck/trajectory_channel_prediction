@@ -119,7 +119,11 @@ class Encoder(nn.Module):
                 nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
                 nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
         else:
-            self.x_prenet.append(nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)))
+            if (memory + 1)%2 != 0:
+                k = memory + 2
+            else:
+                k = memory + 1
+            self.x_prenet.append(nn.Linear(n_ant * 2 * k,int(n_ant * 2 * (memory+1) - step)))
             self.x_prenet.append(nn.ReLU())
             self.x_prenet.append(nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld))
 
