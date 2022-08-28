@@ -40,7 +40,7 @@ def apply_IDFT(sample_set):
     return realed_set
 
 def network_architecture_search():
-    LD = np.random.choice([16,24,32,40]).item()
+    LD = np.random.choice([32,40]).item()
     memory = np.random.choice(range(6,11)).item()
     rnn_bool = np.random.choice([False,True]).item()
     BN = np.random.choice([False]).item()
@@ -52,8 +52,8 @@ def network_architecture_search():
     de_width = np.random.choice([6,8,12]).item()
     cov_type = np.random.choice(['Toeplitz','Toeplitz','DFT']).item()
     prepro = np.random.choice(['None','DFT']).item()
-    n_conv = np.random.choice([1,2]).item()
-    cnn_bool = np.random.choice([False,True]).item()
+    n_conv = np.random.choice([2]).item()
+    cnn_bool = np.random.choice([True]).item()
 
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool
 
