@@ -123,7 +123,7 @@ class Encoder(nn.Module):
                 k = memory + 2
             else:
                 k = memory + 1
-            if (k%2 != 0) & (self.n_conv == 2):
+            if ((k/2)%2 != 0) & (self.n_conv == 2):
                 k = k+1
             self.x_prenet.append(nn.Linear(n_ant * 2 * k,int(n_ant * 2 * (memory+1) - step)))
             self.x_prenet.append(nn.ReLU())
