@@ -170,12 +170,10 @@ class Encoder(nn.Module):
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
-    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,n_conv,cnn_bool,device):
+    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,device):
         super().__init__()
         self.cov_type = cov_type
         self.n_ant = n_ant
-        self.n_conv = n_conv
-        self.cnn_bool = cnn_bool
         self.device = device
         rand_matrix = torch.randn(32,32)
         self.B_mask = torch.tril(rand_matrix)
@@ -191,10 +189,6 @@ class Decoder(nn.Module):
         if cov_type == 'Toeplitz':
             output_dim = 2 * n_ant + 63
 
-        if (memory+1)%2 != 0:
-            k = memory + 2
-        else:
-            k = memory + 1
         step = round((de_width * ld * memory + 1 - output_dim) / de_layer)
         if self.cnn_bool:
             step = round((de_width * ld * (memory+1) - (k * 64))/(de_layer-1))
@@ -214,21 +208,7 @@ class Decoder(nn.Module):
             net_in_dim = net_out_dim
             net_out_dim = int(net_out_dim - step)
 
-        if self.cnn_bool:
-            self.net.append(Reshape(2 * 4**self.n_conv,int(32/(2**self.n_conv)),int(k/(2**self.n_conv))))
-            in_channels = 2 * 4**self.n_conv
-            out_channels = 2 * 4**(self.n_conv-1)
-            for l in range(self.n_conv):
-                self.net.append(nn.ConvTranspose2d(int(in_channels),int(out_channels),7,2,3))
-                self.net.append(nn.ReLU())
-                in_channels = out_channels
-                out_channels = int(out_channels/4)
-                self.net.append(nn.Flatten())
-
-            self.net.append(nn.Linear(k * 32 * 2,output_dim))
-        else:
-            self.net.append(nn.Linear(net_in_dim,output_dim))
-
+        self.net.append(nn.Linear(net_in_dim,output_dim))
         self.net = nn.Sequential(*self.net)
 
     def forward(self,z):
@@ -296,7 +276,7 @@ class HMVAE(nn.Module):
         self.BN = BN
 
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device) for i in range(snapshots)])
-        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,n_conv,cnn_bool,self.device) for i in range(snapshots)])
+        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN) for i in range(snapshots)])
 
     def reparameterize(self, log_var, mu):
