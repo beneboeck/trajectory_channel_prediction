@@ -75,13 +75,15 @@ class Prior(nn.Module):
         return mu, logpre2, new_state
 
 class Encoder(nn.Module):
-    def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,device):
+    def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,device):
         super().__init__()
         self.rnn_bool = rnn_bool
         self.ld = ld
         self.prepro = prepro
         self.cov_type = cov_type
         self.device = device
+        self.n_conv = n_conv
+        self.cnn_bool = cnn_bool
         self.F = torch.zeros((n_ant, n_ant), dtype=torch.cfloat).to(self.device)
         for m in range(n_ant):
             for n in range(n_ant):
@@ -100,6 +102,16 @@ class Encoder(nn.Module):
 
         step = round((n_ant * 2 * (memory+1) - 2*ld)/2)
 
+        self.x_prenet = []
+        if self.cnn_bool:
+            in_channels = 2
+            out_channels = in_channels * 4
+            for i in range(self.n_conv):
+                self.x_prenet.append(nn.Conv2d(in_channels,out_channels,7,2,padding=3))
+                self.x_prenet.append(nn.ReLU())
+                in_channels = out_channels
+                out_channels = 4 * in_channels
+            self.x_prenet.append(nn.Flatten())
         if BN:
             self.x_prenet = nn.Sequential(
                 nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
@@ -107,10 +119,11 @@ class Encoder(nn.Module):
                 nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
                 nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
         else:
-            self.x_prenet = nn.Sequential(
-                nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
-                nn.ReLU(),
-                nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
+            self.x_prenet.append(nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)))
+            self.x_prenet.append(nn.ReLU())
+            self.x_prenet.append(nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld))
+
+        self.x_prenet = nn.Sequential(*self.x_prenet)
 
         self.net = []
         self.net.append(nn.Linear(3 * ld,en_width * ld))
@@ -134,8 +147,9 @@ class Encoder(nn.Module):
             transformed_set = torch.einsum('mn,knl -> kml', self.F, x)
             x_new[:, 0, :, :] = torch.real(transformed_set)
             x_new[:, 1, :, :] = torch.imag(transformed_set)
-            x = nn.Flatten()(x_new)
-        x = nn.Flatten()(x)
+            x = x_new
+        if self.cnn_bool == False:
+            x = nn.Flatten()(x)
         if self.rnn_bool == True:
             forget_state = h * self.forget(z)
             new_state = forget_state + (self.choice(z) * self.candidates(z))
@@ -240,7 +254,7 @@ class Decoder(nn.Module):
             return mu_out, B, C
 
 class HMVAE(nn.Module):
-    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,device):
+    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,n_conv,cnn_bool,device):
         super().__init__()
         # attributes
         self.memory = memory
@@ -249,9 +263,11 @@ class HMVAE(nn.Module):
         self.ld = ld
         self.device = device
         self.cov_type = cov_type
+        self.n_conv = n_conv
+        self.cnn_bool = cnn_bool
         self.BN = BN
 
-        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,self.device) for i in range(snapshots)])
+        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device) for i in range(snapshots)])
         self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN) for i in range(snapshots)])
 

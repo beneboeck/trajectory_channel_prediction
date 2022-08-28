@@ -17,7 +17,7 @@ import csv
 # GLOBAL PARAMETERS
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 9
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
@@ -68,10 +68,10 @@ print('global var successful')
 
 # NETWORK ARCHITECTURE SEARCH
 if MODEL_TYPE == 'Trajectory':
-    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro = network_architecture_search()
+    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 14,1,False,2,8,2,6,4,8,'DFT',True,'DFT'
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro = 32,10,True,3,4,3,3,4,6,'DFT',False,'None'
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'DFT',False,'None',2,True
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro)
@@ -85,6 +85,8 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'De_Layer: {de_layer}\n')
     glob_file.write(f'De_Width: {de_width}\n')
     glob_file.write(f'Cov_Type: {cov_type}\n')
+    glob_file.write(f'n_conv: {n_conv}\n')
+    glob_file.write(f'cnn_bool: {cnn_bool}\n')
     glob_file.write(f'BN use: {BN}\n')
     glob_file.write(f'preopro: {prepro}\n')
 if MODEL_TYPE == 'Single':
@@ -163,7 +165,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val
 print('here')
 # CREATING THE MODELS
 if MODEL_TYPE == 'Trajectory':
-    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
+    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
     if author == 'Michael':

@@ -52,8 +52,10 @@ def network_architecture_search():
     de_width = np.random.choice([6,8,12]).item()
     cov_type = np.random.choice(['Toeplitz','Toeplitz','DFT']).item()
     prepro = np.random.choice(['None','DFT']).item()
+    n_conv = np.random.choice([1,2]).item()
+    cnn_bool = np.random.choice([False,True]).item()
 
-    return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro
+    return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool
 
 def network_architecture_search_VAE():
     LD = np.random.choice([24,32,40,48,56]).item()
