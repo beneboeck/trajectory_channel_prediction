@@ -190,9 +190,6 @@ class Decoder(nn.Module):
             output_dim = 2 * n_ant + 63
 
         step = round((de_width * ld * memory + 1 - output_dim) / de_layer)
-        if self.cnn_bool:
-            step = round((de_width * ld * (memory+1) - (k * 64))/(de_layer-1))
-
         self.net = []
         net_in_dim = de_width * ld * (memory+1)
         net_out_dim = int(de_width * ld * (memory+1) - step)
