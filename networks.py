@@ -971,20 +971,18 @@ class my_tra_VAE(nn.Module):
         return mu + eps * std
 
     def decode(self,z):
-        batchsize = z.size(0)
-        out = self.decoder_input(z)
-        bs = out.size(0)
-        out = self.decoder_lin(out)
+        bs = z.size(0)
+        out = self.decoder_lin(z)
         if self.conv_layer > 0:
             out = out.view(bs,self.out_channels,-1)
-        out = self.decoder(out)
+            out = self.decoder(out)
         out = nn.Flatten()(out)
-
         out = self.final_layer(out)
+
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
             log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
-            mu_out = torch.zeros(batchsize,2,32).to(self.device)
+            mu_out = torch.zeros(bs,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
             return mu_out, log_pre
@@ -1003,17 +1001,17 @@ class my_tra_VAE(nn.Module):
             alpha_rest = 0.022 * alpha_0 * nn.Tanh()(alpha_rest)
             alpha_rest = torch.complex(alpha_rest[:, :31], alpha_rest[:, 31:])
             Alpha = torch.cat((alpha_0, alpha_rest), dim=1)
-            Alpha_prime = torch.cat((torch.zeros(batchsize, 1).to(self.device), Alpha[:, 1:].flip(1)), dim=1)
+            Alpha_prime = torch.cat((torch.zeros(bs, 1).to(self.device), Alpha[:, 1:].flip(1)), dim=1)
             values = torch.cat((Alpha, Alpha[:, 1:].flip(1)), dim=1)
             i, j = torch.ones(32, 32).nonzero().T
-            values = values[:, j - i].reshape(batchsize, 32, 32)
+            values = values[:, j - i].reshape(bs, 32, 32)
             B = values * self.B_mask
 
             values_prime = torch.cat((Alpha_prime, Alpha_prime[:, 1:].flip(1)), dim=1)
             i, j = torch.ones(32, 32).nonzero().T
-            values_prime2 = values_prime[:, j - i].reshape(batchsize, 32, 32)
+            values_prime2 = values_prime[:, j - i].reshape(bs, 32, 32)
             C = torch.conj(values_prime2 * self.C_mask)
-            mu_out = torch.zeros(batchsize,2,32).to(self.device)
+            mu_out = torch.zeros(bs,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
             return mu_out,B,C
