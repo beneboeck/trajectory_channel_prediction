@@ -924,7 +924,7 @@ class my_tra_VAE(nn.Module):
             step = int((32 / (2 ** conv_layer) * self.out_channels - 32 * 4)/conv_layer)
             in_channels = self.out_channels
             out_channel = self.out_channels + step
-            total_dim = in_channels * (32/2**conv_layer)
+            total_dim = (32/2**conv_layer)
             for i in range(conv_layer - 1):
                 self.decoder.append(nn.ConvTranspose1d(in_channels, out_channel, k_size, 2))
                 self.decoder.append(nn.ReLU())
@@ -953,12 +953,12 @@ class my_tra_VAE(nn.Module):
         if cov_type == 'DFT':
             if self.conv_layer > 0:
                 if self.conv_layer > 0:
-                    self.final_layer = nn.Linear(total_dim,96)
+                    self.final_layer = nn.Linear(4 * total_dim,96)
                 else:
                     self.final_layer = nn.Linear(4 * 32, 96)
             else:
                 if self.conv_layer > 0:
-                    self.final_layer = nn.Linear(total_dim,96)
+                    self.final_layer = nn.Linear(4 * total_dim,96)
                 else:
                     self.final_layer = nn.Linear(4 * 32, 96)
         if cov_type == 'Toeplitz':
