@@ -986,6 +986,7 @@ class my_tra_VAE(nn.Module):
         print('encode')
         print(x.size())
         out = self.encoder(x)
+        print(out.size())
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
         log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
