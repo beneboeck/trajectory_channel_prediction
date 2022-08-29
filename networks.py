@@ -983,10 +983,7 @@ class my_tra_VAE(nn.Module):
             x = x_new
         if self.conv_layer == 0:
             x = nn.Flatten()(x)
-        print('encode')
-        print(x.size())
         out = self.encoder(x)
-        print(out.size())
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
         log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
@@ -1000,9 +997,12 @@ class my_tra_VAE(nn.Module):
     def decode(self,z):
         bs = z.size(0)
         out = self.decoder_lin(z)
+        print('decoder')
+        print(out.size())
         if self.conv_layer > 0:
             out = out.view(bs,self.out_channels,-1)
             out = self.decoder(out)
+            print(out.size())
         out = nn.Flatten()(out)
         out = self.final_layer(out)
 
