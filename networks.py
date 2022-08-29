@@ -69,8 +69,9 @@ class Prior(nn.Module):
         else:
             mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
-        #logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 2.3
-        logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
+        logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
+        #state of the art Toeplitz
+        #logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
         logpre2 = logpre.clone()
         return mu, logpre2, new_state
 
@@ -167,8 +168,9 @@ class Encoder(nn.Module):
             mu, logvar = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
 
-        #logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
-        logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
+        logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
+        # state of the art Toeplitz
+        #logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
@@ -215,11 +217,11 @@ class Decoder(nn.Module):
         out = self.net(z)
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
-            logpre_out = (0.5 + 11) / 2 * nn.Tanh()(logpre_out) + (0.5 + 11) / 2 - 0.5
+            #logpre_out = (0.5 + 11) / 2 * nn.Tanh()(logpre_out) + (0.5 + 11) / 2 - 0.5
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
-            #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
