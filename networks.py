@@ -946,23 +946,23 @@ class my_tra_VAE(nn.Module):
         if cov_type == 'DFT':
             if self.conv_layer > 0:
                 if self.conv_layer > 0:
-                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,96)
+                    self.final_layer = nn.Linear(total_dim,96)
                 else:
                     self.final_layer = nn.Linear(4 * 32, 96)
             else:
                 if self.conv_layer > 0:
-                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,96)
+                    self.final_layer = nn.Linear(total_dim,96)
                 else:
                     self.final_layer = nn.Linear(4 * 32, 96)
         if cov_type == 'Toeplitz':
             if self.conv_layer > 0:
                 if self.conv_layer > 0:
-                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,64+63)
+                    self.final_layer = nn.Linear(total_dim,64+63)
                 else:
                     self.final_layer = nn.Linear(4 * 32,64 + 63)
             else:
                 if self.conv_layer > 0:
-                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,64+63)
+                    self.final_layer = nn.Linear(total_dim,64+63)
                 else:
                     self.final_layer = nn.Linear(4 * 32, 64 + 63)
 
