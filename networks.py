@@ -917,15 +917,18 @@ class my_tra_VAE(nn.Module):
             step = int((32 / (2 ** conv_layer) * self.out_channels - 32 * 4)/conv_layer)
             in_channels = self.out_channels
             out_channel = self.out_channels + step
+            total_dim = in_channels * (32/2**conv_layer)
             for i in range(conv_layer - 1):
                 self.decoder.append(nn.ConvTranspose1d(in_channels, out_channel, k_size, 2))
                 self.decoder.append(nn.ReLU())
                 self.decoder.append(nn.BatchNorm1d(out_channel))
+                total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1
                 in_channels = in_channels + step
                 out_channel = out_channel + step
             self.decoder.append(nn.ConvTranspose1d(in_channels, 4, k_size, 2))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(4))
+            total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1
             self.decoder = nn.Sequential(*self.decoder)
         else:
             in_channels = 16 * 64
@@ -942,14 +945,26 @@ class my_tra_VAE(nn.Module):
 
         if cov_type == 'DFT':
             if self.conv_layer > 0:
-                self.final_layer = nn.Linear(4 * 32, 96)
+                if self.conv_layer > 0:
+                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,96)
+                else:
+                    self.final_layer = nn.Linear(4 * 32, 96)
             else:
-                self.final_layer = nn.Linear(4 * 32, 96)
+                if self.conv_layer > 0:
+                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,96)
+                else:
+                    self.final_layer = nn.Linear(4 * 32, 96)
         if cov_type == 'Toeplitz':
             if self.conv_layer > 0:
-                self.final_layer = nn.Linear(4 * 32,64 + 63)
+                if self.conv_layer > 0:
+                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,64+63)
+                else:
+                    self.final_layer = nn.Linear(4 * 32,64 + 63)
             else:
-                self.final_layer = nn.Linear(4 * 32, 64 + 63)
+                if self.conv_layer > 0:
+                    self.final_layer = nn.Linear(total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1,64+63)
+                else:
+                    self.final_layer = nn.Linear(4 * 32, 64 + 63)
 
     def encode(self, x):
         if (self.cov_type == 'Toeplitz') & (self.prepro == 'DFT'):
