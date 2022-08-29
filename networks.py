@@ -938,7 +938,7 @@ class my_tra_VAE(nn.Module):
             total_dim = int((total_dim - 1) * 2 + (k_size - 1) + 1)
             self.decoder = nn.Sequential(*self.decoder)
         else:
-            in_channels = 16 * 64
+            in_channels = self.latent_dim
             for i in range(1,total_layer - 1):
                 self.decoder_lin.append(nn.Linear(in_channels, int(out_channels / 16 * in_linear)))
                 self.decoder_lin.append(nn.ReLU())
