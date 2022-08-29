@@ -217,11 +217,13 @@ class Decoder(nn.Module):
         out = self.net(z)
         if (self.cov_type == 'DFT') | (self.cov_type == 'diagonal'):
             mu_out,logpre_out = out[:,:2*self.n_ant],out[:,2*self.n_ant:]
-            #logpre_out = (0.5 + 11) / 2 * nn.Tanh()(logpre_out) + (0.5 + 11) / 2 - 0.5
+            #NEW BOUNDS
+            logpre_out = (0.5 + 11) / 2 * nn.Tanh()(logpre_out) + (0.5 + 11) / 2 - 0.5
             mu_out = Reshape(2,32,1)(mu_out)
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
-            logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            #OLD BOUNDS
+            #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
