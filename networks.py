@@ -999,6 +999,8 @@ class my_tra_VAE(nn.Module):
         out = self.decoder_lin(z)
         if self.conv_layer > 0:
             out = out.view(bs,self.out_channels,-1)
+            print('out')
+            print(out.size())
             out = self.decoder(out)
         out = nn.Flatten()(out)
         out = self.final_layer(out)

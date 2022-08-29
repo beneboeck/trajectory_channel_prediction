@@ -106,6 +106,7 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'prepro: {prepro}\n')
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_TraVAE()
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 256,1,3,128,7,'Toeplitz','None'
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
