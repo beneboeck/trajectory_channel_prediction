@@ -928,10 +928,12 @@ class my_tra_VAE(nn.Module):
             self.decoder.append(nn.BatchNorm1d(4))
             self.decoder = nn.Sequential(*self.decoder)
         else:
+            in_channels = 16 * 64
             for i in range(1,total_layer - 1):
-                self.decoder_lin.append(nn.Linear(int(out_channels / 16 * in_linear), int(out_channels / 16 * in_linear)))
+                self.decoder_lin.append(nn.Linear(in_channels, int(out_channels / 16 * in_linear)))
                 self.decoder_lin.append(nn.ReLU())
                 self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
+                in_channels =  int(out_channels / 16 * in_linear)
             self.decoder_lin.append(nn.Linear(int(out_channels / 16 * in_linear), 4 * 32))
             self.decoder_lin.append(nn.ReLU())
             self.decoder_lin.append(nn.BatchNorm1d(4 * 32))
@@ -952,13 +954,15 @@ class my_tra_VAE(nn.Module):
     def encode(self, x):
         if (self.cov_type == 'Toeplitz') & (self.prepro == 'DFT'):
             x_new = torch.zeros((x.size())).to(self.device)
-            x = x[:, 0, :] + 1j * x[:, 1, :]
+            x = x[:, 0, :,:] + 1j * x[:, 1, :,:]
             transformed_set = torch.einsum('mn,kn -> km', self.F, x)
             x_new[:, 0, :] = torch.real(transformed_set)
             x_new[:, 1, :] = torch.imag(transformed_set)
             x = x_new
         if self.conv_layer == 0:
             x = nn.Flatten()(x)
+        print('encode')
+        print(x.size())
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
