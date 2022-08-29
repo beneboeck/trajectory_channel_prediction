@@ -935,7 +935,7 @@ class my_tra_VAE(nn.Module):
             self.decoder.append(nn.ConvTranspose1d(in_channels, 4, k_size, 2))
             self.decoder.append(nn.ReLU())
             self.decoder.append(nn.BatchNorm1d(4))
-            total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1
+            total_dim = int((total_dim - 1) * 2 + (k_size - 1) + 1)
             self.decoder = nn.Sequential(*self.decoder)
         else:
             in_channels = 16 * 64
