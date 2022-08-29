@@ -914,7 +914,7 @@ class my_tra_VAE(nn.Module):
             self.decoder_lin.append(nn.BatchNorm1d(int(32 / (2 ** conv_layer) * self.out_channels)))
 
             self.decoder = []
-            step = (int(32 / (2 ** conv_layer) * self.out_channels - 32 * 4))/conv_layer
+            step = int((32 / (2 ** conv_layer) * self.out_channels - 32 * 4)/conv_layer)
             in_channels = self.out_channels
             out_channel = self.out_channels - step
             for i in range(conv_layer - 1):
