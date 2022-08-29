@@ -899,7 +899,7 @@ class my_tra_VAE(nn.Module):
 
 
         self.decoder_lin = []
-        if conv_layer > 0:
+        if (conv_layer > 0) & (conv_layer != total_layer):
             step = int(math.floor((int(32 / (2 ** conv_layer) * self.out_channels - self.latent_dim) / (total_layer - conv_layer))))
             in_channels = self.latent_dim
             out_channel = in_channels + step
@@ -912,7 +912,7 @@ class my_tra_VAE(nn.Module):
             self.decoder_lin.append(nn.Linear(in_channels,int(32 / (2 ** conv_layer) * self.out_channels)))
             self.decoder_lin.append(nn.ReLU())
             self.decoder_lin.append(nn.BatchNorm1d(int(32 / (2 ** conv_layer) * self.out_channels)))
-
+        if conv_layer > 0:
             self.decoder = []
             step = int((32 / (2 ** conv_layer) * self.out_channels - 32 * 4)/conv_layer)
             in_channels = self.out_channels
