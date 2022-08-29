@@ -17,12 +17,12 @@ import csv
 # GLOBAL PARAMETERS
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 2
+G_EPOCHS = 900
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -51,7 +51,7 @@ if not(exists(overall_path + MODEL_TYPE + 'NAS_file.txt')):
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
-glob_file.write('TRYIYNG TO REPRRODUCE HMVAE RESULTS WITH OLD BOUNDS!!')
+glob_file.write('NO DECODER BOUNDS; OLD PRIOR AND ENCODER BOUNDS!!')
 glob_file.write('Date: ' +date +'\n')
 glob_file.write('Time: ' + time + '\n\n')
 glob_file.write(f'\nMODEL_TYPE: {MODEL_TYPE}\n\n')

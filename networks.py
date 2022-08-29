@@ -223,7 +223,7 @@ class Decoder(nn.Module):
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
             #OLD BOUNDS
-            logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
@@ -855,89 +855,99 @@ class my_tra_VAE(nn.Module):
         self.out_channels = out_channels
         self.k_size = k_size
         self.n_snapshots = n_snapshots
-        if conv_layer > 0:
-            step = int(math.floor((out_channels - 2)/conv_layer))
+
         self.encoder = []
         in_channels = 2
-        for i in range(conv_layer-1):
-            self.encoder.append(nn.Conv2d(in_channels,in_channels + step,k_size,2,int((k_size-1)/2)))
-            self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm2d(in_channels + step))
-            in_channels = in_channels + step
         if conv_layer > 0:
-            self.encoder.append(nn.Conv2d(in_channels,out_channels,k_size,2,int((k_size-1)/2)))
+            step = int(math.floor((self.out_channels - 2)/conv_layer))
+            for i in range(conv_layer-1):
+                self.encoder.append(nn.Conv2d(in_channels,in_channels + step,k_size,2,int((k_size-1)/2)))
+                self.encoder.append(nn.ReLU())
+                self.encoder.append(nn.BatchNorm2d(in_channels + step))
+                in_channels = in_channels + step
+            self.encoder.append(nn.Conv2d(in_channels,self.out_channels,k_size,2,int((k_size-1)/2)))
             self.encoder.append(nn.ReLU())
             self.encoder.append(nn.BatchNorm2d(out_channels))
 
-        in_linear = 64 * self.n_snapshots
-        if conv_layer > 0:
+            step = int(math.floor((int(32*16/(4**conv_layer) * self.out_channels - self.latent_dim)/(total_layer - conv_layer))))
             self.encoder.append(nn.Flatten())
+            in_channels = int(32*16/(4**conv_layer)) * self.out_channels
+            out_channel = in_channels - step
             for i in range(total_layer-conv_layer):
-                self.encoder.append(nn.Linear(int(32*16/(4**conv_layer) * out_channels),int(32*16/(4**conv_layer) * out_channels)))
+                self.encoder.append(nn.Linear(in_channels,out_channel))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(int(32*16/(4**conv_layer) * out_channels)))
+                self.encoder.append(nn.BatchNorm1d(out_channel))
+                in_channels = out_channel
+                out_channel = out_channel - step
 
-            self.fc_mu = nn.Linear(int(32*16 / (4 ** conv_layer) * out_channels), self.latent_dim)
-            self.fc_var = nn.Linear(int(32*16 / (4 ** conv_layer) * out_channels), self.latent_dim)
+            self.fc_mu = nn.Linear(in_channels, self.latent_dim)
+            self.fc_var = nn.Linear(in_channels, self.latent_dim)
         else:
-            self.encoder.append(nn.Linear(int(in_linear),int(out_channels/4 * in_linear)))
+            in_linear = 64 * self.n_snapshots
+            self.encoder.append(nn.Flatten())
+            self.encoder.append(nn.Linear(int(in_linear),int(out_channels/16 * in_linear)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(int(out_channels/4 * in_linear)))
+            self.encoder.append(nn.BatchNorm1d(int(out_channels/16 * in_linear)))
             for i in range(1,total_layer - conv_layer - 1):
-                self.encoder.append(nn.Linear(int(out_channels / 4 * in_linear),int( out_channels / 4 * in_linear)))
+                self.encoder.append(nn.Linear(int(out_channels / 16 * in_linear),int( out_channels / 16 * in_linear)))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(int(out_channels / 4 * in_linear)))
+                self.encoder.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
 
-            self.fc_mu = nn.Linear(int(out_channels / 4 * in_linear), self.latent_dim)
-            self.fc_var = nn.Linear(int(out_channels / 4 * in_linear), self.latent_dim)
+            self.fc_mu = nn.Linear(int(out_channels / 16 * in_linear), self.latent_dim)
+            self.fc_var = nn.Linear(int(out_channels / 16 * in_linear), self.latent_dim)
         self.encoder = nn.Sequential(*self.encoder)
-        dim_out = 0
+
+
         self.decoder_lin = []
         if conv_layer > 0:
-            self.decoder_input = nn.Linear(self.latent_dim,int(32 / (2 ** conv_layer) * out_channels))
-            for i in range(total_layer-conv_layer):
-                self.decoder_lin.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
+            step = int(math.floor((int(32 / (2 ** conv_layer) * self.out_channels - self.latent_dim) / (total_layer - conv_layer))))
+            in_channels = self.latent_dim
+            out_channel = in_channels + step
+            for i in range(total_layer-conv_layer-1):
+                self.decoder_lin.append(nn.Linear(in_channels,out_channel))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
-            dim_out = int(32/(2**conv_layer) * out_channels)
+                self.decoder_lin.append(nn.BatchNorm1d(out_channel))
+                in_channels = out_channel
+                out_channel = out_channel + step
+            self.decoder_lin.append(nn.Linear(in_channels,int(32 / (2 ** conv_layer) * self.out_channels)))
+            self.decoder_lin.append(nn.ReLU())
+            self.decoder_lin.append(nn.BatchNorm1d(int(32 / (2 ** conv_layer) * self.out_channels)))
+
+            self.decoder = []
+            step = (int(32 / (2 ** conv_layer) * self.out_channels - 32 * 4))/conv_layer
+            in_channels = self.out_channels
+            out_channel = self.out_channels - step
+            for i in range(conv_layer - 1):
+                self.decoder.append(nn.ConvTranspose1d(in_channels, out_channel, k_size, 2))
+                self.decoder.append(nn.ReLU())
+                self.decoder.append(nn.BatchNorm1d(out_channel))
+                in_channels = in_channels - step
+                out_channel = out_channel - step
+            self.decoder.append(nn.ConvTranspose1d(in_channels, 4, k_size, 2))
+            self.decoder.append(nn.ReLU())
+            self.decoder.append(nn.BatchNorm1d(4))
+            self.decoder = nn.Sequential(*self.decoder)
         else:
-            self.decoder_input = nn.Linear(self.latent_dim, int(out_channels / 4 * in_linear))
-            for i in range(1,total_layer - conv_layer - 1):
-                self.decoder_lin.append(nn.Linear(int(out_channels / 4 * in_linear), int(out_channels / 4 * in_linear)))
+            for i in range(1,total_layer - 1):
+                self.decoder_lin.append(nn.Linear(int(out_channels / 16 * in_linear), int(out_channels / 16 * in_linear)))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 4 * in_linear)))
-            dim_out = int(out_channels / 4 * in_linear)
+                self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
+            self.decoder_lin.append(nn.Linear(int(out_channels / 16 * in_linear), 4 * 32))
+            self.decoder_lin.append(nn.ReLU())
+            self.decoder_lin.append(nn.BatchNorm1d(4 * 32))
 
         self.decoder_lin = nn.Sequential(*self.decoder_lin)
-        self.decoder = []
-        if conv_layer > 0:
-            dim_out = dim_out / out_channels
-        for i in range(conv_layer - 1):
-            self.decoder.append(nn.ConvTranspose2d(out_channels, out_channels - step, k_size, 2))
-            self.decoder.append(nn.ReLU())
-            self.decoder.append(nn.BatchNorm2d(out_channels - step))
-            out_channels = out_channels - step
-            dim_out = (dim_out-1) * 2 + (k_size-1) + 1
-        #Lout=(Lin−1)×stride−2×padding + dilation×(kernel_size−1) + output_padding + 1
 
-
-        if conv_layer > 0:
-            self.decoder.append(nn.ConvTranspose2d(out_channels, 2, k_size, 2))
-            self.decoder.append(nn.ReLU())
-            self.decoder.append(nn.BatchNorm2d(2))
-            dim_out = (dim_out - 1) * 2 + (k_size - 1) + 1
-
-        self.decoder = nn.Sequential(*self.decoder)
         if cov_type == 'DFT':
             if self.conv_layer > 0:
-                self.final_layer = nn.Linear(int(2 * dim_out), 96)
+                self.final_layer = nn.Linear(4 * 32, 96)
             else:
-                self.final_layer = nn.Linear(int(dim_out), 96)
+                self.final_layer = nn.Linear(4 * 32, 96)
         if cov_type == 'Toeplitz':
             if self.conv_layer > 0:
-                self.final_layer = nn.Linear(int(2 * dim_out),64 + 63)
+                self.final_layer = nn.Linear(4 * 32,64 + 63)
             else:
-                self.final_layer = nn.Linear(int(dim_out), 64 + 63)
+                self.final_layer = nn.Linear(4 * 32, 64 + 63)
 
     def encode(self, x):
         if (self.cov_type == 'Toeplitz') & (self.prepro == 'DFT'):
