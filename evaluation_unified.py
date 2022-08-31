@@ -142,16 +142,18 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
         received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
         mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex; BS, N_ANT, N_ANT complex
-        print('Frobenius Cov out')
-        print(torch.mean(torch.sum(torch.abs(Cov_out)**2,dim=(1,2))))
+        mean_frob = torch.mean(torch.sum(torch.abs(Cov_out)**2,dim=(1,2)))
+        mean_mu_signal_energy = torch.mean(torch.sum(torch.abs(mu_out)**2,dim=1))
         L,U = torch.linalg.eigh(Cov_out)
         inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
         h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
+        Cov_part_LMMSE_energy = torch.mean(torch.sum(torch.abs(torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))) ** 2, dim=1))
         NMSE = torch.mean(torch.sum(torch.abs(sample_oi - h_hat) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
+        NMSE_only_mu = torch.mean(torch.sum(torch.abs(sample_oi - mu_out) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
         NMSE_list.append(NMSE)
 
     NMSE = np.mean(np.array(NMSE_list))
-    return NMSE
+    return NMSE,mean_frob.item(),mean_mu_signal_energy.item(),Cov_part_LMMSE_energy.item(),NMSE_only_mu.item()
 
 def channel_estimation_all(model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []

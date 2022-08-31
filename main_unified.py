@@ -203,8 +203,8 @@ if MODEL_TYPE == 'Trajectory':
     print(f'NMSE prediction test: {NMSE_test}')
     log_file.write(f'NMSE prediction test: {NMSE_test}\n')
 
-NMSE_val_est = ev.channel_estimation(model,dataloader_val,sig_n_val,cov_type,dir_path,device)
-NMSE_test_est = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
+NMSE_val_est,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(model,dataloader_val,sig_n_val,cov_type,dir_path,device)
+NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_only_mun_t = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
 
 csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
@@ -229,6 +229,10 @@ glob_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
 glob_file.write(f'ELBO Validation Set: {Risk_val:4f}\n')
 glob_file.write('Test SET\n')
 glob_file.write(f'NMSE estimation: {NMSE_test_est:.4f}\n')
+glob_file.write(f'Mean Frobenius Norm Cov: {mean_frob:.4f}\n')
+glob_file.write(f'Mean MuOut Signal Energy: {mean_mu_signal_energy:.4f}\n')
+glob_file.write(f'Mean CovLMMSE part Energy: {Cov_part_LMMSE_energy:.4f}\n')
+glob_file.write(f'NMSE only with mu_out: {NMSE_only_mun:.4f}\n')
 if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'NMSE prediction: {NMSE_test:.4f}\n')
     glob_file.write(f'TPR prior: {TPR1:.4f}\n')
@@ -244,4 +248,3 @@ if MODEL_TYPE == 'Trajectory':
     if cov_type == 'DFT':
         glob_file.write(f'Mean Variance Decoder: {m_sigma_squared_out:4f}\n')
         glob_file.write(f'Std Variance Decoder: {std_sigma_squared_out:4f}\n')
-        glob_file.write(f'Number of Alphas (i>0) hitting their Bound: {n_bound_hits:4f}\n')
