@@ -28,7 +28,7 @@ n_permutations = 300
 bs_mmd = 1000
 normed = False
 author = 'Bene'
-SNR_db = 5
+SNR_db = 10
 CSI = 'NOISY' # PERFECT, NOISY
 
 # CREATING FILES AND DIRECTORY
