@@ -71,7 +71,7 @@ print('global var successful')
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'DFT',False,'None',1,False
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'Toeplitz',False,'None',1,False
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
     cov_type = 'DFT'
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
@@ -220,23 +220,18 @@ NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_
 print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
 
-glob_file.write('\nResults\n')
-glob_file.write('EVALUATION SET\n')
+glob_file.write('\nResults\n\n')
+glob_file.write('EVALUATION SET\n\n')
 glob_file.write(f'NMSE estimation: {eval_NMSE_estimation[-1]:.4f}\n')
 glob_file.write(f'NMSE prediction: {eval_NMSE[-1]:.4f}\n')
 glob_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
 glob_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
 glob_file.write(f'ELBO Validation Set: {Risk_val:4f}\n')
-glob_file.write('Test SET\n')
-glob_file.write(f'NMSE estimation: {NMSE_test_est:.4f}\n')
 glob_file.write(f'Mean Frobenius Norm Cov: {mean_frob:.4f}\n')
 glob_file.write(f'Mean MuOut Signal Energy: {mean_mu_signal_energy:.4f}\n')
 glob_file.write(f'Mean CovLMMSE part Energy: {Cov_part_LMMSE_energy:.4f}\n')
 glob_file.write(f'NMSE only with mu_out: {NMSE_only_mun:.4f}\n')
 if MODEL_TYPE == 'Trajectory':
-    glob_file.write(f'NMSE prediction: {NMSE_test:.4f}\n')
-    glob_file.write(f'TPR prior: {TPR1:.4f}\n')
-    glob_file.write(f'TPR inf: {TPR2:.4f}\n')
     glob_file.write(f'Mean Variance Prior: {m_sigma_squared_prior:.4f}\n')
     glob_file.write(f'Std Variance Prior: {std_sigma_squared_prior:.4f}\n')
     glob_file.write(f'Mean Variance Encoder: {m_sigma_squared_inf:.4f}\n')
