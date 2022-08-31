@@ -55,6 +55,7 @@ log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of 
 glob_file.write('UPPER_BOUNDS OLD; LOWER BOUNDS NEW!!')
 glob_file.write('Date: ' +date +'\n')
 glob_file.write('Time: ' + time + '\n\n')
+glob_file.write(f'CSI TYPE: {CSI}\n\n')
 glob_file.write(f'\nMODEL_TYPE: {MODEL_TYPE}\n\n')
 glob_file.write(f'\AUTHER: {author}\n\n')
 glob_file.write('BATCHSIZE: ' + str(BATCHSIZE) +'\n')
@@ -72,7 +73,7 @@ print('global var successful')
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'DFT',False,'None',1,False
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'Toeplitz',False,'None',1,False
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')

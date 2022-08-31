@@ -291,6 +291,7 @@ class HMVAE(nn.Module):
         self.BN = BN
         self.LB_pre_dec = torch.log(torch.tensor(1/UB_var_dec)).item()
         self.UB_pre_dec = torch.log(torch.tensor(1/LB_var_dec)).item()
+        print(f'lower and upper bound precision: {self.LB_pre_dec:.4f},{self.UB_pre_dec:.4f}')
 
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device) for i in range(snapshots)])
         self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.LB_pre_dec,self.UB_pre_dec,self.device) for i in range(snapshots)])

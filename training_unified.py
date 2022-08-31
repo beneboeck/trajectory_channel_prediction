@@ -127,7 +127,7 @@ def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_v
             if i%5 == 0:
                 model.eval()
                 NMSE, Risk,output_stats = ev.eval_val(CSI,model_type,setup,model, dataloader_val,cov_type, lamba, device, dir_path)
-                NMSE_estimation,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(CSI,model, dataloader_val, sig_n,cov_type, dir_path, device)
+                NMSE_estimation,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mu = ev.channel_estimation(CSI,model, dataloader_val, sig_n,cov_type, dir_path, device)
                 if model_type == 'Trajectory':
                     TPR1, TPR2 = ev.computing_MMD(CSI,setup, model, n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots, dir_path,device)
                     eval_TPR1.append(TPR1)
@@ -142,9 +142,9 @@ def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_v
                 eval_NMSE_estimation.append(NMSE_estimation)
                 model.train()
                 print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
-                print(f'mean_frob: {mean_frob:.3f},mean_mu_signal_energy: {mean_mu_signal_energy:.3f},Cov_part_LMMSE_energy: {Cov_part_LMMSE_energy:.3f},NMSE_only_mun: {NMSE_only_mun:.3f}')
+                print(f'mean_frob: {mean_frob:.3f},mean_mu_signal_energy: {mean_mu_signal_energy:.3f},Cov_part_LMMSE_energy: {Cov_part_LMMSE_energy:.3f},NMSE_only_mu: {NMSE_only_mu:.3f}')
                 log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
-                log_file.write(f'mean_frob: {mean_frob:.3f},mean_mu_signal_energy: {mean_mu_signal_energy:.3f},Cov_part_LMMSE_energy: {Cov_part_LMMSE_energy:.3f},NMSE_only_mun: {NMSE_only_mun:.3f}\n')
+                log_file.write(f'mean_frob: {mean_frob:.3f},mean_mu_signal_energy: {mean_mu_signal_energy:.3f},Cov_part_LMMSE_energy: {Cov_part_LMMSE_energy:.3f},NMSE_only_mu: {NMSE_only_mu:.3f}\n')
                 if (i > 40) & (lr_adaption == False):
                     x_range_lr = torch.arange(5)
                     x_lr = torch.ones(5, 2)
