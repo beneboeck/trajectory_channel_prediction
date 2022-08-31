@@ -73,7 +73,6 @@ if MODEL_TYPE == 'Trajectory':
     ## ACHTUNG, NACHAENDERUNG!!!!!!
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'Toeplitz',False,'None',1,False
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
-    cov_type = 'DFT'
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool)
