@@ -209,9 +209,9 @@ NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_o
 csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
-    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val])
+    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item()])
 if MODEL_TYPE == 'Single':
-    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est])
+    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est,Risk_val.item()])
 
 csv_file.close()
 
