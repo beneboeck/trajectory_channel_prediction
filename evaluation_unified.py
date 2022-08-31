@@ -72,7 +72,7 @@ def eval_val(CSI,model_type,setup,model,dataloader_val,cov_type, lamba,device, d
         output_stats = []
 
     if model_type == 'Trajectory':
-        NMSE = channel_prediction(setup,model,dataloader_val,15,dir_path,device,'evaluation')
+        NMSE = channel_prediction(CSI,setup,model,dataloader_val,15,dir_path,device,'evaluation')
     else:
         NMSE = 0
 
