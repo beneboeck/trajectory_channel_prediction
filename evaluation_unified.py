@@ -78,7 +78,7 @@ def eval_val(CSI,model_type,setup,model,dataloader_val,cov_type, lamba,device, d
 
     return NMSE,Risk,output_stats
 
-def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHASE):
+def channel_prediction(CSI,setup,model,dataloader_val,knowledge,dir_path,device,PHASE):
     cov_type = setup[9]
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
@@ -159,7 +159,7 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
     plt.close('all')
 
 
-def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
+def channel_estimation(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []
     for ind, samples in enumerate(dataloader_val):
         estimated_snapshot = -1
