@@ -50,7 +50,7 @@ def risk_free_bits(lamba,x,mu,log_var,mu_out,Gamma):
     KL =  torch.mean(torch.sum(torch.max(lamba,-0.5 * (1 + log_var - mu ** 2 - (log_var).exp())),dim=1))
     return Rec_err + KL,Rec_err,KL
 
-def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
+def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
 
     risk_list= []
     KL_list = []
@@ -72,32 +72,46 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
         print('epoch')
         print(i)
         for ind, samples in enumerate(loader):
-            if cov_type == 'DFT':
-                sample = samples[2]
-            else:
-                sample = samples[0]
-            sample = sample.to(device)
+            if CSI == 'PERFECT':
+                if cov_type == 'DFT':
+                    sample_in = samples[2]
+                    sample_ELBO = sample_in
+                else:
+                    sample_in = samples[0]
+                    sample_ELBO = sample_in
+                sample_in = sample_in.to(device)
+                sample_ELBO = sample_ELBO.to(device)
+            if CSI == 'NOISY':
+                if cov_type == 'DFT':
+                    sample_in = samples[3]
+                    sample_ELBO = samples[2]
+                else:
+                    sample_in = samples[1]
+                    sample_ELBO = samples[0]
+                sample_in = sample_in.to(device)
+                sample_ELBO = sample_ELBO.to(device)
 
             if (model_type == 'Trajectory') & (cov_type == 'Toeplitz'):
-                out, z, eps, mu_inf, log_var = model(sample)
+                out, z, eps, mu_inf, log_var = model(sample_in)
                 mu_out, B_out, C_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
-                Risk, RR, KL = risk_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
+                Risk, RR, KL = risk_toeplitz_free_bits(lamba, sample_ELBO, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
 
             if (model_type == 'Trajectory') & (cov_type == 'DFT'):
-                out, z, eps, mu_inf, log_var = model(sample)
+                out, z, eps, mu_inf, log_var = model(sample_in)
                 mu_out, logpre_out = out
                 mu_prior, logpre_prior = model.feed_prior(z)
-                Risk, RR, KL = risk_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
+                Risk, RR, KL = risk_diagonal_free_bits(lamba, sample_ELBO, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
 
             if (model_type == 'Single'):
-                sample = sample[:,:,:,-1]
-                mu_out, Gamma, mu, log_var = model(sample)
-                Risk, RR, KL = risk_free_bits(lamba,sample,mu,log_var,mu_out,Gamma)
+                sample_in = sample_in[:,:,:,-1]
+                sample_ELBO = sample_ELBO[:,:,:,-1]
+                mu_out, Gamma, mu, log_var = model(sample_in)
+                Risk, RR, KL = risk_free_bits(lamba,sample_ELBO,mu,log_var,mu_out,Gamma)
 
             if (model_type == 'TraSingle'):
-                single_sample = sample[:,:,:,-1]
-                mu_out,Gamma,mu, log_var = model(sample)
+                single_sample = sample_ELBO[:,:,:,-1]
+                mu_out,Gamma,mu, log_var = model(sample_in)
                 Risk,RR,KL = risk_free_bits(lamba,single_sample,mu,log_var,mu_out,Gamma)
 
             optimizer.zero_grad()
@@ -112,10 +126,10 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
         with torch.no_grad():
             if i%5 == 0:
                 model.eval()
-                NMSE, Risk,output_stats = ev.eval_val(model_type,setup,model, dataloader_val,cov_type, lamba, device, dir_path)
-                NMSE_estimation,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(model, dataloader_val, sig_n,cov_type, dir_path, device)
+                NMSE, Risk,output_stats = ev.eval_val(CSI,model_type,setup,model, dataloader_val,cov_type, lamba, device, dir_path)
+                NMSE_estimation,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(CSI,model, dataloader_val, sig_n,cov_type, dir_path, device)
                 if model_type == 'Trajectory':
-                    TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots, dir_path,device)
+                    TPR1, TPR2 = ev.computing_MMD(CSI,setup, model, n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots, dir_path,device)
                     eval_TPR1.append(TPR1)
                     eval_TPR2.append(TPR2)
                 else:

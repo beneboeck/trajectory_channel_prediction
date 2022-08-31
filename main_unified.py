@@ -29,6 +29,7 @@ bs_mmd = 1000
 normed = False
 author = 'Bene'
 SNR_db = 5
+CSI = 'NOISY' # PERFECT, NOISY
 
 # CREATING FILES AND DIRECTORY
 now = datetime.datetime.now()
@@ -75,7 +76,7 @@ if MODEL_TYPE == 'Trajectory':
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
-    print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool)
+    print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec)
     glob_file.write(f'Latent Dim: {LD}\n')
     glob_file.write(f'Memory: {memory}\n')
     glob_file.write(f'RNN Bool: {rnn_bool}\n')
@@ -178,7 +179,7 @@ if MODEL_TYPE == 'TraSingle':
     model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS, device).to(device)
     print('model generated')
 
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(CSI,MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
@@ -191,12 +192,12 @@ save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
 torch.save(model.state_dict(),dir_path + '/model_dict')
 log_file.write('\nTESTING\n')
 print('testing')
-_, Risk_val, output_stats_val = ev.eval_val(MODEL_TYPE, setup, model, dataloader_val, cov_type, FREE_BITS_LAMBDA, device, dir_path)
+_, Risk_val, output_stats_val = ev.eval_val(CSI,MODEL_TYPE, setup, model, dataloader_val, cov_type, FREE_BITS_LAMBDA, device, dir_path)
 if MODEL_TYPE == 'Trajectory':
-    NMSE_test = ev.channel_prediction(setup,model,dataloader_test,15,dir_path,device,'testing')
-    TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test, SNAPSHOTS, dir_path, device)
-    NMSE_val = ev.channel_prediction(setup, model, dataloader_val, 15, dir_path, device, 'testing')
-    TPR1_val, TPR2_val = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val, SNAPSHOTS,dir_path, device)
+    NMSE_test = ev.channel_prediction(CSI,setup,model,dataloader_test,15,dir_path,device,'testing')
+    TPR1, TPR2 = ev.computing_MMD(CSI,setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test, SNAPSHOTS, dir_path, device)
+    NMSE_val = ev.channel_prediction(CSI,setup, model, dataloader_val, 15, dir_path, device, 'testing')
+    TPR1_val, TPR2_val = ev.computing_MMD(CSI,setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val, SNAPSHOTS,dir_path, device)
     if cov_type == 'Toeplitz':
         m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_alpha_0, std_alpha_0, n_bound_hits = output_stats_val
     if cov_type == 'DFT':
@@ -204,8 +205,8 @@ if MODEL_TYPE == 'Trajectory':
     print(f'NMSE prediction test: {NMSE_test}')
     log_file.write(f'NMSE prediction test: {NMSE_test}\n')
 
-NMSE_val_est,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(model,dataloader_val,sig_n_val,cov_type,dir_path,device)
-NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_only_mun_t = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,dir_path,device)
+NMSE_val_est,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(CSI,model,dataloader_val,sig_n_val,cov_type,dir_path,device)
+NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_only_mun_t = ev.channel_estimation(CSI,model,dataloader_test,sig_n_test,cov_type,dir_path,device)
 
 csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)

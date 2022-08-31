@@ -7,19 +7,33 @@ from utils import *
 from torch.utils.data import DataLoader
 from mmd_utils import *
 
-def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_path):
+def eval_val(CSI,model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_path):
     iterator = iter(dataloader_val)
     samples = iterator.next()
-    if cov_type == 'DFT':
-        sample = samples[2].to(device)
-    else:
-        sample = samples[0].to(device)
+    if CSI == 'PERFECT':
+        if cov_type == 'DFT':
+            sample_in = samples[2]
+            sample_ELBO = sample_in
+        else:
+            sample_in = samples[0]
+            sample_ELBO = sample_in
+        sample_in = sample_in.to(device)
+        sample_ELBO = sample_ELBO.to(device)
+    if CSI == 'NOISY':
+        if cov_type == 'DFT':
+            sample_in = samples[3]
+            sample_ELBO = samples[2]
+        else:
+            sample_in = samples[1]
+            sample_ELBO = samples[0]
+        sample_in = sample_in.to(device)
+        sample_ELBO = sample_ELBO.to(device)
 
     if (model_type == 'Trajectory') & (cov_type == 'Toeplitz'):
-        out, z, eps, mu_inf, log_var = model(sample)
+        out, z, eps, mu_inf, log_var = model(sample_in)
         mu_out, B_out, C_out = out
         mu_prior, logpre_prior = model.feed_prior(z)
-        Risk, RR, KL = tr.risk_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
+        Risk, RR, KL = tr.risk_toeplitz_free_bits(lamba, sample_ELBO, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
         m_sigma_squared_prior = torch.mean(1 / torch.exp(logpre_prior)).item()
         m_sigma_squared_inf = torch.mean(torch.exp(log_var)).item()
         std_sigma_squared_prior = torch.std(1 / torch.exp(logpre_prior)).item()
@@ -31,10 +45,10 @@ def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_p
         output_stats = [m_sigma_squared_prior,std_sigma_squared_prior,m_sigma_squared_inf,std_sigma_squared_inf,m_alpha_0,std_alpha_0,n_bound_hits]
 
     if (model_type == 'Trajectory') & (cov_type == 'DFT'):
-        out, z, eps, mu_inf, log_var = model(sample)
+        out, z, eps, mu_inf, log_var = model(sample_in)
         mu_out, logpre_out = out
         mu_prior, logpre_prior = model.feed_prior(z)
-        Risk, RR, KL = tr.risk_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
+        Risk, RR, KL = tr.risk_diagonal_free_bits(lamba, sample_ELBO, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
         m_sigma_squared_out = torch.mean(1/torch.exp(logpre_out)).item()
         m_sigma_squared_prior = torch.mean(1/torch.exp(logpre_prior)).item()
         m_sigma_squared_inf = torch.mean(torch.exp(log_var)).item()
@@ -45,14 +59,15 @@ def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_p
 
 
     if model_type == 'Single':
-        sample = sample[:, :, :, -1]
-        mu_out, Gamma, mu, log_var = model(sample)
-        Risk, RR, KL = tr.risk_free_bits(lamba, sample, mu, log_var, mu_out, Gamma)
+        sample_in = sample_in[:, :, :, -1]
+        sample_ELBO = sample_ELBO[:,:,:,-1]
+        mu_out, Gamma, mu, log_var = model(sample_in)
+        Risk, RR, KL = tr.risk_free_bits(lamba, sample_ELBO, mu, log_var, mu_out, Gamma)
         output_stats = []
 
     if (model_type == 'TraSingle'):
-        single_sample = sample[:, :, :, -1]
-        mu_out, Gamma, mu, log_var = model(sample)
+        single_sample = sample_ELBO[:, :, :, -1]
+        mu_out, Gamma, mu, log_var = model(sample_in)
         Risk, RR, KL = tr.risk_free_bits(lamba, single_sample, mu, log_var, mu_out, Gamma)
         output_stats = []
 
@@ -67,11 +82,26 @@ def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHAS
     cov_type = setup[9]
     NMSE_list = []
     for ind,sample in enumerate(dataloader_val):
-        if cov_type == 'DFT':
-            sample = sample[2].to(device)
-        if cov_type == 'Toeplitz':
-            sample = sample[0].to(device)
-        predicted_samples, ground_truth = model.predicting(sample, knowledge) # BS,2,N_ANT,SNAPSHOTS - KNOWLEDGE
+        if CSI == 'PERFECT':
+            if cov_type == 'DFT':
+                sample_in = sample[2]
+                sample_ELBO = sample_in
+            else:
+                sample_in = sample[0]
+                sample_ELBO = sample_in
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+        if CSI == 'NOISY':
+            if cov_type == 'DFT':
+                sample_in = sample[3]
+                sample_ELBO = sample[2]
+            else:
+                sample_in = sample[1]
+                sample_ELBO = sample[0]
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+
+        predicted_samples, ground_truth = model.predicting(sample_in, knowledge) # BS,2,N_ANT,SNAPSHOTS - KNOWLEDGE
         NMSE = torch.mean(torch.sum(torch.abs(ground_truth - predicted_samples) ** 2, dim=(1,2,3)) / torch.sum(torch.abs(ground_truth) ** 2,dim=(1,2,3))).detach().to('cpu')
         NMSE_list.append(NMSE)
 
@@ -133,15 +163,32 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []
     for ind, samples in enumerate(dataloader_val):
         estimated_snapshot = -1
-        if cov_type == 'DFT':
-            sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
-            received_signal = samples[3].to(device)
-        if cov_type == 'Toeplitz':
-            sample = samples[0].to(device)
-            received_signal = samples[1].to(device)
-        sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
+        if CSI == 'PERFECT':
+            if cov_type == 'DFT':
+                sample_in = samples[2]
+                sample_ELBO = sample_in
+                received_signal = samples[3].to(device)
+            else:
+                sample_in = samples[0]
+                sample_ELBO = sample_in
+                received_signal = samples[1].to(device)
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+        if CSI == 'NOISY':
+            if cov_type == 'DFT':
+                sample_in = samples[3]
+                sample_ELBO = samples[2]
+                received_signal = samples[3].to(device)
+            else:
+                sample_in = samples[1]
+                sample_ELBO = samples[0]
+                received_signal = samples[1].to(device)
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+
+        sample_oi = sample_ELBO[:,0,:,estimated_snapshot] + 1j * sample_ELBO[:,1,:,estimated_snapshot] # BS, N_ANT
         received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
-        mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex; BS, N_ANT, N_ANT complex
+        mu_out,Cov_out = model.estimating(sample_in,estimated_snapshot) # BS,N_ANT complex; BS, N_ANT, N_ANT complex
         mean_frob = torch.mean(torch.sum(torch.abs(Cov_out)**2,dim=(1,2)))
         mean_mu_signal_energy = torch.mean(torch.sum(torch.abs(mu_out)**2,dim=1))
         L,U = torch.linalg.eigh(Cov_out)
@@ -155,16 +202,32 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE,mean_frob.item(),mean_mu_signal_energy.item(),Cov_part_LMMSE_energy.item(),NMSE_only_mu.item()
 
-def channel_estimation_all(model,dataloader_val,sig_n,cov_type,dir_path,device):
+def channel_estimation_all(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []
     estimated_snapshot = -1
     for ind, samples in enumerate(dataloader_val):
-        if cov_type == 'DFT':
-            sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
-            received_signal = samples[3].to(device)
-        if cov_type == 'Toeplitz':
-            sample = samples[0].to(device)
-            received_signal = samples[1].to(device)
+        if CSI == 'PERFECT':
+            if cov_type == 'DFT':
+                sample_in = samples[2]
+                sample_ELBO = sample_in
+                received_signal = samples[3].to(device)
+            else:
+                sample_in = samples[0]
+                sample_ELBO = sample_in
+                received_signal = samples[1].to(device)
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+        if CSI == 'NOISY':
+            if cov_type == 'DFT':
+                sample_in = samples[3]
+                sample_ELBO = samples[2]
+                received_signal = samples[3].to(device)
+            else:
+                sample_in = samples[1]
+                sample_ELBO = samples[0]
+                received_signal = samples[1].to(device)
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
         NMSE_final = 10e5
         for i in range(16):
@@ -180,7 +243,7 @@ def channel_estimation_all(model,dataloader_val,sig_n,cov_type,dir_path,device):
     return NMSE
 
 
-def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_val,snapshots,dir_path,device):
+def computing_MMD(CSI,setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_val,snapshots,dir_path,device):
     LD = setup[0]
     cov_type = setup[9]
     alpha = 0.05
@@ -202,9 +265,12 @@ def computing_MMD(setup,model,n_iterations,n_permutations,normed,bs_mmd,dataset_
         samples = samples[0].to(device)
 
             # samples2 are for the generating latent distributions q(z|x) for MMD inf
-
-        samples2 = iterator.next()
-        samples2 = samples2[0].to(device)
+        if CSI == 'PERFECT':
+            samples2 = iterator.next()
+            samples2 = samples2[0].to(device)
+        if CSI == 'NOISY':
+            samples2 = iterator.next()
+            samples2 = samples2[1].to(device)
 
         # here I create completely new data
 
