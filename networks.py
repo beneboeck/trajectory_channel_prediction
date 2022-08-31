@@ -72,9 +72,11 @@ class Prior(nn.Module):
         #old&new_bounds
         #logpre = (15 - 1.1) / 2 * nn.Tanh()(logpre) + (15 - 1.1) / 2 + 1.1
         #old bounds
-        logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
+        #logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
         #state of the art Toeplitz
         #logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
+        # NEW BOUNDS 31.08.22
+        logpre = (15 + 1.4) / 2 * nn.Tanh()(logpre) + (15 - 1.4) / 2 - 1.4
         logpre2 = logpre.clone()
         return mu, logpre2, new_state
 
@@ -173,9 +175,11 @@ class Encoder(nn.Module):
         #old&new_bounds
         #logvar = (15 + 1.1) / 2 * nn.Tanh()(logvar) + (15 + 1.1) / 2 - 15
         #old_bounds
-        logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
+        #logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
         # state of the art Toeplitz
         #logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
+        # NEW BOUNDS 31.08.22
+        logvar = (15 + 1.4) / 2 * nn.Tanh()(logvar) + (15 + 1.4) / 2 - 15
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
