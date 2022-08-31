@@ -8,7 +8,6 @@ from torch.utils.data import DataLoader
 from mmd_utils import *
 
 def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_path):
-
     iterator = iter(dataloader_val)
     samples = iterator.next()
     if cov_type == 'DFT':
@@ -21,28 +20,48 @@ def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_p
         mu_out, B_out, C_out = out
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_toeplitz_free_bits(lamba, sample, z, log_var, mu_out, B_out,C_out, mu_prior, logpre_prior, eps)
+        m_sigma_squared_prior = torch.mean(1 / torch.exp(logpre_prior)).item()
+        m_sigma_squared_inf = torch.mean(torch.exp(log_var)).item()
+        std_sigma_squared_prior = torch.std(1 / torch.exp(logpre_prior)).item()
+        std_sigma_squared_inf = torch.std(torch.exp(log_var)).item()
+        m_alpha_0 = torch.mean(torch.abs(B_out[:,:,0,0])).item()
+        std_alpha_0 = torch.std(torch.abs(B_out[:,:,0,0])).item()
+        bound = 0.02 * torch.abs(B_out[:,:,0,0])
+        n_bound_hits = torch.mean(torch.sum(torch.abs(torch.real(B_out[:,:,1:,0])) > bound[:,:,None],dim=2).float()).item() + torch.mean(torch.sum(torch.abs(torch.imag(B_out[:,:,1:,0])) > bound[:,:,None],dim=2)).item()
+        output_stats = [m_sigma_squared_prior,std_sigma_squared_prior,m_sigma_squared_inf,std_sigma_squared_inf,m_alpha_0,std_alpha_0,n_bound_hits]
 
     if (model_type == 'Trajectory') & (cov_type == 'DFT'):
         out, z, eps, mu_inf, log_var = model(sample)
         mu_out, logpre_out = out
         mu_prior, logpre_prior = model.feed_prior(z)
         Risk, RR, KL = tr.risk_diagonal_free_bits(lamba, sample, z, log_var, mu_out, logpre_out,mu_prior, logpre_prior, eps)
+        m_sigma_squared_out = torch.mean(1/torch.exp(logpre_out)).item()
+        m_sigma_squared_prior = torch.mean(1/torch.exp(logpre_prior)).item()
+        m_sigma_squared_inf = torch.mean(torch.exp(log_var)).item()
+        std_sigma_squared_out = torch.std(1/torch.exp(logpre_out)).item()
+        std_sigma_squared_prior = torch.std(1/torch.exp(logpre_prior)).item()
+        std_sigma_squared_inf = torch.std(torch.exp(log_var)).item()
+        output_stats = [m_sigma_squared_prior,std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf,m_sigma_squared_out,std_sigma_squared_out]
+
 
     if model_type == 'Single':
         sample = sample[:, :, :, -1]
         mu_out, Gamma, mu, log_var = model(sample)
         Risk, RR, KL = tr.risk_free_bits(lamba, sample, mu, log_var, mu_out, Gamma)
+        output_stats = []
 
     if (model_type == 'TraSingle'):
         single_sample = sample[:, :, :, -1]
         mu_out, Gamma, mu, log_var = model(sample)
         Risk, RR, KL = tr.risk_free_bits(lamba, single_sample, mu, log_var, mu_out, Gamma)
+        output_stats = []
 
     if model_type == 'Trajectory':
         NMSE = channel_prediction(setup,model,dataloader_val,15,dir_path,device,'evaluation')
     else:
         NMSE = 0
-    return NMSE, Risk
+
+    return NMSE,Risk,output_stats
 
 def channel_prediction(setup,model,dataloader_val,knowledge,dir_path,device,PHASE):
     cov_type = setup[9]
@@ -112,8 +131,8 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
 
 def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []
-    estimated_snapshot = -1
     for ind, samples in enumerate(dataloader_val):
+        estimated_snapshot = -1
         if cov_type == 'DFT':
             sample = samples[2].to(device) # BS, 2, N_ANT, SNAPSHOTS
             received_signal = samples[3].to(device)
@@ -122,7 +141,9 @@ def channel_estimation(model,dataloader_val,sig_n,cov_type,dir_path,device):
             received_signal = samples[1].to(device)
         sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
         received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
-        mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
+        mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex; BS, N_ANT, N_ANT complex
+        print('Frobenius Cov out')
+        print(torch.mean(torch.sum(torch.abs(Cov_out)**2,dim=(1,2))))
         L,U = torch.linalg.eigh(Cov_out)
         inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
         h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))

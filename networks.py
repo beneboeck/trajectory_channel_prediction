@@ -70,9 +70,9 @@ class Prior(nn.Module):
             mu, logpre = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
         #old&new_bounds
-        logpre = (15 - 1.1) / 2 * nn.Tanh()(logpre) + (15 - 1.1) / 2 + 1.1
+        #logpre = (15 - 1.1) / 2 * nn.Tanh()(logpre) + (15 - 1.1) / 2 + 1.1
         #old bounds
-        #logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
+        logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
         #state of the art Toeplitz
         #logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
         logpre2 = logpre.clone()
@@ -171,9 +171,9 @@ class Encoder(nn.Module):
             mu, logvar = transformed_z.chunk(2, dim=1)
             new_state = torch.zeros(z.size())
         #old&new_bounds
-        logvar = (15 + 1.1) / 2 * nn.Tanh()(logvar) + (15 + 1.1) / 2 - 15
+        #logvar = (15 + 1.1) / 2 * nn.Tanh()(logvar) + (15 + 1.1) / 2 - 15
         #old_bounds
-        #logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
+        logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
         # state of the art Toeplitz
         #logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
         return mu, logvar, new_state
@@ -228,9 +228,9 @@ class Decoder(nn.Module):
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
             #OLD BOUNDS
-            #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             #OLD&NEW_BOUNDS
-            logpre_out = (11-1.1) / 2 * nn.Tanh()(logpre_out) + (11 - 1.1) / 2 + 1.1
+            #logpre_out = (11-1.1) / 2 * nn.Tanh()(logpre_out) + (11 - 1.1) / 2 + 1.1
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':

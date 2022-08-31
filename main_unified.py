@@ -22,7 +22,7 @@ LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
 DATASET_TYPE = 'my_Quadriga'
-MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -44,9 +44,9 @@ if not(exists(overall_path + MODEL_TYPE + 'NAS_file.txt')):
     csvfile = open(overall_path + MODEL_TYPE + 'NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
-        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf'])
+        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf','ELBO'])
     if MODEL_TYPE == 'Single':
-        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est'])
+        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est','ELBO'])
     csvfile.close()
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
@@ -71,7 +71,7 @@ print('global var successful')
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'DFT',False,'DFT',1,False
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'DFT',False,'None',1,False
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
     cov_type = 'DFT'
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
@@ -190,11 +190,16 @@ save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
 torch.save(model.state_dict(),dir_path + '/model_dict')
 log_file.write('\nTESTING\n')
 print('testing')
+_, Risk_val, output_stats_val = ev.eval_val(MODEL_TYPE, setup, model, dataloader_val, cov_type, FREE_BITS_LAMBDA, device, dir_path)
 if MODEL_TYPE == 'Trajectory':
     NMSE_test = ev.channel_prediction(setup,model,dataloader_test,15,dir_path,device,'testing')
     TPR1, TPR2 = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test, SNAPSHOTS, dir_path, device)
     NMSE_val = ev.channel_prediction(setup, model, dataloader_val, 15, dir_path, device, 'testing')
     TPR1_val, TPR2_val = ev.computing_MMD(setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val, SNAPSHOTS,dir_path, device)
+    if cov_type == 'Toeplitz':
+        m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_alpha_0, std_alpha_0, n_bound_hits = output_stats_val
+    if cov_type == 'DFT':
+        m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_sigma_squared_out, std_sigma_squared_out = output_stats_val
     print(f'NMSE prediction test: {NMSE_test}')
     log_file.write(f'NMSE prediction test: {NMSE_test}\n')
 
@@ -204,7 +209,7 @@ NMSE_test_est = ev.channel_estimation(model,dataloader_test,sig_n_test,cov_type,
 csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
-    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val])
+    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val])
 if MODEL_TYPE == 'Single':
     csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est])
 
@@ -221,12 +226,22 @@ glob_file.write(f'NMSE estimation: {eval_NMSE_estimation[-1]:.4f}\n')
 glob_file.write(f'NMSE prediction: {eval_NMSE[-1]:.4f}\n')
 glob_file.write(f'TPR - prior: {eval_TPR1[-1]:.4f}\n')
 glob_file.write(f'TPR - inference: {eval_TPR2[-1]:.4f}\n')
-
+glob_file.write(f'ELBO Validation Set: {Risk_val:4f}\n')
 glob_file.write('Test SET\n')
 glob_file.write(f'NMSE estimation: {NMSE_test_est:.4f}\n')
 if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'NMSE prediction: {NMSE_test:.4f}\n')
     glob_file.write(f'TPR prior: {TPR1:.4f}\n')
     glob_file.write(f'TPR inf: {TPR2:.4f}\n')
-
-
+    glob_file.write(f'Mean Variance Prior: {m_sigma_squared_prior:.4f}\n')
+    glob_file.write(f'Std Variance Prior: {std_sigma_squared_prior:.4f}\n')
+    glob_file.write(f'Mean Variance Encoder: {m_sigma_squared_inf:.4f}\n')
+    glob_file.write(f'Std Variance Encoder: {std_sigma_squared_inf:.4f}\n')
+    if cov_type == 'Toeplitz':
+        glob_file.write(f'Mean Alpha0: {m_alpha_0:4f}\n')
+        glob_file.write(f'Std Alpha0: {std_alpha_0:4f}\n')
+        glob_file.write(f'Number of Alphas (i>0) hitting their Bound: {n_bound_hits:4f}\n')
+    if cov_type == 'DFT':
+        glob_file.write(f'Mean Variance Decoder: {m_sigma_squared_out:4f}\n')
+        glob_file.write(f'Std Variance Decoder: {std_sigma_squared_out:4f}\n')
+        glob_file.write(f'Number of Alphas (i>0) hitting their Bound: {n_bound_hits:4f}\n')
