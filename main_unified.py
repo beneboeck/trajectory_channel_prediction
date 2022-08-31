@@ -69,7 +69,7 @@ print('global var successful')
 
 # NETWORK ARCHITECTURE SEARCH
 if MODEL_TYPE == 'Trajectory':
-    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool = network_architecture_search()
+    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
     LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'Toeplitz',False,'None',1,False
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,True,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
@@ -90,6 +90,8 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'cnn_bool: {cnn_bool}\n')
     glob_file.write(f'BN use: {BN}\n')
     glob_file.write(f'preopro: {prepro}\n')
+    glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
+    glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_VAE()
     out_channel = 128

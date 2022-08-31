@@ -27,7 +27,7 @@ def eval_val(model_type,setup,model,dataloader_val,cov_type, lamba,device, dir_p
         m_alpha_0 = torch.mean(torch.abs(B_out[:,:,0,0])).item()
         std_alpha_0 = torch.std(torch.abs(B_out[:,:,0,0])).item()
         bound = 0.02 * torch.abs(B_out[:,:,0,0])
-        n_bound_hits = torch.mean(torch.sum(torch.abs(torch.real(B_out[:,:,1:,0])) > bound[:,:,None],dim=2).float()).item() + torch.mean(torch.sum(torch.abs(torch.imag(B_out[:,:,1:,0])) > bound[:,:,None],dim=2)).item()
+        n_bound_hits = torch.mean(torch.sum(torch.abs(torch.real(B_out[:,:,1:,0])) > bound[:,:,None],dim=2).float()).item() + torch.mean(torch.sum(torch.abs(torch.imag(B_out[:,:,1:,0])) > bound[:,:,None],dim=2).float()).item()
         output_stats = [m_sigma_squared_prior,std_sigma_squared_prior,m_sigma_squared_inf,std_sigma_squared_inf,m_alpha_0,std_alpha_0,n_bound_hits]
 
     if (model_type == 'Trajectory') & (cov_type == 'DFT'):
