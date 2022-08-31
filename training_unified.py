@@ -130,6 +130,7 @@ def training_gen_NN(model_type,setup,lr, cov_type,model, loader,dataloader_val, 
                 print(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f}, Risk: {Risk:.4f}')
                 print(f'mean_frob: {mean_frob:.3f},mean_mu_signal_energy: {mean_mu_signal_energy:.3f},Cov_part_LMMSE_energy: {Cov_part_LMMSE_energy:.3f},NMSE_only_mun: {NMSE_only_mun:.3f}')
                 log_file.write(f'Evaluation - NMSE_prediction: {NMSE:.4f}, NMSE_estimation: {NMSE_estimation:.4f}, TPR1: {TPR1:.4f}, TPR2: {TPR2:.4f} ,Risk: {Risk:.4f}\n')
+                log_file.write(f'mean_frob: {mean_frob:.3f},mean_mu_signal_energy: {mean_mu_signal_energy:.3f},Cov_part_LMMSE_energy: {Cov_part_LMMSE_energy:.3f},NMSE_only_mun: {NMSE_only_mun:.3f}\n')
                 if (i > 40) & (lr_adaption == False):
                     x_range_lr = torch.arange(5)
                     x_lr = torch.ones(5, 2)

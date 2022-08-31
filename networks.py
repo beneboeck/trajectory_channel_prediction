@@ -179,11 +179,13 @@ class Encoder(nn.Module):
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
-    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,device):
+    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,LB_pre_dec,UB_pre_dec,device):
         super().__init__()
         self.cov_type = cov_type
         self.n_ant = n_ant
         self.device = device
+        self.LB_pre_dec = LB_pre_dec
+        self.UB_pre_dec = UB_pre_dec
         rand_matrix = torch.randn(32,32)
         self.B_mask = torch.tril(rand_matrix)
         self.B_mask[self.B_mask != 0] = 1
@@ -231,6 +233,9 @@ class Decoder(nn.Module):
             logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             #OLD&NEW_BOUNDS
             #logpre_out = (11-1.1) / 2 * nn.Tanh()(logpre_out) + (11 - 1.1) / 2 + 1.1
+
+            # RANDOM SEARCH BOUNDS
+            logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
@@ -272,7 +277,7 @@ class Decoder(nn.Module):
             return mu_out, B, C
 
 class HMVAE(nn.Module):
-    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,n_conv,cnn_bool,device):
+    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device):
         super().__init__()
         # attributes
         self.memory = memory
@@ -284,9 +289,11 @@ class HMVAE(nn.Module):
         self.n_conv = n_conv
         self.cnn_bool = cnn_bool
         self.BN = BN
+        self.LB_pre_dec = torch.log(torch.tensor(1/UB_var_dec)).item()
+        self.UB_pre_dec = torch.log(torch.tensor(1/LB_var_dec)).item()
 
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device) for i in range(snapshots)])
-        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.device) for i in range(snapshots)])
+        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.LB_pre_dec,self.UB_pre_dec,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN) for i in range(snapshots)])
 
     def reparameterize(self, log_var, mu):

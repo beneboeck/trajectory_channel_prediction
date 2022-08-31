@@ -44,7 +44,7 @@ if not(exists(overall_path + MODEL_TYPE + 'NAS_file.txt')):
     csvfile = open(overall_path + MODEL_TYPE + 'NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
-        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','Est','Pre','TPR','TPRinf','ELBO'])
+        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','PreVarLB','PreVarUB','Est','Pre','TPR','TPRinf','ELBO'])
     if MODEL_TYPE == 'Single':
         csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est','ELBO'])
     csvfile.close()
@@ -169,7 +169,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val
 print('here')
 # CREATING THE MODELS
 if MODEL_TYPE == 'Trajectory':
-    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,device).to(device)
+    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
     if author == 'Michael':
@@ -210,7 +210,7 @@ NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_o
 csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
-    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item()])
+    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item()])
 if MODEL_TYPE == 'Single':
     csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est,Risk_val.item()])
 

@@ -54,8 +54,8 @@ def network_architecture_search():
     prepro = np.random.choice(['None','DFT']).item()
     n_conv = np.random.choice([2]).item()
     cnn_bool = np.random.choice([True]).item()
-    LB_var_dec = np.random.uniform(low = 0.0001, high = 0.01)
-    UB_var_dec = np.random.uniform(low=0.5, high = 1)
+    LB_var_dec = round(np.random.uniform(low = 0.0001, high = 0.01),4)
+    UB_var_dec = round(np.random.uniform(low=0.5, high = 1),4)
 
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec
 
