@@ -51,6 +51,7 @@ def network_architecture_search():
     de_layer = np.random.choice([4,5]).item()
     de_width = np.random.choice([6,8,12]).item()
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
+    cov_type = 'Toeplitz'
     prepro = np.random.choice(['None','DFT']).item()
     if cov_type == 'Toeplitz':
         prepro = 'None'
