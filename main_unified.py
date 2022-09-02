@@ -42,7 +42,7 @@ dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_
 os.mkdir (dir_path)
 
 if not(exists(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + '_NAS_file.txt','w')
+    csvfile = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','PreVarLB','PreVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','ELBO','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
