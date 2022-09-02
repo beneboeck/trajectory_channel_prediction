@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 # GLOBAL PARAMETERS
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 900
 LEARNING_RATE = 6e-5
