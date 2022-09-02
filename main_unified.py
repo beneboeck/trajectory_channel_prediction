@@ -74,7 +74,7 @@ if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
     ## ACHTUNG, NACHAENDERUNG!!!!!!
     #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'Toeplitz',False,'None',1,False
-    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,False,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
+    #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,False,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec)
@@ -212,7 +212,7 @@ if MODEL_TYPE == 'Trajectory':
 NMSE_val_est,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(CSI,model,dataloader_val,sig_n_val,cov_type,dir_path,device)
 NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_only_mun_t = ev.channel_estimation(CSI,model,dataloader_test,sig_n_test,cov_type,dir_path,device)
 
-csv_file = open(overall_path + MODEL_TYPE + 'NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + '_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item(),mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun,m_sigma_squared_inf,m_alpha_0,n_bound_hits])
