@@ -30,10 +30,11 @@ class ReshapeDouble(nn.Module):
         return x.view(-1, self.channel1,self.channel2, self.x_size, self.y_size)
 
 class Prior(nn.Module):
-    def __init__(self,ld,rnn_bool,pr_layer,pr_width,BN):
+    def __init__(self,ld,rnn_bool,pr_layer,pr_width,BN,cov_type):
         super().__init__()
         self.rnn_bool = rnn_bool
         self.ld = ld
+        self.cov_type = cov_type
         if rnn_bool == True:
             self.forget = nn.Sequential(
                 nn.Linear(ld, ld),
@@ -72,11 +73,13 @@ class Prior(nn.Module):
         #old&new_bounds
         #logpre = (15 - 1.1) / 2 * nn.Tanh()(logpre) + (15 - 1.1) / 2 + 1.1
         #old bounds
-        #logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
+        if self.cov_type == 'DFT':
+            logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
         #state of the art Toeplitz
-        #logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
+        if self.cov_type == 'Toeplitz':
+            logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
         # NEW BOUNDS 31.08.22
-        logpre = (15 + 1.4) / 2 * nn.Tanh()(logpre) + (15 - 1.4) / 2 - 1.4
+        #logpre = (15 + 1.4) / 2 * nn.Tanh()(logpre) + (15 - 1.4) / 2 - 1.4
         logpre2 = logpre.clone()
         return mu, logpre2, new_state
 
@@ -175,11 +178,13 @@ class Encoder(nn.Module):
         #old&new_bounds
         #logvar = (15 + 1.1) / 2 * nn.Tanh()(logvar) + (15 + 1.1) / 2 - 15
         #old_bounds
-        #logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
+        if self.cov_type == 'DFT':
+            logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
         # state of the art Toeplitz
-        #logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
+        if self.cov_type == 'Toeplitz':
+            logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
         # NEW BOUNDS 31.08.22
-        logvar = (15 + 1.4) / 2 * nn.Tanh()(logvar) + (15 + 1.4) / 2 - 15
+        #logvar = (15 + 1.4) / 2 * nn.Tanh()(logvar) + (15 + 1.4) / 2 - 15
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
@@ -239,7 +244,7 @@ class Decoder(nn.Module):
             #logpre_out = (11-1.1) / 2 * nn.Tanh()(logpre_out) + (11 - 1.1) / 2 + 1.1
 
             # RANDOM SEARCH BOUNDS
-            logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
+            #logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
@@ -299,7 +304,7 @@ class HMVAE(nn.Module):
 
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device) for i in range(snapshots)])
         self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.LB_pre_dec,self.UB_pre_dec,self.device) for i in range(snapshots)])
-        self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN) for i in range(snapshots)])
+        self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN,self.cov_type) for i in range(snapshots)])
 
     def reparameterize(self, log_var, mu):
             std = torch.exp(0.5 * log_var)
@@ -1017,7 +1022,12 @@ class my_tra_VAE(nn.Module):
 
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
-            log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
+            #log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
+            ### Stand 20.08
+            log_pre2 = log_pre.clone()
+            log_pre2[log_pre < torch.log(torch.tensor(10e-1)).to(self.device)] = torch.log(torch.tensor(10e-1)).to(self.device)
+            log_pre2[log_pre > torch.log(torch.tensor(10e4)).to(self.device)] = torch.log(torch.tensor(10e4)).to(self.device)
+            log_pre = log_pre2.clone()
             mu_out = torch.zeros(bs,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
@@ -1031,7 +1041,8 @@ class my_tra_VAE(nn.Module):
             alpha_intermediate = alpha_0.clone()
             if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
                 print('alpha regularized')
-            alpha_intermediate[alpha_0 > 5000] = 5000
+            #alpha_intermediate[alpha_0 > 5000] = 5000
+            alpha_intermediate[alpha_0 > 3000] = 3000
             alpha_0 = alpha_intermediate.clone()
             alpha_rest = torch.squeeze(alpha_rest)
             alpha_rest = 0.022 * alpha_0 * nn.Tanh()(alpha_rest)
