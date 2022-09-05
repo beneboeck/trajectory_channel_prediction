@@ -17,7 +17,7 @@ import csv
 ################################################# GLOBAL PARAMETERS ############################################################
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 5
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
@@ -26,7 +26,7 @@ n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
-SNR_db = 0
+SNR_db = 5
 CSI = 'PERFECT' # PERFECT, NOISY
 
 ################################################ CREATING FILES AND DIRECTORY #############################################################
@@ -89,10 +89,10 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 if MODEL_TYPE == 'Single':
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec = network_architecture_search_VAE()
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN = network_architecture_search_VAE()
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
-    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec)
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
     glob_file.write(f'conv_layer: {conv_layer}\n')
     glob_file.write(f'total_layer: {total_layer}\n')
@@ -102,6 +102,7 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'prepro: {prepro}\n')
     glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
+    glob_file.write(f'BN: {BN:.4f}\n')
 
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_TraVAE()
@@ -168,7 +169,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val
 
 ####################################################### CREATING THE MODELS & TRAINING #############################################
 if MODEL_TYPE == 'Trajectory':
-    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
+    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,BN,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,device).to(device)
 if MODEL_TYPE == 'TraSingle':

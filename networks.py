@@ -564,11 +564,12 @@ class HMVAE(nn.Module):
         return out, z, eps, mu_inf, logvar_inf
 
 class my_VAE(nn.Module):
-    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,LB_var_dec,UB_var_dec,device):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,LB_var_dec,UB_var_dec,BN,device):
         super().__init__()
         rand_matrix = torch.randn(32, 32)
         self.device = device
         self.prepro = prepro
+        self.BN = BN
         self.LB_pre_dec = torch.log(torch.tensor(1 / UB_var_dec)).item()
         self.UB_pre_dec = torch.log(torch.tensor(1 / LB_var_dec)).item()
         self.F = torch.zeros((32, 32), dtype=torch.cfloat).to(self.device)
@@ -595,12 +596,14 @@ class my_VAE(nn.Module):
         for i in range(conv_layer-1):
             self.encoder.append(nn.Conv1d(in_channels,in_channels + step,k_size,2,int((k_size-1)/2)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(in_channels + step))
+            if self.BN:
+                self.encoder.append(nn.BatchNorm1d(in_channels + step))
             in_channels = in_channels + step
         if conv_layer > 0:
             self.encoder.append(nn.Conv1d(in_channels,out_channels,k_size,2,int((k_size-1)/2)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(out_channels))
+            if self.BN:
+                self.encoder.append(nn.BatchNorm1d(out_channels))
 
         in_linear = 64
         if conv_layer > 0:
@@ -615,7 +618,8 @@ class my_VAE(nn.Module):
         else:
             self.encoder.append(nn.Linear(int(in_linear),int(out_channels/4 * in_linear)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(int(out_channels/4 * in_linear)))
+            if self.BN:
+                self.encoder.append(nn.BatchNorm1d(int(out_channels/4 * in_linear)))
             for i in range(1,total_layer - conv_layer - 1):
                 self.encoder.append(nn.Linear(int(out_channels / 4 * in_linear),int( out_channels / 4 * in_linear)))
                 self.encoder.append(nn.ReLU())
@@ -631,7 +635,8 @@ class my_VAE(nn.Module):
             for i in range(total_layer-conv_layer):
                 self.decoder_lin.append(nn.Linear(int(32/(2**conv_layer) * out_channels),int(32/(2**conv_layer) * out_channels)))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
+                if self.BN:
+                    self.decoder_lin.append(nn.BatchNorm1d(int(32/(2**conv_layer) * out_channels)))
             dim_out = int(32/(2**conv_layer) * out_channels)
         else:
             self.decoder_input = nn.Linear(self.latent_dim, int(out_channels / 4 * in_linear))
@@ -657,7 +662,8 @@ class my_VAE(nn.Module):
         if conv_layer > 0:
             self.decoder.append(nn.ConvTranspose1d(out_channels, 2, k_size, 2))
             self.decoder.append(nn.ReLU())
-            self.decoder.append(nn.BatchNorm1d(2))
+            if self.BN:
+                self.decoder.append(nn.BatchNorm1d(2))
             dim_out = (dim_out - 1) * 2 + (k_size - 1) + 1
 
         self.decoder = nn.Sequential(*self.decoder)
@@ -707,7 +713,7 @@ class my_VAE(nn.Module):
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
 
-            log_pre= (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
+            log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             #log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
 
             #log_pre2 = log_pre.clone()

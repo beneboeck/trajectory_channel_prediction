@@ -70,6 +70,7 @@ def network_architecture_search_VAE():
     total_layer = np.random.choice([3,4,5]).item()
     out_channel = np.random.choice([128]).item()
     k_size = np.random.choice([7,9]).item()
+    BN = np.random.choice([False,True]).item()
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
     prepro = np.random.choice(['None', 'DFT']).item()
     if cov_type == 'Toeplitz':
@@ -77,7 +78,7 @@ def network_architecture_search_VAE():
     LB_var_dec = round(np.random.uniform(low=0.0001, high=0.01), 4)
     UB_var_dec = round(np.random.uniform(low=0.5, high=1), 4)
 
-    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec
+    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN
 
 def network_architecture_search_TraVAE():
     LD = np.random.choice([4*16,16*8,16*16]).item()
