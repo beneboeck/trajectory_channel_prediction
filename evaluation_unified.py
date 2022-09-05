@@ -110,7 +110,6 @@ def channel_prediction(CSI,setup,model,dataloader_val,knowledge,dir_path,device,
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE
 
-
 def prediction_visualization(setup,samples,complete_x_list,dir_path):
     cov_type = setup[9]
     if cov_type == 'DFT':
@@ -157,7 +156,6 @@ def prediction_visualization(setup,samples,complete_x_list,dir_path):
 
     fig.savefig(dir_path + '/heat_map_for_prediction.png', dpi=300)
     plt.close('all')
-
 
 def channel_estimation(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []

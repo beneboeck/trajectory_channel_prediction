@@ -21,13 +21,11 @@ G_EPOCHS = 900
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
-DATASET_TYPE = 'my_Quadriga'
 MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
-author = 'Bene'
 SNR_db = 0
 CSI = 'NOISY' # PERFECT, NOISY
 
@@ -45,9 +43,9 @@ if not(exists(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt')
     csvfile = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
-        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','PreVarLB','PreVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','ELBO','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
+        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','ELBO','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
     if MODEL_TYPE == 'Single':
-        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est','ELBO'])
+        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est','ELBO',])
     csvfile.close()
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
@@ -57,7 +55,6 @@ glob_file.write('Date: ' +date +'\n')
 glob_file.write('Time: ' + time + '\n\n')
 glob_file.write(f'CSI TYPE: {CSI}\n\n')
 glob_file.write(f'\nMODEL_TYPE: {MODEL_TYPE}\n\n')
-glob_file.write(f'\AUTHER: {author}\n\n')
 glob_file.write('BATCHSIZE: ' + str(BATCHSIZE) +'\n')
 glob_file.write('G_EPOCHS: ' +str(G_EPOCHS) +'\n')
 glob_file.write(f'Learning Rate: {LEARNING_RATE}\n')
@@ -72,9 +69,6 @@ print('global var successful')
 # NETWORK ARCHITECTURE SEARCH
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
-    ## ACHTUNG, NACHAENDERUNG!!!!!!
-    #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'Toeplitz',False,'None',1,False
-    #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,False,3,4,3,3,4,6,'Toeplitz',False,'None',2,False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec)
@@ -96,7 +90,6 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_VAE()
-    out_channel = 128
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
@@ -107,6 +100,7 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'k_size: {k_size}\n')
     glob_file.write(f'cov_type: {cov_type}\n')
     glob_file.write(f'prepro: {prepro}\n')
+
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_TraVAE()
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 256,1,3,128,7,'Toeplitz','None'
@@ -123,43 +117,42 @@ if MODEL_TYPE == 'TraSingle':
 
 #LOADING AND PREPARING DATA + DEFINING THE MODEL
 
-if DATASET_TYPE == 'my_Quadriga':
-    H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
-    H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
-    H_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val.npy','r')
-    pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
-    pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
-    pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
+H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
+H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
+H_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val.npy','r')
+pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
+pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
+pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
 
-    H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
-    H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
-    H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
+H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
+H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
+H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-    print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
-    print(np.mean(H_train))
-    print(np.std(H_train))
+print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
+print(np.mean(H_train))
+print(np.std(H_train))
 
-    H_test_dft = apply_DFT(H_test)
-    H_val_dft = apply_DFT(H_val)
-    H_train_dft = apply_DFT(H_train)
+H_test_dft = apply_DFT(H_test)
+H_val_dft = apply_DFT(H_val)
+H_train_dft = apply_DFT(H_train)
 
 
-    x_train = np.mean(np.sum(H_train[:,:,:,-1]**2,axis=(1,2)))
-    SNR_eff = 10**(SNR_db/10)
-    sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
-    x_test = np.mean(np.sum(H_test[:,:,:,-1]**2,axis=(1,2)))
-    SNR_eff = 10**(SNR_db/10)
-    sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
-    x_val = np.mean(np.sum(H_val[:,:,:,-1]**2,axis=(1,2)))
-    SNR_eff = 10**(SNR_db/10)
-    sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
+x_train = np.mean(np.sum(H_train[:,:,:,-1]**2,axis=(1,2)))
+SNR_eff = 10**(SNR_db/10)
+sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
+x_test = np.mean(np.sum(H_test[:,:,:,-1]**2,axis=(1,2)))
+SNR_eff = 10**(SNR_db/10)
+sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
+x_val = np.mean(np.sum(H_val[:,:,:,-1]**2,axis=(1,2)))
+SNR_eff = 10**(SNR_db/10)
+sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
 
-    n_H_train = H_train + sig_n_train/math.sqrt(2) * np.random.randn(*H_train.shape)
-    n_H_test = H_test + sig_n_test/math.sqrt(2) * np.random.randn(*H_test.shape)
-    n_H_val = H_val + sig_n_val/math.sqrt(2) * np.random.randn(*H_val.shape)
-    n_H_train_dft = H_train_dft + sig_n_train/math.sqrt(2) * np.random.randn(*H_train_dft.shape)
-    n_H_test_dft = H_test_dft + sig_n_test/math.sqrt(2) * np.random.randn(*H_test_dft.shape)
-    n_H_val_dft = H_val_dft + sig_n_val/math.sqrt(2) * np.random.randn(*H_val_dft.shape)
+n_H_train = H_train + sig_n_train/math.sqrt(2) * np.random.randn(*H_train.shape)
+n_H_test = H_test + sig_n_test/math.sqrt(2) * np.random.randn(*H_test.shape)
+n_H_val = H_val + sig_n_val/math.sqrt(2) * np.random.randn(*H_val.shape)
+n_H_train_dft = H_train_dft + sig_n_train/math.sqrt(2) * np.random.randn(*H_train_dft.shape)
+n_H_test_dft = H_test_dft + sig_n_test/math.sqrt(2) * np.random.randn(*H_test_dft.shape)
+n_H_val_dft = H_val_dft + sig_n_val/math.sqrt(2) * np.random.randn(*H_val_dft.shape)
 
 dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft)
 dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft)
@@ -168,14 +161,14 @@ dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
 dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_test))
 dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
 dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
-print('here')
+
+
+
 # CREATING THE MODELS
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
-    if author == 'Michael':
-        model = mg.Michael_VAE_DFT(16,device).to(device)
 if MODEL_TYPE == 'TraSingle':
     model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS, device).to(device)
     print('model generated')
