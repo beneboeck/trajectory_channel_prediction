@@ -228,11 +228,11 @@ def channel_estimation_all(CSI,model,dataloader_val,sig_n,cov_type,dir_path,devi
                 received_signal = samples[1].to(device)
             sample_in = sample_in.to(device)
             sample_ELBO = sample_ELBO.to(device)
-        sample_oi = sample[:,0,:,estimated_snapshot] + 1j * sample[:,1,:,estimated_snapshot] # BS, N_ANT
+        sample_oi = sample_ELBO[:,0,:,estimated_snapshot] + 1j * sample_ELBO[:,1,:,estimated_snapshot] # BS, N_ANT
         NMSE_final = 10e5
         for i in range(16):
             received_signal_oi = torch.mean(received_signal[:,0,:,i:] + 1j * received_signal[:,1,:,i:],dim=2)
-            mu_out,Cov_out = model.estimating(sample,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
+            mu_out,Cov_out = model.estimating(sample_in,estimated_snapshot) # BS,N_ANT complex, BS, N_ANT, N_ANT complex
             L,U = torch.linalg.eigh(Cov_out)
             inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
             h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
