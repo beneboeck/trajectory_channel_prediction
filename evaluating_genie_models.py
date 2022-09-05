@@ -67,7 +67,7 @@ log_file.write('global variables successfully defined\n\n')
 print('global var successful')
 
 # DEFINING THE MODELS
-cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',14,True,10,3,9,3,8,5,8,False,'DFT'
+cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',14,False,10,3,9,3,8,5,8,False,'DFT'
 n_conv,cnn_bool,LB_var_dec,UB_var_dec = 1,False,0.1,0.33
 model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
 model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
