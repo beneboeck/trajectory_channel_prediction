@@ -31,7 +31,7 @@ author = 'Bene'
 SNR_db_list = [-10,-5,0,5,10,15,20]
 
 
-path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_17_00_tra/model_dict'
+path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_17_46_tra/model_dict'
 path_TN_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_18_23_final_TN/model_dict'
 #path_TD_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_17_08_tra/model_dict'
 path_DFT_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_20_25_single/model_dict'
