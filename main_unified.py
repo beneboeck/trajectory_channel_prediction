@@ -254,7 +254,7 @@ for SNR_db in SNR_db_list:
 
 
 
-csv_file = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item(),mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun,m_sigma_squared_inf,m_alpha_0,n_bound_hits])
