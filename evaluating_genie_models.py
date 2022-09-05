@@ -103,14 +103,14 @@ model_DFT_Tra.eval()
 csv_writer.writerow(SNR_db_list)
 
 NMSE_est_DFT_Tra = []
-NMSE_est_TD_Tra = []
+#NMSE_est_TD_Tra = []
 NMSE_est_TN_Tra = []
 
 NMSE_est_DFT_VAE = []
-NMSE_est_TD_VAE = []
+#NMSE_est_TD_VAE = []
 NMSE_est_TN_VAE = []
 NMSE_est_DFT_VAE_tot = []
-NMSE_est_TD_VAE_tot = []
+#NMSE_est_TD_VAE_tot = []
 NMSE_est_TN_VAE_tot = []
 
 NMSE_est_LS = []
@@ -166,15 +166,15 @@ for SNR_db in SNR_db_list:
     dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
     dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
-    NMSE_DFT_Tra = ev.channel_estimation('PERFECT',model_DFT_Tra, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+    NMSE_DFT_Tra = ev.channel_estimation('PERFECT',model_DFT_Tra, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
     #NMSE_TD_Tra = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
-    NMSE_TN_Tra = ev.channel_estimation('PERFECT',model_TN_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TN_Tra = ev.channel_estimation('PERFECT',model_TN_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
 
-    NMSE_DFT_VAE = ev.channel_estimation('PERFECT',model_DFT_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+    NMSE_DFT_VAE = ev.channel_estimation('PERFECT',model_DFT_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
     NMSE_DFT_VAE_tot = ev.channel_estimation_all('PERFECT',model_DFT_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)
     #NMSE_TD_VAE = ev.channel_estimation(model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
     #NMSE_TD_VAE_tot = ev.channel_estimation_all(model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
-    NMSE_TN_VAE = ev.channel_estimation('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TN_VAE = ev.channel_estimation('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
     NMSE_TN_VAE_tot = ev.channel_estimation_all('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
 
     NMSE_LS_tot, NMSE_sCov_tot = ev.computing_LS_sample_covariance_estimator_all(dataset_test, sig_n_test)
@@ -197,14 +197,14 @@ for SNR_db in SNR_db_list:
     NMSE_est_sCov_tot.append(NMSE_sCov_tot.item())
 
 csv_writer.writerow(NMSE_est_DFT_Tra)
-csv_writer.writerow(NMSE_est_TD_Tra)
+#csv_writer.writerow(NMSE_est_TD_Tra)
 csv_writer.writerow(NMSE_est_TN_Tra)
 
 csv_writer.writerow(NMSE_est_DFT_VAE)
-csv_writer.writerow(NMSE_est_TD_VAE)
+#csv_writer.writerow(NMSE_est_TD_VAE)
 csv_writer.writerow(NMSE_est_TN_VAE)
 csv_writer.writerow(NMSE_est_DFT_VAE_tot)
-csv_writer.writerow(NMSE_est_TD_VAE_tot)
+#csv_writer.writerow(NMSE_est_TD_VAE_tot)
 csv_writer.writerow(NMSE_est_TN_VAE_tot)
 
 csv_writer.writerow(NMSE_est_LS)
