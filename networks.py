@@ -564,11 +564,13 @@ class HMVAE(nn.Module):
         return out, z, eps, mu_inf, logvar_inf
 
 class my_VAE(nn.Module):
-    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,device):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,LB_var_dec,UB_var_dec,device):
         super().__init__()
         rand_matrix = torch.randn(32, 32)
         self.device = device
         self.prepro = prepro
+        self.LB_pre_dec = torch.log(torch.tensor(1 / UB_var_dec)).item()
+        self.UB_pre_dec = torch.log(torch.tensor(1 / LB_var_dec)).item()
         self.F = torch.zeros((32, 32), dtype=torch.cfloat).to(self.device)
         for m in range(32):
             for n in range(32):
@@ -683,7 +685,7 @@ class my_VAE(nn.Module):
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
-        #log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
+        log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
         return mu, log_var
 
     def reparameterize(self, log_var, mu):
@@ -704,11 +706,14 @@ class my_VAE(nn.Module):
         out = self.final_layer(out)
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
+
+            log_pre= (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             #log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
-            log_pre2 = log_pre.clone()
-            log_pre2[log_pre < torch.log(torch.tensor(10e-1)).to(self.device)] = torch.log(torch.tensor(10e-1)).to(self.device)
-            log_pre2[log_pre > torch.log(torch.tensor(10e4)).to(self.device)] = torch.log(torch.tensor(10e4)).to(self.device)
-            log_pre = log_pre2.clone()
+
+            #log_pre2 = log_pre.clone()
+            #log_pre2[log_pre < torch.log(torch.tensor(10e-1)).to(self.device)] = torch.log(torch.tensor(10e-1)).to(self.device)
+            #log_pre2[log_pre > torch.log(torch.tensor(10e4)).to(self.device)] = torch.log(torch.tensor(10e4)).to(self.device)
+            #log_pre = log_pre2.clone()
             mu_out = torch.zeros(batchsize,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
@@ -719,11 +724,12 @@ class my_VAE(nn.Module):
             alpha_0 = alpha[:, 0][:, None]
             alpha_rest = alpha[:, 1:]
             alpha_0 = torch.exp(alpha_0)
-            alpha_intermediate = alpha_0.clone()
-            if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
-                print('alpha regularized')
-            alpha_intermediate[alpha_0 > 5000] = 5000
-            alpha_0 = alpha_intermediate.clone()
+            #alpha_intermediate = alpha_0.clone()
+            #if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
+            #    print('alpha regularized')
+            #alpha_intermediate[alpha_0 > 5000] = 5000
+            alpha_0 = (10 + 2) / 2 * nn.Tanh()(alpha_0) - 2 + (10 + 2) / 2
+            #alpha_0 = alpha_intermediate.clone()
             alpha_rest = torch.squeeze(alpha_rest)
             alpha_rest = 0.022 * alpha_0 * nn.Tanh()(alpha_rest)
             alpha_rest = torch.complex(alpha_rest[:, :31], alpha_rest[:, 31:])

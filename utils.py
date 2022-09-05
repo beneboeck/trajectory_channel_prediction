@@ -65,15 +65,19 @@ def network_architecture_search():
     return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec
 
 def network_architecture_search_VAE():
-    LD = np.random.choice([24,32,40,48,56]).item()
+    LD = np.random.choice([16,24,32,40,48,56]).item()
     conv_layer = np.random.choice([0,1,2,3]).item()
     total_layer = np.random.choice([3,4,5]).item()
     out_channel = np.random.choice([64,128]).item()
     k_size = np.random.choice([7,9]).item()
-    cov_type = np.random.choice(['Toeplitz','Toeplitz','DFT']).item()
+    cov_type = np.random.choice(['Toeplitz','DFT']).item()
     prepro = np.random.choice(['None', 'DFT']).item()
+    if cov_type == 'Toeplitz':
+        prepro = 'None'
+    LB_var_dec = round(np.random.uniform(low=0.0001, high=0.01), 4)
+    UB_var_dec = round(np.random.uniform(low=0.5, high=1), 4)
 
-    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro
+    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec
 
 def network_architecture_search_TraVAE():
     LD = np.random.choice([4*16,16*8,16*16]).item()

@@ -14,22 +14,22 @@ import math
 from os.path import exists
 import csv
 
-# GLOBAL PARAMETERS
+################################################# GLOBAL PARAMETERS ############################################################
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 9
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Single' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
 SNR_db = 0
-CSI = 'NOISY' # PERFECT, NOISY
+CSI = 'PERFECT' # PERFECT, NOISY
 
-# CREATING FILES AND DIRECTORY
+################################################ CREATING FILES AND DIRECTORY #############################################################
 now = datetime.datetime.now()
 date = str(now)[:10]
 time = str(now)[11:16]
@@ -43,9 +43,9 @@ if not(exists(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt')
     csvfile = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
-        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','ELBO','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
+        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','Risk_val','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
     if MODEL_TYPE == 'Single':
-        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Est','ELBO',])
+        csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
     csvfile.close()
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
@@ -66,7 +66,7 @@ log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n\n')
 print('global var successful')
 
-# NETWORK ARCHITECTURE SEARCH
+############################################### NETWORK ARCHITECTURE SEARCH #############################################
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
@@ -89,7 +89,7 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 if MODEL_TYPE == 'Single':
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_VAE()
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec = network_architecture_search_VAE()
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
@@ -100,6 +100,8 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'k_size: {k_size}\n')
     glob_file.write(f'cov_type: {cov_type}\n')
     glob_file.write(f'prepro: {prepro}\n')
+    glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
+    glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_TraVAE()
@@ -115,7 +117,7 @@ if MODEL_TYPE == 'TraSingle':
     glob_file.write(f'cov_type: {cov_type}\n')
     glob_file.write(f'prepro: {prepro}\n')
 
-#LOADING AND PREPARING DATA + DEFINING THE MODEL
+#################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
 
 H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
 H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
@@ -164,7 +166,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val
 
 
 
-# CREATING THE MODELS
+####################################################### CREATING THE MODELS & TRAINING #############################################
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
 if MODEL_TYPE == 'Single':
@@ -174,6 +176,9 @@ if MODEL_TYPE == 'TraSingle':
     print('model generated')
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(CSI,MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
+
+################################################### EVALUATION OF THE MODELS #####################################################
+
 model.eval()
 save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
@@ -184,33 +189,77 @@ save_risk_single(eval_TPR1,dir_path,'Evaluation - TPR1 prior')
 save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
 
 torch.save(model.state_dict(),dir_path + '/model_dict')
-log_file.write('\nTESTING\n')
-print('testing')
-_, Risk_val, output_stats_val = ev.eval_val(CSI,MODEL_TYPE, setup, model, dataloader_val, cov_type, FREE_BITS_LAMBDA, device, dir_path)
+
+
+_, Risk_val, output_stats_val = ev.eval_val(CSI, MODEL_TYPE, setup, model, dataloader_val, cov_type, FREE_BITS_LAMBDA,device, dir_path)
+if cov_type == 'Toeplitz':
+    m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_alpha_0, std_alpha_0, n_bound_hits = output_stats_val
+if cov_type == 'DFT':
+    m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_sigma_squared_out, std_sigma_squared_out = output_stats_val
+    m_alpha_0 = float('nan')
+    n_bound_hits = float('nan')
 if MODEL_TYPE == 'Trajectory':
-    NMSE_test = ev.channel_prediction(CSI,setup,model,dataloader_test,15,dir_path,device,'testing')
-    TPR1, TPR2 = ev.computing_MMD(CSI,setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test, SNAPSHOTS, dir_path, device)
-    NMSE_val = ev.channel_prediction(CSI,setup, model, dataloader_val, 15, dir_path, device, 'testing')
-    TPR1_val, TPR2_val = ev.computing_MMD(CSI,setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val, SNAPSHOTS,dir_path, device)
-    if cov_type == 'Toeplitz':
-        m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_alpha_0, std_alpha_0, n_bound_hits = output_stats_val
-    if cov_type == 'DFT':
-        m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_sigma_squared_out, std_sigma_squared_out = output_stats_val
-        m_alpha_0 = float('nan')
-        n_bound_hits = float('nan')
+    NMSE_test = ev.channel_prediction(CSI, setup, model, dataloader_test, 15, dir_path, device, 'testing')
+    TPR1, TPR2 = ev.computing_MMD(CSI, setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test,SNAPSHOTS, dir_path, device)
+    NMSE_val = ev.channel_prediction(CSI, setup, model, dataloader_val, 15, dir_path, device, 'testing')
+    TPR1_val, TPR2_val = ev.computing_MMD(CSI, setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val,SNAPSHOTS, dir_path, device)
 
-    print(f'NMSE prediction test: {NMSE_test}')
-    log_file.write(f'NMSE prediction test: {NMSE_test}\n')
+SNR_db_list = [0,5,10,20]
+NMSE_est = []
+for SNR_db in SNR_db_list:
 
-NMSE_val_est,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(CSI,model,dataloader_val,sig_n_val,cov_type,dir_path,device)
-NMSE_test_est,mean_frob_t,mean_mu_signal_energy_t,Cov_part_LMMSE_energy_t,NMSE_only_mun_t = ev.channel_estimation(CSI,model,dataloader_test,sig_n_test,cov_type,dir_path,device)
+    H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
+    H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
+    H_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val.npy','r')
+    pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
+    pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
+    pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
+
+    H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
+    H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
+    H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
+
+    H_test_dft = apply_DFT(H_test)
+    H_val_dft = apply_DFT(H_val)
+    H_train_dft = apply_DFT(H_train)
+
+    x_train = np.mean(np.sum(H_train[:,:,:,-1]**2,axis=(1,2)))
+    SNR_eff = 10**(SNR_db/10)
+    sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
+    x_test = np.mean(np.sum(H_test[:,:,:,-1]**2,axis=(1,2)))
+    SNR_eff = 10**(SNR_db/10)
+    sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
+    x_val = np.mean(np.sum(H_val[:,:,:,-1]**2,axis=(1,2)))
+    SNR_eff = 10**(SNR_db/10)
+    sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
+
+    n_H_train = H_train + sig_n_train/math.sqrt(2) * np.random.randn(*H_train.shape)
+    n_H_test = H_test + sig_n_test/math.sqrt(2) * np.random.randn(*H_test.shape)
+    n_H_val = H_val + sig_n_val/math.sqrt(2) * np.random.randn(*H_val.shape)
+    n_H_train_dft = H_train_dft + sig_n_train/math.sqrt(2) * np.random.randn(*H_train_dft.shape)
+    n_H_test_dft = H_test_dft + sig_n_test/math.sqrt(2) * np.random.randn(*H_test_dft.shape)
+    n_H_val_dft = H_val_dft + sig_n_val/math.sqrt(2) * np.random.randn(*H_val_dft.shape)
+
+    dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft)
+    dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft)
+    dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
+
+    dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_test))
+    dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
+    dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
+
+    NMSE_val_est,mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun = ev.channel_estimation(CSI,model,dataloader_val,sig_n_val,cov_type,dir_path,device)
+
+    NMSE_est.append(NMSE_val_est)
+
+
 
 csv_file = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item(),mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun,m_sigma_squared_inf,m_alpha_0,n_bound_hits])
 if MODEL_TYPE == 'Single':
-    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,NMSE_val_est,Risk_val.item()])
+    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,Risk_val.item(),NMSE_est[0],NMSE_est[1],NMSE_est[2],NMSE_est[3]])
 
 csv_file.close()
 
