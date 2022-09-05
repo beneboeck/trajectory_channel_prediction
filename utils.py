@@ -70,8 +70,8 @@ def network_architecture_search_VAE():
     total_layer = np.random.choice([3,4,5]).item()
     out_channel = np.random.choice([128]).item()
     k_size = np.random.choice([7,9]).item()
-    BN = np.random.choice([False,True]).item()
-    cov_type = np.random.choice(['Toeplitz','DFT']).item()
+    BN = np.random.choice([False]).item()
+    cov_type = np.random.choice(['Toeplitz']).item()
     prepro = np.random.choice(['None', 'DFT']).item()
     if cov_type == 'Toeplitz':
         prepro = 'None'
