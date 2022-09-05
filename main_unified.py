@@ -39,8 +39,8 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + str(SNR_db) + 'dB_NAS_file.txt','w')
+if not(exists(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','Risk_val','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
@@ -92,7 +92,7 @@ if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec = network_architecture_search_VAE()
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
-    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
     glob_file.write(f'conv_layer: {conv_layer}\n')
     glob_file.write(f'total_layer: {total_layer}\n')
@@ -192,13 +192,13 @@ torch.save(model.state_dict(),dir_path + '/model_dict')
 
 
 _, Risk_val, output_stats_val = ev.eval_val(CSI, MODEL_TYPE, setup, model, dataloader_val, cov_type, FREE_BITS_LAMBDA,device, dir_path)
-if cov_type == 'Toeplitz':
-    m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_alpha_0, std_alpha_0, n_bound_hits = output_stats_val
-if cov_type == 'DFT':
-    m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_sigma_squared_out, std_sigma_squared_out = output_stats_val
-    m_alpha_0 = float('nan')
-    n_bound_hits = float('nan')
 if MODEL_TYPE == 'Trajectory':
+    if cov_type == 'Toeplitz':
+        m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_alpha_0, std_alpha_0, n_bound_hits = output_stats_val
+    if cov_type == 'DFT':
+        m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_sigma_squared_out, std_sigma_squared_out = output_stats_val
+        m_alpha_0 = float('nan')
+        n_bound_hits = float('nan')
     NMSE_test = ev.channel_prediction(CSI, setup, model, dataloader_test, 15, dir_path, device, 'testing')
     TPR1, TPR2 = ev.computing_MMD(CSI, setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test,SNAPSHOTS, dir_path, device)
     NMSE_val = ev.channel_prediction(CSI, setup, model, dataloader_val, 15, dir_path, device, 'testing')
