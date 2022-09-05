@@ -54,7 +54,7 @@ def network_architecture_search():
     cov_type = 'Toeplitz'
     prepro = np.random.choice(['None','DFT']).item()
     if cov_type == 'Toeplitz':
-        prepro = 'None'
+        prepro = 'DFT'
     n_conv = np.random.choice([2]).item()
     cnn_bool = np.random.choice([True,False]).item()
     if cov_type == 'Toeplitz':
