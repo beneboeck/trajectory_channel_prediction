@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 3
 LEARNING_RATE = 6e-5
@@ -39,8 +39,8 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt','w')
+if not(exists(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','Risk_val','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
@@ -50,7 +50,7 @@ if not(exists(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt')):
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
-glob_file.write('UPPER_BOUNDS OLD; LOWER BOUNDS NEW!!')
+#glob_file.write('UPPER_BOUNDS OLD; LOWER BOUNDS NEW!!')
 glob_file.write('Date: ' +date +'\n')
 glob_file.write('Time: ' + time + '\n\n')
 glob_file.write(f'CSI TYPE: {CSI}\n\n')
@@ -254,12 +254,12 @@ for SNR_db in SNR_db_list:
 
 
 
-csv_file = open(overall_path + MODEL_TYPE + '_' + 'dB_NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item(),mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun,m_sigma_squared_inf,m_alpha_0,n_bound_hits])
 if MODEL_TYPE == 'Single':
-    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,round(Risk_val.item(),3),round(NMSE_est[0],6),round(NMSE_est[1],6),round(NMSE_est[2],6),round(NMSE_est[3],6)])
+    csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
 
 csv_file.close()
 
