@@ -733,7 +733,7 @@ class my_VAE(nn.Module):
             alpha_intermediate = alpha_0.clone()
             #if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
             #    print('alpha regularized')
-            alpha_intermediate[alpha_0 > 5000] = 5000
+            alpha_intermediate[alpha_0 > 50] = 50
             #alpha_0 = (10 + 2) / 2 * nn.Tanh()(alpha_0) - 2 + (10 + 2) / 2
             alpha_0 = alpha_intermediate.clone()
             alpha_rest = torch.squeeze(alpha_rest)
