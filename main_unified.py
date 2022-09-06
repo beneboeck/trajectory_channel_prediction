@@ -90,6 +90,7 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN = network_architecture_search_VAE()
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro, LB_var_dec, UB_var_dec, BN = 56,0,4,128,7,'Toeplitz','None',0.01,0.6,False
     cov_type = 'Toeplitz'
     prepro = 'DFT'
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
