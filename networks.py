@@ -730,13 +730,13 @@ class my_VAE(nn.Module):
             alpha_0 = alpha[:, 0][:, None]
             alpha_rest = alpha[:, 1:]
             #alpha_0 = torch.exp(alpha_0)
-            alpha_intermediate = alpha_0.clone()
+            #alpha_intermediate = alpha_0.clone()
             #if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
             #    print('alpha regularized')
             #alpha_intermediate[alpha_0 > 5000] = 5000
             alpha_0 = (10 + 2) / 2 * nn.Tanh()(alpha_0) - 2 + (10 + 2) / 2
             alpha_0 = torch.exp(alpha_0)
-            alpha_0 = alpha_intermediate.clone()
+            #alpha_0 = alpha_intermediate.clone()
             alpha_rest = torch.squeeze(alpha_rest)
             alpha_rest = 0.022 * alpha_0 * nn.Tanh()(alpha_rest)
             alpha_rest = torch.complex(alpha_rest[:, :31], alpha_rest[:, 31:])
