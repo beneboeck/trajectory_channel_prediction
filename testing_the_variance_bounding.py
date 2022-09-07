@@ -44,7 +44,7 @@ log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n\n')
 print('global var successful')
 
-path_model = '../Simulations/trajectory_channel_prediction/models/time_11_22_myVAE/model_dict'
+path_model = '../Simulations/trajectory_channel_prediction/models/time_10_37_myVAE/model_dict'
 
 #Reproducing MODEL
 LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'DFT',False,'DFT',1,False
