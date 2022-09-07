@@ -44,7 +44,7 @@ log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n\n')
 print('global var successful')
 
-path_model = '../Simulations/trajectory_channel_prediction/models/time_13_17_REPRODUCING/model_dict'
+path_model = '../Simulations/trajectory_channel_prediction/models/time_11_22_myVAE/model_dict'
 
 #Reproducing MODEL
 LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 14,10,False,3,8,3,9,5,8,'DFT',False,'DFT',1,False
@@ -53,6 +53,9 @@ LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width
 # FINAL TN MODEL
 #LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool = 32,10,False,3,4,3,3,4,6,'Toeplitz',False,'None',1,False
 setup = [LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,n_conv,cnn_bool]
+
+LD_VAE,conv_layer, tot_layer,out_channel,k_size,cov_type,prepro,LB,UB,BN = 56,0,3,128,7,'Toeplitz','None',0.01,0.6,False
+
 
 H_test = np.load('../Simulations/trajectory_channel_prediction/data/H_test.npy','r')
 H_train = np.load('../Simulations/trajectory_channel_prediction/data/H_train.npy','r')
@@ -99,10 +102,11 @@ dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_t
 dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
 dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
-model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,device).to(device)
+#model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,device).to(device)
+model = mg.my_VAE(cov_type,LD_VAE,conv_layer,tot_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
 model.load_state_dict(torch.load(path_model,map_location=device))
 model.eval()
-NMSE_DFT_Tra = ev.channel_estimation(model, dataloader_test, sig_n_test, cov_type, dir_path, device)
+NMSE_DFT_Tra = ev.channel_estimation('PERFECT',model, dataloader_test, sig_n_test, cov_type, dir_path, device)
 print(NMSE_DFT_Tra)
 NMSE, Risk,output_stats = ev.eval_val(MODEL_TYPE,setup,model, dataloader_val,cov_type, torch.tensor(1).to(device), device, dir_path)
 print(output_stats)
