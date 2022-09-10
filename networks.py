@@ -128,13 +128,11 @@ class Encoder(nn.Module):
                 nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
                 nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
         else:
-            if ((memory + 1)%2 != 0) & self.cnn_bool:
-                k = memory + 2
-            else:
-                k = memory + 1
-            if ((k/2)%2 != 0) & (self.n_conv == 2) & self.cnn_bool:
-                k = k+1
-            self.x_prenet.append(nn.Linear(n_ant * 2 * k,int(n_ant * 2 * (memory+1) - step)))
+            k = memory + 1
+            for i in range(self.n_conv):
+                k = np.ceil(k/2)
+            k = k.item()
+            self.x_prenet.append(nn.Linear(int(n_ant/(2**self.n_conv) * out_channels * k),int(n_ant * 2 * (memory+1) - step)))
             self.x_prenet.append(nn.ReLU())
             self.x_prenet.append(nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld))
 
