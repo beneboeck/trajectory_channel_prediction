@@ -121,13 +121,6 @@ class Encoder(nn.Module):
                 in_channels = out_channels
                 out_channels = 4 * in_channels
             self.x_prenet.append(nn.Flatten())
-        if BN:
-            self.x_prenet = nn.Sequential(
-                nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
-                nn.ReLU(),
-                nn.BatchNorm1d(int(n_ant * 2 * (memory + 1) - step), eps=1e-4),
-                nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
-        else:
             k = memory + 1
             for i in range(self.n_conv):
                 k = np.ceil(k/2)
@@ -135,8 +128,12 @@ class Encoder(nn.Module):
             self.x_prenet.append(nn.Linear(int(n_ant/(2**self.n_conv) * out_channels * k),int(n_ant * 2 * (memory+1) - step)))
             self.x_prenet.append(nn.ReLU())
             self.x_prenet.append(nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld))
-
-        self.x_prenet = nn.Sequential(*self.x_prenet)
+            self.x_prenet = nn.Sequential(*self.x_prenet)
+        else:
+            self.x_prenet = nn.Sequential(
+                nn.Linear(n_ant * 2 * (memory+1),int(n_ant * 2 * (memory+1) - step)),
+                nn.ReLU(),
+                nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld),)
 
         self.net = []
         self.net.append(nn.Linear(3 * ld,en_width * ld))
