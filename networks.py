@@ -73,15 +73,15 @@ class Prior(nn.Module):
         #old&new_bounds
         #logpre = (15 - 1.1) / 2 * nn.Tanh()(logpre) + (15 - 1.1) / 2 + 1.1
         #old bounds
-        if self.cov_type == 'DFT':
-            logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
+        #if self.cov_type == 'DFT':
+        #    logpre = (2.3 - 1.1) / 2 * nn.Tanh()(logpre) + (2.3 - 1.1) / 2 + 1.1
         #state of the art Toeplitz
-        if self.cov_type == 'Toeplitz':
-            logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
+        #if self.cov_type == 'Toeplitz':
+        #    logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
         # NEW BOUNDS 31.08.22
-        #logpre = (15 + 1.4) / 2 * nn.Tanh()(logpre) + (15 - 1.4) / 2 - 1.4
-        logpre2 = logpre.clone()
-        return mu, logpre2, new_state
+        logpre = (15 + 1.4) / 2 * nn.Tanh()(logpre) + (15 - 1.4) / 2 - 1.4
+        #logpre2 = logpre.clone()
+        return mu, logpre, new_state
 
 class Encoder(nn.Module):
     def __init__(self,n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,device):
@@ -178,13 +178,13 @@ class Encoder(nn.Module):
         #old&new_bounds
         #logvar = (15 + 1.1) / 2 * nn.Tanh()(logvar) + (15 + 1.1) / 2 - 15
         #old_bounds
-        if self.cov_type == 'DFT':
-            logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
+        #if self.cov_type == 'DFT':
+         #   logvar = (4.6 + 1.1) / 2 * nn.Tanh()(logvar) + (4.6 + 1.1) / 2 - 4.6
         # state of the art Toeplitz
-        if self.cov_type == 'Toeplitz':
-            logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
+        #if self.cov_type == 'Toeplitz':
+        #    logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
         # NEW BOUNDS 31.08.22
-        #logvar = (15 + 1.4) / 2 * nn.Tanh()(logvar) + (15 + 1.4) / 2 - 15
+        logvar = (15 + 1.4) / 2 * nn.Tanh()(logvar) + (15 + 1.4) / 2 - 15
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
@@ -239,12 +239,12 @@ class Decoder(nn.Module):
             logpre_out = logpre_out[:,:,None]
             #logpre_out[logpre_out > 4] = 4
             #OLD BOUNDS
-            logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
+            #logpre_out = (2.3 - 1.1) / 2 * nn.Tanh()(logpre_out) + (2.3 - 1.1) / 2 + 1.1
             #OLD&NEW_BOUNDS
             #logpre_out = (11-1.1) / 2 * nn.Tanh()(logpre_out) + (11 - 1.1) / 2 + 1.1
 
             # RANDOM SEARCH BOUNDS
-            #logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
+            logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':

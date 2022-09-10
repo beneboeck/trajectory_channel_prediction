@@ -17,11 +17,11 @@ import csv
 ################################################# GLOBAL PARAMETERS ############################################################
 device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 5
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'Single' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -43,7 +43,7 @@ if not(exists(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt')):
     csvfile = open(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
-        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','NMSE_est','NMSE_pre','TPR','TPRinf','Risk_val','FrobCov','MuOutEnergy','CovLMMSEENergy','NMSEonlyMuOut','MeanVarEnc','MeanAlpha0','nAlphaBound'])
+        csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','TPR','TPRinf','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
     if MODEL_TYPE == 'Single':
         csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','LB_var_dec','UB_var_dec','BN','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
     csvfile.close()
@@ -259,7 +259,7 @@ for SNR_db in SNR_db_list:
 csv_file = open(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
-    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,NMSE_val_est,NMSE_val,TPR1_val,TPR2_val,Risk_val.item(),mean_frob,mean_mu_signal_energy,Cov_part_LMMSE_energy,NMSE_only_mun,m_sigma_squared_inf,m_alpha_0,n_bound_hits])
+    csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,TPR1_val,TPR2_val,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
 if MODEL_TYPE == 'Single':
     csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
 
