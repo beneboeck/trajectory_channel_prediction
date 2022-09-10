@@ -125,7 +125,7 @@ class Encoder(nn.Module):
             for i in range(self.n_conv):
                 k = np.ceil(k/2)
             k = k.item()
-            self.x_prenet.append(nn.Linear(int(n_ant/(2**self.n_conv) * out_channels * k),int(n_ant * 2 * (memory+1) - step)))
+            self.x_prenet.append(nn.Linear(int(n_ant/(2**self.n_conv) * out_channels/4 * k),int(n_ant * 2 * (memory+1) - step)))
             self.x_prenet.append(nn.ReLU())
             self.x_prenet.append(nn.Linear(int(n_ant * 2 * (memory+1) - step),2*ld))
             self.x_prenet = nn.Sequential(*self.x_prenet)
