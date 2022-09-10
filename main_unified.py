@@ -170,7 +170,7 @@ dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val
 
 ####################################################### CREATING THE MODELS & TRAINING #############################################
 if MODEL_TYPE == 'Trajectory':
-    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,BN,device).to(device)
+    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,device).to(device)
 if MODEL_TYPE == 'TraSingle':
