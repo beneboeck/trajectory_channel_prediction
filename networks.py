@@ -783,11 +783,14 @@ class my_VAE(nn.Module):
             return mu_out,Gamma, mu, log_var
 
 class my_tra_VAE(nn.Module):
-    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,n_snapshots,device):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,n_snapshots,LB_var_dec,UB_var_dec,BN,device):
         super().__init__()
         rand_matrix = torch.randn(32, 32)
         self.device = device
         self.prepro = prepro
+        self.BN = BN
+        self.LB_pre_dec = torch.log(torch.tensor(1 / UB_var_dec)).item()
+        self.UB_pre_dec = torch.log(torch.tensor(1 / LB_var_dec)).item()
         self.F = torch.zeros((32, 32), dtype=torch.cfloat).to(self.device)
         for m in range(32):
             for n in range(32):
@@ -814,11 +817,13 @@ class my_tra_VAE(nn.Module):
             for i in range(conv_layer-1):
                 self.encoder.append(nn.Conv2d(in_channels,in_channels + step,k_size,2,int((k_size-1)/2)))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm2d(in_channels + step))
+                if self.BN:
+                    self.encoder.append(nn.BatchNorm2d(in_channels + step))
                 in_channels = in_channels + step
             self.encoder.append(nn.Conv2d(in_channels,self.out_channels,k_size,2,int((k_size-1)/2)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm2d(out_channels))
+            if self.BN:
+                self.encoder.append(nn.BatchNorm2d(out_channels))
 
             step = int(math.floor((int(32*16/(4**conv_layer) * self.out_channels - self.latent_dim)/(total_layer - conv_layer))))
             self.encoder.append(nn.Flatten())
@@ -827,7 +832,8 @@ class my_tra_VAE(nn.Module):
             for i in range(total_layer-conv_layer):
                 self.encoder.append(nn.Linear(in_channels,out_channel))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(out_channel))
+                if self.BN:
+                    self.encoder.append(nn.BatchNorm1d(out_channel))
                 in_channels = out_channel
                 out_channel = out_channel - step
 
@@ -838,11 +844,13 @@ class my_tra_VAE(nn.Module):
             self.encoder.append(nn.Flatten())
             self.encoder.append(nn.Linear(int(in_linear),int(out_channels/16 * in_linear)))
             self.encoder.append(nn.ReLU())
-            self.encoder.append(nn.BatchNorm1d(int(out_channels/16 * in_linear)))
+            if self.BN:
+                self.encoder.append(nn.BatchNorm1d(int(out_channels/16 * in_linear)))
             for i in range(1,total_layer - conv_layer - 1):
                 self.encoder.append(nn.Linear(int(out_channels / 16 * in_linear),int( out_channels / 16 * in_linear)))
                 self.encoder.append(nn.ReLU())
-                self.encoder.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
+                if self.BN:
+                    self.encoder.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
 
             self.fc_mu = nn.Linear(int(out_channels / 16 * in_linear), self.latent_dim)
             self.fc_var = nn.Linear(int(out_channels / 16 * in_linear), self.latent_dim)
@@ -857,12 +865,14 @@ class my_tra_VAE(nn.Module):
             for i in range(total_layer-conv_layer-1):
                 self.decoder_lin.append(nn.Linear(in_channels,out_channel))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(out_channel))
+                if self.BN:
+                    self.decoder_lin.append(nn.BatchNorm1d(out_channel))
                 in_channels = out_channel
                 out_channel = out_channel + step
             self.decoder_lin.append(nn.Linear(in_channels,int(32 / (2 ** conv_layer) * self.out_channels)))
             self.decoder_lin.append(nn.ReLU())
-            self.decoder_lin.append(nn.BatchNorm1d(int(32 / (2 ** conv_layer) * self.out_channels)))
+            if self.BN:
+                self.decoder_lin.append(nn.BatchNorm1d(int(32 / (2 ** conv_layer) * self.out_channels)))
         if conv_layer > 0:
             self.decoder = []
             step = int((32 / (2 ** conv_layer) * self.out_channels - 32 * 4)/conv_layer)
@@ -872,13 +882,15 @@ class my_tra_VAE(nn.Module):
             for i in range(conv_layer - 1):
                 self.decoder.append(nn.ConvTranspose1d(in_channels, out_channel, k_size, 2))
                 self.decoder.append(nn.ReLU())
-                self.decoder.append(nn.BatchNorm1d(out_channel))
+                if self.BN:
+                    self.decoder.append(nn.BatchNorm1d(out_channel))
                 total_dim = (total_dim - 1) * 2 + (k_size - 1) + 1
                 in_channels = in_channels + step
                 out_channel = out_channel + step
             self.decoder.append(nn.ConvTranspose1d(in_channels, 4, k_size, 2))
             self.decoder.append(nn.ReLU())
-            self.decoder.append(nn.BatchNorm1d(4))
+            if self.BN:
+                self.decoder.append(nn.BatchNorm1d(4))
             total_dim = int((total_dim - 1) * 2 + (k_size - 1) + 1)
             self.decoder = nn.Sequential(*self.decoder)
         else:
@@ -886,11 +898,13 @@ class my_tra_VAE(nn.Module):
             for i in range(1,total_layer - 1):
                 self.decoder_lin.append(nn.Linear(in_channels, int(out_channels / 16 * in_linear)))
                 self.decoder_lin.append(nn.ReLU())
-                self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
+                if self.BN:
+                    self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
                 in_channels =  int(out_channels / 16 * in_linear)
             self.decoder_lin.append(nn.Linear(int(out_channels / 16 * in_linear), 4 * 32))
             self.decoder_lin.append(nn.ReLU())
-            self.decoder_lin.append(nn.BatchNorm1d(4 * 32))
+            if self.BN:
+                self.decoder_lin.append(nn.BatchNorm1d(4 * 32))
 
         self.decoder_lin = nn.Sequential(*self.decoder_lin)
 
@@ -949,8 +963,7 @@ class my_tra_VAE(nn.Module):
 
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
-            log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
-            ### Stand 20.08
+            log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             mu_out = torch.zeros(bs,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
@@ -960,13 +973,8 @@ class my_tra_VAE(nn.Module):
             mu_real, mu_imag,alpha = out[:,:32],out[:,32:64],out[:,64:]
             alpha_0 = alpha[:, 0][:, None]
             alpha_rest = alpha[:, 1:]
+            alpha_0 = (5 + 2) / 2 * nn.Tanh()(alpha_0) - 2 + (5 + 2) / 2
             alpha_0 = torch.exp(alpha_0)
-            alpha_intermediate = alpha_0.clone()
-            if torch.sum(alpha_intermediate[alpha_0 > 5000]) > 0:
-                print('alpha regularized')
-            #alpha_intermediate[alpha_0 > 5000] = 5000
-            alpha_intermediate[alpha_0 > 3000] = 3000
-            alpha_0 = alpha_intermediate.clone()
             alpha_rest = torch.squeeze(alpha_rest)
             alpha_rest = 0.022 * alpha_0 * nn.Tanh()(alpha_rest)
             alpha_rest = torch.complex(alpha_rest[:, :31], alpha_rest[:, 31:])

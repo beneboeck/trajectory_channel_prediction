@@ -15,13 +15,13 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 5
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -106,17 +106,20 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'BN: {BN:.4f}\n')
 
 if MODEL_TYPE == 'TraSingle':
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro = network_architecture_search_TraVAE()
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 256,1,3,128,7,'Toeplitz','None'
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN = network_architecture_search_TraVAE()
+    #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 256,1,3,128,7,'Toeplitz','None'
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
-    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro)
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
     glob_file.write(f'conv_layer: {conv_layer}\n')
     glob_file.write(f'total_layer: {total_layer}\n')
     glob_file.write(f'out_channel: {out_channel}\n')
     glob_file.write(f'k_size: {k_size}\n')
     glob_file.write(f'cov_type: {cov_type}\n')
+    glob_file.write(f'LB_var_dec: {LB_var_dec}\n')
+    glob_file.write(f'UB_var_dec: {UB_var_dec}\n')
+    glob_file.write(f'BN: {BN}\n')
     glob_file.write(f'prepro: {prepro}\n')
 
 #################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
@@ -174,7 +177,7 @@ if MODEL_TYPE == 'Trajectory':
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,device).to(device)
 if MODEL_TYPE == 'TraSingle':
-    model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS, device).to(device)
+    model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB_var_dec,UB_var_dec,BN, device).to(device)
     print('model generated')
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(CSI,MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
@@ -260,7 +263,7 @@ csv_file = open(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,TPR1_val,TPR2_val,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
-if MODEL_TYPE == 'Single':
+if (MODEL_TYPE == 'Single') | (MODEL_TYPE == 'TraSingle'):
     csv_writer.writerow([time,LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
 
 csv_file.close()
