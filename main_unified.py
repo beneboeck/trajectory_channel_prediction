@@ -44,7 +44,7 @@ if not(exists(overall_path + MODEL_TYPE + '_' + 'NAS_file.txt')):
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','TPR','TPRinf','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
-    if MODEL_TYPE == 'Single':
+    if (MODEL_TYPE == 'Single') | (MODEL_TYPE == 'TraSingle'):
         csv_writer.writerow(['Time','LD_VAE', 'conv_layer', 'total_layer', 'out_channel', 'k_size', 'cov_type','prepro','LB_var_dec','UB_var_dec','BN','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
     csvfile.close()
 
