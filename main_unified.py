@@ -69,6 +69,8 @@ print('global var successful')
 ############################################### NETWORK ARCHITECTURE SEARCH #############################################
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
+    LD = 32
+    memory = 8
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
     print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec)
