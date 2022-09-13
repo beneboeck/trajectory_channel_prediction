@@ -79,6 +79,7 @@ class Prior(nn.Module):
         #if self.cov_type == 'Toeplitz':
         #    logpre = (15 + 3.5)/2 * nn.Tanh()(logpre) + (15 + 3.5)/2 - 3.5
         # NEW BOUNDS 31.08.22
+        #else:
         logpre = (15 + 1.4) / 2 * nn.Tanh()(logpre) + (15 - 1.4) / 2 - 1.4
         #logpre2 = logpre.clone()
         return mu, logpre, new_state
@@ -179,6 +180,7 @@ class Encoder(nn.Module):
         #if self.cov_type == 'Toeplitz':
         #    logvar = (15 + 3.5) / 2 * nn.Tanh()(logvar) + (15 + 3.5) / 2 - 15
         # NEW BOUNDS 31.08.22
+        #else:
         logvar = (15 + 1.4) / 2 * nn.Tanh()(logvar) + (15 + 1.4) / 2 - 15
         return mu, logvar, new_state
 

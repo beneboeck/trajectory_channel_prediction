@@ -32,16 +32,21 @@ SNR_db_list = [-10,-5,0,5,10,15,20]
 
 
 #path_DFT_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_13_17_REPRODUCING/model_dict'
-#path_TN_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_18_23_final_TN/model_dict'
+#path_TN_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/best_TraSingle_models/time_18_23_final_TN/model_dict'
+
+path_DFT_Tra = '../trajectory_channel_prediction_data_analysis/best_HMVAE_models/time_18_57_best_DFT_yet/model_dict'
+path_TN_Tra = '../trajectory_channel_prediction_data_analysis/best_HMVAE_models/time_18_23_final_TN/model_dict'
+path_DFT_TraSingle = '../trajectory_channel_prediction_data_analysis/best_TraSingle_models/time_14_19/model_dict'
+
 #path_TD_Tra = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_17_08_tra/model_dict'
 #path_DFT_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_20_25_single/model_dict'
 #path_TN_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_23_28_single/model_dict'
 #path_TD_VAE = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/first_run_models/time_20_06_single/model_dict'
 
-path_DFT1_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_21_45_DFT1/model_dict'
-path_DFT2_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_21_48_DFT2/model_dict'
-path_TN_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_11_55_TN/model_dict'
-path_TD_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_14_45_TD/model_dict'
+#path_DFT1_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_21_45_DFT1/model_dict'
+#path_DFT2_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_21_48_DFT2/model_dict'
+#path_TN_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_11_55_TN/model_dict'
+#path_TD_VAE = '../trajectory_channel_prediction_data_analysis/best_genie_VAE_models/time_14_45_TD/model_dict'
 
 
 # CREATING FILES AND DIRECTORY
@@ -73,72 +78,80 @@ log_file.write('global variables successfully defined\n\n')
 print('global var successful')
 
 # DEFINING THE MODELS
-#cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',14,False,10,3,9,3,8,5,8,False,'DFT'
-#n_conv,cnn_bool,LB_var_dec,UB_var_dec = 1,False,0.1,0.33
-#model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
-#model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
+cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',24,True,8,4,3,3,4,4,6,False,'None'
+n_conv,cnn_bool,LB_var_dec,UB_var_dec = 2,False,0.0064,0.6482
+model_DFT_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
+model_DFT_Tra.load_state_dict(torch.load(path_DFT_Tra,map_location=device))
 
-#cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'Toeplitz',32,False,10,3,3,3,4,4,6,False,'None'
-#n_conv,cnn_bool,LB_var_dec,UB_var_dec = 1,False,0.1,1
-#model_TN_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
-#model_TN_Tra.load_state_dict(torch.load(path_TN_Tra,map_location=device))
+cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'Toeplitz',32,False,10,3,3,3,4,4,6,False,'None'
+n_conv,cnn_bool,LB_var_dec,UB_var_dec = 1,False,0.1,1
+model_TN_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
+model_TN_Tra.load_state_dict(torch.load(path_TN_Tra,map_location=device))
+
+cov_type,LD,conv_layer,total_layer,out_channel,k_size,LB,UB,BN,prepro = 'DFT',64,0,3,64,9,0.0026,0.8386,False,'None'
+model_DFT_TraSingle = mg.my_tra_VAE(cov_type,LD,conv_layer,total_layer,out_channel,k_size,prepro,SNAPSHOTS,LB,UB,BN,device).to(device)
+model_DFT_TraSingle.load_state_dict(torch.load(path_DFT_TraSingle,map_location=device))
 
 #cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'Toeplitz',14,True,6,2,3,3,4,5,8,False,'DFT'
 #model_TD_Tra = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,device).to(device)
 #model_TD_Tra.load_state_dict(torch.load(path_TD_Tra,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,3,128,7,'DFT','None',0.0066,0.9953,True
-model_DFT1_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
-model_DFT1_VAE.load_state_dict(torch.load(path_DFT1_VAE,map_location=device))
+#LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,3,128,7,'DFT','None',0.0066,0.9953,True
+#model_DFT1_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
+#model_DFT1_VAE.load_state_dict(torch.load(path_DFT1_VAE,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,3,128,7,'Toeplitz','None',0.0002,0.7394,False
-model_TN_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
-model_TN_VAE.load_state_dict(torch.load(path_TN_VAE,map_location=device))
+#LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,3,128,7,'Toeplitz','None',0.0002,0.7394,False
+#model_TN_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
+#model_TN_VAE.load_state_dict(torch.load(path_TN_VAE,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,4,128,7,'DFT','None',0.0028,0.6116,True
-model_DFT2_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
-model_DFT2_VAE.load_state_dict(torch.load(path_DFT2_VAE,map_location=device))
+#LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,4,128,7,'DFT','None',0.0028,0.6116,True
+#model_DFT2_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
+#model_DFT2_VAE.load_state_dict(torch.load(path_DFT2_VAE,map_location=device))
 
-LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,3,128,7,'Toeplitz','DFT',0.0002,0.7394,False
-model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
-model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
+#LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN = 56,0,3,128,7,'Toeplitz','DFT',0.0002,0.7394,False
+#model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,device).to(device)
+#model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
+
+
 
 #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro = 48,3,5,128,9,'Toeplitz','DFT'
 #model_TD_VAE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,device).to(device)
 #model_TD_VAE.load_state_dict(torch.load(path_TD_VAE,map_location=device))
 
 #model_TD_VAE.eval()
-model_TN_VAE.eval()
-model_DFT1_VAE.eval()
-model_TN_VAE.eval()
-model_DFT2_VAE.eval()
+#model_TN_VAE.eval()
+#model_DFT1_VAE.eval()
+#model_TN_VAE.eval()
+#model_DFT2_VAE.eval()
 #model_TD_Tra.eval()
-#model_TN_Tra.eval()
-#model_DFT_Tra.eval()
+model_TN_Tra.eval()
+model_DFT_Tra.eval()
+model_DFT_TraSingle.eval()
 
 csv_writer.writerow(SNR_db_list)
 
-#NMSE_est_DFT_Tra = []
+NMSE_est_DFT_Tra = []
 #NMSE_est_TD_Tra = []
-#NMSE_est_TN_Tra = []
+NMSE_est_TN_Tra = []
+NMSE_est_DFT_TraSingle = []
 
-NMSE_est_DFT1_VAE = []
-NMSE_est_DFT2_VAE = []
-NMSE_est_TD_VAE = []
-NMSE_est_TN_VAE = []
-NMSE_est_DFT1_VAE_tot = []
-NMSE_est_DFT2_VAE_tot = []
-NMSE_est_TD_VAE_tot = []
-NMSE_est_TN_VAE_tot = []
-
-NMSE_est_LS = []
-NMSE_est_LS_tot = []
-NMSE_est_sCov = []
-NMSE_est_sCov_tot = []
+# NMSE_est_DFT1_VAE = []
+# NMSE_est_DFT2_VAE = []
+# NMSE_est_TD_VAE = []
+# NMSE_est_TN_VAE = []
+# NMSE_est_DFT1_VAE_tot = []
+# NMSE_est_DFT2_VAE_tot = []
+# NMSE_est_TD_VAE_tot = []
+# NMSE_est_TN_VAE_tot = []
+#
+# NMSE_est_LS = []
+# NMSE_est_LS_tot = []
+# NMSE_est_sCov = []
+# NMSE_est_sCov_tot = []
 
 
 for SNR_db in SNR_db_list:
-
+    print(f'SNR_db: {SNR_db}')
     if DATASET_TYPE == 'my_Quadriga':
         #H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
         #H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
@@ -195,14 +208,14 @@ for SNR_db in SNR_db_list:
     #NMSE_TD_Tra = ev.channel_estimation(model_TD_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
     #NMSE_TN_Tra = ev.channel_estimation('PERFECT',model_TN_Tra, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
 
-    NMSE_DFT1_VAE = ev.channel_estimation('PERFECT',model_DFT1_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
-    NMSE_DFT1_VAE_tot = ev.channel_estimation_all('PERFECT',model_DFT1_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)
-    NMSE_DFT2_VAE = ev.channel_estimation('PERFECT', model_DFT2_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
-    NMSE_DFT2_VAE_tot = ev.channel_estimation_all('PERFECT', model_DFT2_VAE, dataloader_test, sig_n_test, 'DFT',dir_path, device)
-    NMSE_TD_VAE = ev.channel_estimation('PERFECT',model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
-    NMSE_TD_VAE_tot = ev.channel_estimation_all('PERFECT',model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
-    NMSE_TN_VAE = ev.channel_estimation('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
-    NMSE_TN_VAE_tot = ev.channel_estimation_all('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    NMSE_TN = ev.channel_estimation('PERFECT',model_TN_Tra, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
+    #NMSE_DFT1_VAE_tot = ev.channel_estimation_all('PERFECT',model_DFT1_VAE, dataloader_test, sig_n_test, 'DFT', dir_path, device)
+    NMSE_DFT = ev.channel_estimation('PERFECT', model_DFT_Tra, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
+    #NMSE_DFT2_VAE_tot = ev.channel_estimation_all('PERFECT', model_DFT2_VAE, dataloader_test, sig_n_test, 'DFT',dir_path, device)
+    NMSE_TraSingle = ev.channel_estimation('PERFECT',model_DFT_TraSingle, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
+    #NMSE_TD_VAE_tot = ev.channel_estimation_all('PERFECT',model_TD_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
+    #NMSE_TN_VAE = ev.channel_estimation('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)[0]
+    #NMSE_TN_VAE_tot = ev.channel_estimation_all('PERFECT',model_TN_VAE, dataloader_test, sig_n_test, 'Toeplitz', dir_path, device)
 
     NMSE_LS_tot, NMSE_sCov_tot = ev.computing_LS_sample_covariance_estimator_all(dataset_test, sig_n_test)
     NMSE_LS, NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_test, sig_n_test)
@@ -211,36 +224,41 @@ for SNR_db in SNR_db_list:
     #NMSE_est_TD_Tra.append(NMSE_TD_Tra)
     #NMSE_est_TN_Tra.append(NMSE_TN_Tra)
 
-    NMSE_est_DFT1_VAE.append(NMSE_DFT1_VAE)
-    NMSE_est_DFT2_VAE.append(NMSE_DFT2_VAE)
-    NMSE_est_TD_VAE.append(NMSE_TD_VAE)
-    NMSE_est_TN_VAE.append(NMSE_TN_VAE)
-    NMSE_est_DFT1_VAE_tot.append(NMSE_DFT1_VAE_tot)
-    NMSE_est_DFT2_VAE_tot.append(NMSE_DFT2_VAE_tot)
-    NMSE_est_TD_VAE_tot.append(NMSE_TD_VAE_tot)
-    NMSE_est_TN_VAE_tot.append(NMSE_TN_VAE_tot)
+    NMSE_est_DFT_Tra.append(NMSE_TraSingle)
+    # NMSE_est_TD_Tra = []
+    NMSE_est_TN_Tra.append(NMSE_TN)
+    NMSE_est_DFT_TraSingle.append(NMSE_DFT)
 
-    NMSE_est_LS.append(NMSE_LS.item())
-    NMSE_est_LS_tot.append(NMSE_LS_tot.item())
-    NMSE_est_sCov.append(NMSE_sCov.item())
-    NMSE_est_sCov_tot.append(NMSE_sCov_tot.item())
+    # NMSE_est_DFT1_VAE.append(NMSE_DFT1_VAE)
+    # NMSE_est_DFT2_VAE.append(NMSE_DFT2_VAE)
+    # NMSE_est_TD_VAE.append(NMSE_TD_VAE)
+    # NMSE_est_TN_VAE.append(NMSE_TN_VAE)
+    # NMSE_est_DFT1_VAE_tot.append(NMSE_DFT1_VAE_tot)
+    # NMSE_est_DFT2_VAE_tot.append(NMSE_DFT2_VAE_tot)
+    # NMSE_est_TD_VAE_tot.append(NMSE_TD_VAE_tot)
+    # NMSE_est_TN_VAE_tot.append(NMSE_TN_VAE_tot)
+
+    #NMSE_est_LS.append(NMSE_LS.item())
+    #NMSE_est_LS_tot.append(NMSE_LS_tot.item())
+    #NMSE_est_sCov.append(NMSE_sCov.item())
+    #NMSE_est_sCov_tot.append(NMSE_sCov_tot.item())
 
 #csv_writer.writerow(NMSE_est_DFT_Tra)
 #csv_writer.writerow(NMSE_est_TD_Tra)
 #csv_writer.writerow(NMSE_est_TN_Tra)
 
-csv_writer.writerow(NMSE_est_DFT1_VAE)
-csv_writer.writerow(NMSE_est_DFT2_VAE)
-csv_writer.writerow(NMSE_est_TD_VAE)
-csv_writer.writerow(NMSE_est_TN_VAE)
-csv_writer.writerow(NMSE_est_DFT1_VAE_tot)
-csv_writer.writerow(NMSE_est_DFT2_VAE_tot)
-csv_writer.writerow(NMSE_est_TD_VAE_tot)
-csv_writer.writerow(NMSE_est_TN_VAE_tot)
-
-csv_writer.writerow(NMSE_est_LS)
-csv_writer.writerow(NMSE_est_LS_tot)
-csv_writer.writerow(NMSE_est_sCov)
-csv_writer.writerow(NMSE_est_sCov_tot)
+csv_writer.writerow(NMSE_est_DFT_Tra)
+csv_writer.writerow(NMSE_est_TN_Tra)
+csv_writer.writerow(NMSE_est_DFT_TraSingle)
+# csv_writer.writerow(NMSE_est_TN_VAE)
+# csv_writer.writerow(NMSE_est_DFT1_VAE_tot)
+# csv_writer.writerow(NMSE_est_DFT2_VAE_tot)
+# csv_writer.writerow(NMSE_est_TD_VAE_tot)
+# csv_writer.writerow(NMSE_est_TN_VAE_tot)
+#
+# csv_writer.writerow(NMSE_est_LS)
+# csv_writer.writerow(NMSE_est_LS_tot)
+# csv_writer.writerow(NMSE_est_sCov)
+# csv_writer.writerow(NMSE_est_sCov_tot)
 
 csv_file.close()
