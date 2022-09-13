@@ -88,6 +88,7 @@ def network_architecture_search_TraVAE():
     out_channel = np.random.choice([64,128]).item()
     k_size = np.random.choice([7,9]).item()
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
+    cov_type = 'DFT'
     prepro = np.random.choice(['None']).item()
     LB_var_dec = round(np.random.uniform(low=0.0001, high=0.01), 4)
     UB_var_dec = round(np.random.uniform(low=0.5, high=1), 4)
