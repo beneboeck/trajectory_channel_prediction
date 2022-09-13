@@ -85,11 +85,11 @@ def network_architecture_search_TraVAE():
     LD = np.random.choice([4*16,16*8,16*16]).item()
     LD = 24 * 16
     conv_layer = np.random.choice([0,1,2,3]).item()
-    conv_layer = 2
+    conv_layer = 0
     total_layer = np.random.choice([3,4,5]).item()
-    total_layer = 5
+    total_layer = 4
     out_channel = np.random.choice([64,128]).item()
-    out_channel = 256
+    out_channel = 128
     k_size = np.random.choice([7,9]).item()
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
     cov_type = 'DFT'
