@@ -83,13 +83,9 @@ def network_architecture_search_VAE():
 
 def network_architecture_search_TraVAE():
     LD = np.random.choice([4*16,16*8,16*16]).item()
-    LD = 24 * 16
     conv_layer = np.random.choice([0,1,2,3]).item()
-    conv_layer = 0
     total_layer = np.random.choice([3,4,5]).item()
-    total_layer = 4
     out_channel = np.random.choice([64,128]).item()
-    out_channel = 168
     k_size = np.random.choice([7,9]).item()
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
     cov_type = 'DFT'
@@ -97,7 +93,6 @@ def network_architecture_search_TraVAE():
     LB_var_dec = round(np.random.uniform(low=0.0001, high=0.01), 4)
     UB_var_dec = round(np.random.uniform(low=0.5, high=1), 4)
     BN = np.random.choice([False, True]).item()
-    BN = True
     return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN
 
 def save_risk(risk_list,RR_list,KL_list,model_path,title):
