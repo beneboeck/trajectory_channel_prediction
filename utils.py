@@ -66,12 +66,16 @@ def network_architecture_search():
 
 def network_architecture_search_VAE():
     LD = np.random.choice([16,24,32,40,48,56]).item()
+    LD = 56
     #LD = np.random.choice([40, 48, 56]).item()
     conv_layer = np.random.choice([0,1,2,3]).item()
+    conv_layer = 0
     total_layer = np.random.choice([3,4,5]).item()
+    total_layer = 3
     out_channel = np.random.choice([128]).item()
     k_size = np.random.choice([7,9]).item()
     BN = np.random.choice([False,True]).item()
+    BN = True
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
     cov_type = 'DFT'
     prepro = np.random.choice(['None', 'DFT']).item()
