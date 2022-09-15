@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 1000
 LEARNING_RATE = 6e-5
@@ -50,7 +50,7 @@ if not(exists(overall_path + MODEL_TYPE + '_' + '5dB_NAS_file.txt')):
 
 glob_file = open(dir_path + '/glob_var_file.txt','w') # only the important results and the framework
 log_file = open(dir_path + '/log_file.txt','w') # log_file which keeps track of the training and such stuff
-#glob_file.write('UPPER_BOUNDS OLD; LOWER BOUNDS NEW!!')
+#glob_file.write('DATA DIFFERENTLY NORMALIZED!!! IT IS NOW NORMALIZED WITH RESPECT TO THE LAST SNAPSHOT')
 glob_file.write('Date: ' +date +'\n')
 glob_file.write('Time: ' + time + '\n\n')
 glob_file.write(f'CSI TYPE: {CSI}\n\n')
