@@ -50,7 +50,7 @@ def risk_free_bits(lamba,x,mu,log_var,mu_out,Gamma):
     KL =  torch.mean(torch.sum(torch.max(lamba,-0.5 * (1 + log_var - mu ** 2 - (log_var).exp())),dim=1))
     return Rec_err + KL,Rec_err,KL
 
-def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n, device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
+def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n,sig_n_train,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
 
     risk_list= []
     KL_list = []
@@ -83,10 +83,10 @@ def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_v
                 sample_ELBO = sample_ELBO.to(device)
             if CSI == 'NOISY':
                 if cov_type == 'DFT':
-                    sample_in = samples[3]
+                    sample_in = samples[2] + sig_n_train/torch.sqrt(2) * torch.randn(samples[2].size())
                     sample_ELBO = samples[2]
                 else:
-                    sample_in = samples[1]
+                    sample_in = samples[0] + sig_n_train/torch.sqrt(2) * torch.randn(samples[0].size())
                     sample_ELBO = samples[0]
                 sample_in = sample_in.to(device)
                 sample_ELBO = sample_ELBO.to(device)
