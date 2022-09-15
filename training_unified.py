@@ -33,8 +33,8 @@ def risk_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_prior,logpre
     #IR_term = - 0.5 * eps**2 - 0.5 * log_var
     IR_term = -0.5 * (log_var + 1)
     PR_term = 0.5 * (- logpre_prior + logpre_prior.exp() * (z - mu_prior)**2)
-    #KL = torch.mean(torch.sum(torch.max(lamba,IR_term + PR_term),dim=(1,2)))
-    KL = torch.max(lamba,torch.mean(torch.sum( IR_term + PR_term, dim=(1, 2))))
+    KL = torch.mean(torch.sum(torch.max(lamba,IR_term + PR_term),dim=(1,2)))
+    #KL = torch.max(lamba,torch.mean(torch.sum( IR_term + PR_term, dim=(1, 2))))
 
     return RR + KL,RR,KL
 
@@ -48,7 +48,8 @@ def risk_free_bits(lamba,x,mu,log_var,mu_out,Gamma):
     log_detGamma = torch.sum(torch.log(torch.abs(diagU)), dim=1)
     argument = torch.einsum('ij,ij->i', torch.conj(x - mu_out), torch.einsum('ijk,ik->ij', Gamma, x - mu_out))
     Rec_err = torch.real(torch.mean(- log_detGamma + argument))
-    KL =  torch.mean(torch.sum(torch.max(lamba,-0.5 * (1 + log_var - mu ** 2 - (log_var).exp())),dim=1))
+    #KL =  torch.mean(torch.sum(torch.max(lamba,-0.5 * (1 + log_var - mu ** 2 - (log_var).exp())),dim=1))
+    KL = torch.max(lamba,torch.mean(torch.sum( -0.5 * (1 + log_var - mu ** 2 - (log_var).exp()), dim=1)))
     return Rec_err + KL,Rec_err,KL
 
 def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_val, epochs, lamba,sig_n,sig_n_train,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, snapshots):
