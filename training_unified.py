@@ -33,7 +33,8 @@ def risk_diagonal_free_bits(lamba,x,z,log_var,mu_out,log_pre_out,mu_prior,logpre
     #IR_term = - 0.5 * eps**2 - 0.5 * log_var
     IR_term = -0.5 * (log_var + 1)
     PR_term = 0.5 * (- logpre_prior + logpre_prior.exp() * (z - mu_prior)**2)
-    KL = torch.mean(torch.sum(torch.max(lamba,IR_term + PR_term),dim=(1,2)))
+    #KL = torch.mean(torch.sum(torch.max(lamba,IR_term + PR_term),dim=(1,2)))
+    KL = torch.max(lamba,torch.mean(torch.sum( IR_term + PR_term, dim=(1, 2))))
 
     return RR + KL,RR,KL
 
