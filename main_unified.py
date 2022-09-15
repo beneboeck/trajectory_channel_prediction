@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 1000
 LEARNING_RATE = 6e-5
@@ -34,6 +34,9 @@ now = datetime.datetime.now()
 date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
+
+#overall_path = './'
+#dir_path = './time_' + time
 
 overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
@@ -134,6 +137,26 @@ pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/m
 H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
 H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
 H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
+
+H_train = H_train/np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))) * 32
+H_val = H_val/np.mean(np.sum(np.abs(H_val)**2,axis=(1,2))) * 32
+H_train = H_train/np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))) * 32
+
+#H_train_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_train.npy','r')
+#H_test_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_test.npy','r')
+#H_val_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_eval.npy','r')
+
+#H_train = np.zeros((40000,2,32,1))
+#H_train[:,0,:,0] = np.real(H_train_c[:40000,:]) * 2
+#H_train[:,1,:,0] = np.imag(H_train_c[:40000,:]) * 2
+
+#H_val = np.zeros((10000,2,32,1))
+#H_val[:,0,:,0] = np.real(H_val_c) * 2
+#H_val[:,1,:,0] = np.imag(H_val_c) * 2
+
+#H_test = np.zeros((10000,2,32,1))
+#H_test[:,0,:,0] = np.real(H_test_c) * 2
+#H_test[:,1,:,0] = np.imag(H_test_c) * 2
 
 print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
 print(np.mean(H_train))

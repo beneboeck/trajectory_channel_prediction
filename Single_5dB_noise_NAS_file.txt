@@ -1,0 +1,1 @@
+Time,LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,Risk_val,NMSE_0dB,NMSE_5dB,NMSE_10dB,NMSE_20dB

@@ -77,7 +77,7 @@ def network_architecture_search_VAE():
     BN = np.random.choice([False,True]).item()
     BN = True
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
-    cov_type = 'Toeplitz'
+    cov_type = 'DFT'
     prepro = np.random.choice(['None', 'DFT']).item()
     if cov_type == 'Toeplitz':
         prepro = 'None'
