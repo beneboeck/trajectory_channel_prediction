@@ -141,6 +141,12 @@ H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 H = np.concatenate((H_train,H_test,H_val),axis=0)
 H = H = H/np.sqrt(np.mean(np.sum(np.abs(H)**2,axis=(1,2)))) * np.sqrt(32)
 
+def shuffle_along_axis(a, axis):
+    idx = np.random.rand(*a.shape).argsort(axis=axis)
+    return np.take_along_axis(a,idx,axis=axis)
+
+H = shuffle_along_axis(H,axis=0)
+
 H_train = H[:40000,:,:,:]
 H_test = H[40000:45000,:,:,:]
 H_val = H[45000:,:,:,:]

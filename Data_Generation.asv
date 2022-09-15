@@ -5,8 +5,8 @@ clc
 
 %% (A) global variables
 
-no_runs = 120;                                     % Number of total simulations
-no_trajectories = 1000;                             % Number of simulated trajectories per simulation
+no_runs = 600;                                     % Number of total simulations
+no_trajectories = 200;                             % Number of simulated trajectories per simulation
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
@@ -200,12 +200,12 @@ for o = [1:no_runs]
         end
     end
     % comment: additional saves: PG_normalization_factor + initial_positions
-    %if o == 1
-    %    figure;
-    %    a = squeeze(real(H(1,:,:)));
-    %    a = a./max(a) * 256;
-    %    image(a)
-    %end
+    if o == 1
+        figure;
+        a = squeeze(real(H(1,:,:)));
+        a = a./max(a) * 256;
+        image(a)
+    end
     %set(gca,'FontSize',18)
     %title('3m/s, 0.5ms snapshots, 15ms trajectory','FontSize',18)
     %xlabel('Snapshots','FontSize',18)
@@ -233,15 +233,15 @@ path_gains_test = path_gains_total(0.9 * no_runs * no_trajectories + 1:end,:);
 
 
 
-save('../Simulations//trajectory_channel_prediction/data/H_real600_200.mat','H_real','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H600_200.mat','H_real','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_real_val500_100.mat','H_real_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_real_test500_100.mat','H_real_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_imag600_200.mat','H_imag','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag600_200.mat','H_imag','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/path_gains600_200.mat','path_gains_total','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/path_gains600_200.mat','path_gains','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/path_gains_val500_100.mat','path_gains_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/path_gains_test500_100.mat','path_gains_test','-v7.3');
 
