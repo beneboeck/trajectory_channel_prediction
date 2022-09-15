@@ -138,9 +138,9 @@ H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
 H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
 H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-H_train = H_train/np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))) * 32
-H_val = H_val/np.mean(np.sum(np.abs(H_val)**2,axis=(1,2))) * 32
-H_train = H_train/np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))) * 32
+H_train = H_train = H_train/np.sqrt(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2)))) * np.sqrt(32)
+H_val = H_val = H_train/np.sqrt(np.mean(np.sum(np.abs(H_val)**2,axis=(1,2)))) * np.sqrt(32)
+H_test = H_test = H_train/np.sqrt(np.mean(np.sum(np.abs(H_test)**2,axis=(1,2)))) * np.sqrt(32)
 
 #H_train_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_train.npy','r')
 #H_test_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_test.npy','r')
@@ -158,6 +158,7 @@ H_train = H_train/np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))) * 32
 #H_test[:,0,:,0] = np.real(H_test_c) * 2
 #H_test[:,1,:,0] = np.imag(H_test_c) * 2
 
+print('....')
 print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
 print(np.mean(H_train))
 print(np.std(H_train))
