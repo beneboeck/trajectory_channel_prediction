@@ -35,11 +35,11 @@ date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
 
-#overall_path = './'
-#dir_path = './time_' + time
+overall_path = './'
+dir_path = './time_' + time
 
-overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
-dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
+#overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
+#dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
 if not(exists(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt')):
@@ -138,25 +138,32 @@ H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
 H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
 H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-H_train = H_train = H_train/np.sqrt(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2)))) * np.sqrt(32)
-H_val = H_val = H_train/np.sqrt(np.mean(np.sum(np.abs(H_val)**2,axis=(1,2)))) * np.sqrt(32)
-H_test = H_test = H_train/np.sqrt(np.mean(np.sum(np.abs(H_test)**2,axis=(1,2)))) * np.sqrt(32)
+H = np.concatenate((H_train,H_test,H_val),axis=0)
+H = H = H/np.sqrt(np.mean(np.sum(np.abs(H)**2,axis=(1,2)))) * np.sqrt(32)
+
+H_train = H[:40000,:,:,:]
+H_test = H[40000:45000,:,:,:]
+H_val = H[45000:,:,:,:]
+
+#H_train = H_train = H_train/np.sqrt(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2)))) * np.sqrt(32)
+#H_val = H_val = H_train/np.sqrt(np.mean(np.sum(np.abs(H_val)**2,axis=(1,2)))) * np.sqrt(32)
+#H_test = H_test = H_train/np.sqrt(np.mean(np.sum(np.abs(H_test)**2,axis=(1,2)))) * np.sqrt(32)
 
 #H_train_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_train.npy','r')
 #H_test_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_test.npy','r')
 #H_val_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_eval.npy','r')
 
-#H_train = np.zeros((40000,2,32,1))
-#H_train[:,0,:,0] = np.real(H_train_c[:40000,:]) * 2
-#H_train[:,1,:,0] = np.imag(H_train_c[:40000,:]) * 2
+#H_train = np.zeros((100000,2,32,1))
+#H_train[:,0,:,0] = np.real(H_train_c)
+#H_train[:,1,:,0] = np.imag(H_train_c)
 
 #H_val = np.zeros((10000,2,32,1))
-#H_val[:,0,:,0] = np.real(H_val_c) * 2
-#H_val[:,1,:,0] = np.imag(H_val_c) * 2
+#H_val[:,0,:,0] = np.real(H_val_c)
+#H_val[:,1,:,0] = np.imag(H_val_c)
 
 #H_test = np.zeros((10000,2,32,1))
-#H_test[:,0,:,0] = np.real(H_test_c) * 2
-#H_test[:,1,:,0] = np.imag(H_test_c) * 2
+#H_test[:,0,:,0] = np.real(H_test_c)
+#H_test[:,1,:,0] = np.imag(H_test_c)
 
 print('....')
 print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
