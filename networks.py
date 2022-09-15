@@ -688,7 +688,7 @@ class my_VAE(nn.Module):
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
-        log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
+        #log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
         return mu, log_var
 
     def reparameterize(self, log_var, mu):
@@ -710,13 +710,9 @@ class my_VAE(nn.Module):
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
 
-            log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
-            #log_pre = (0.5 + 15) / 2 * nn.Tanh()(log_pre) + (0.5 + 15) / 2 - 0.5
+            #log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
 
-            #log_pre2 = log_pre.clone()
-            #log_pre2[log_pre < torch.log(torch.tensor(10e-1)).to(self.device)] = torch.log(torch.tensor(10e-1)).to(self.device)
-            #log_pre2[log_pre > torch.log(torch.tensor(10e4)).to(self.device)] = torch.log(torch.tensor(10e4)).to(self.device)
-            #log_pre = log_pre2.clone()
+            
             mu_out = torch.zeros(batchsize,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
