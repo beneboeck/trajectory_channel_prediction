@@ -66,10 +66,10 @@ def network_architecture_search():
 
 def network_architecture_search_VAE():
     LD = np.random.choice([16,24,32,40,48,56]).item()
-    LD = 24
+    LD = 16
     #LD = np.random.choice([40, 48, 56]).item()
     conv_layer = np.random.choice([0,1,2,3]).item()
-    conv_layer = 2
+    conv_layer = 3
     total_layer = np.random.choice([3,4,5]).item()
     total_layer = 3
     out_channel = np.random.choice([128]).item()
