@@ -83,7 +83,7 @@ def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_v
                 sample_ELBO = sample_ELBO.to(device)
             if CSI == 'NOISY':
                 if cov_type == 'DFT':
-                    sample_in = samples[2] + sig_n_train/torch.sqrt(torch.tensor(2)) * torch.randn(samples[2].size())
+                    sample_in = samples[2].to(device) + sig_n_train/torch.sqrt(torch.tensor(2)) * torch.randn(samples[2].size()).to(device)
                     sample_ELBO = samples[2]
                 else:
                     sample_in = samples[0] + sig_n_train/torch.sqrt(torch.tensor(2)) * torch.randn(samples[0].size())

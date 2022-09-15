@@ -712,7 +712,7 @@ class my_VAE(nn.Module):
 
             #log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
 
-            
+
             mu_out = torch.zeros(batchsize,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag
