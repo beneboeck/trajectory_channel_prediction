@@ -75,7 +75,7 @@ def network_architecture_search_VAE():
     out_channel = np.random.choice([128]).item()
     k_size = np.random.choice([7,9]).item()
     BN = np.random.choice([False,True]).item()
-    BN = True
+    BN = False
     cov_type = np.random.choice(['Toeplitz','DFT']).item()
     cov_type = 'DFT'
     prepro = np.random.choice(['None', 'DFT']).item()
