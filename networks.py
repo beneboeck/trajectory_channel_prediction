@@ -688,7 +688,7 @@ class my_VAE(nn.Module):
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
-        log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
+        #log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
         return mu, log_var
 
     def reparameterize(self, log_var, mu):
