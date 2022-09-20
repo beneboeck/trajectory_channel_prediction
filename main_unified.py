@@ -35,11 +35,11 @@ date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
 
-overall_path = './'
-dir_path = './time_' + time
+#overall_path = './'
+#dir_path = './time_' + time
 
-#overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
-#dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
+overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
+dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
 if not(exists(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt')):
