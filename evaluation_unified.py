@@ -183,6 +183,7 @@ def channel_estimation(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
                 received_signal = samples[1].to(device)
             sample_in = sample_in.to(device)
             sample_ELBO = sample_ELBO.to(device)
+            sig_n = samples[4].to(device)
 
         sample_oi = sample_ELBO[:,0,:,estimated_snapshot] + 1j * sample_ELBO[:,1,:,estimated_snapshot] # BS, N_ANT
         received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
@@ -190,7 +191,7 @@ def channel_estimation(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
         mean_frob = torch.mean(torch.sum(torch.abs(Cov_out)**2,dim=(1,2)))
         mean_mu_signal_energy = torch.mean(torch.sum(torch.abs(mu_out)**2,dim=1))
         L,U = torch.linalg.eigh(Cov_out)
-        inv_matrix = U @ torch.diag_embed(1/(L + sig_n ** 2)).cfloat() @ U.mH
+        inv_matrix = U @ torch.diag_embed(1/(L + torch.squeeze(sig_n)[:,None] ** 2)).cfloat() @ U.mH
         h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
         Cov_part_LMMSE_energy = torch.mean(torch.sum(torch.abs(torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))) ** 2, dim=1))
         NMSE = torch.mean(torch.sum(torch.abs(sample_oi - h_hat) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
@@ -435,15 +436,20 @@ def computing_MMD(CSI,setup,model,n_iterations,n_permutations,normed,bs_mmd,data
     TPR2 = H2.sum() / n_iterations
     return TPR1, TPR2
 
-def computing_LS_sample_covariance_estimator(dataset_val,sig_n):
+def computing_LS_sample_covariance_estimator(dataset_val,dataset_train,sig_n):
     h_hat_LS = dataset_val.y[:,0,:,-1] + 1j * dataset_val.y[:,1,:,-1]
+    h_hat_LS_train = dataset_train.y[:, 0, :, -1] + 1j * dataset_train.y[:, 1, :, -1]
     h = dataset_val.h[:,0,:,-1] + 1j * dataset_val.h[:,1,:,-1]
     NMSE_LS = torch.mean(torch.linalg.norm(h - h_hat_LS,dim = 1) ** 2)/torch.mean(torch.linalg.norm(h,dim=1)**2)
 
+    sMean_train = torch.mean(h_hat_LS_train,dim=0)
     sMean = torch.mean(h_hat_LS,dim=0)
-    sCov_y = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS - sMean),torch.conj(h_hat_LS - sMean)),dim=0)
+    sCov_y = torch.mean(torch.einsum('ij,ik->ijk',(h_hat_LS_train - sMean_train),torch.conj(h_hat_LS_train - sMean_train)),dim=0)
     inv_matrix = torch.linalg.inv(sCov_y)
-    h_hat_sCov = sMean[None,:] + torch.einsum('ij,kj->ki',(sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat)) @ inv_matrix,(h_hat_LS - sMean[None,:]))
+    h_hat_sCov = sMean_train[None, :] + torch.einsum('kij,kj->ki', (sCov_y[None,:,:] - torch.squeeze(dataset_val.sig_n)[:,None,None] ** 2 * torch.eye(32, 32, dtype=torch.cfloat)[None,:,:]) @ inv_matrix,(h_hat_LS - sMean_train[None, :]))
+
+
+    #h_hat_sCov = sMean_train[None,:] + torch.einsum('ij,kj->ki',(sCov_y - sig_n ** 2 * torch.eye(32,32,dtype=torch.cfloat)) @ inv_matrix,(h_hat_LS - sMean_train[None,:]))
     NMSE_sCov = torch.mean(torch.linalg.norm(h - h_hat_sCov, dim=1) ** 2) / torch.mean(torch.linalg.norm(h, dim=1) ** 2)
 
     return NMSE_LS,NMSE_sCov

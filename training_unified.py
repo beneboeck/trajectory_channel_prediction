@@ -85,10 +85,10 @@ def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_v
                 sample_ELBO = sample_ELBO.to(device)
             if CSI == 'NOISY':
                 if cov_type == 'DFT':
-                    sample_in = samples[2].to(device) + sig_n_train/torch.sqrt(torch.tensor(2)) * torch.randn(samples[2].size()).to(device)
+                    sample_in = samples[2] + samples[4]/torch.sqrt(torch.tensor(2)) * torch.randn(samples[2].size())
                     sample_ELBO = samples[2]
                 else:
-                    sample_in = samples[0] + sig_n_train/torch.sqrt(torch.tensor(2)) * torch.randn(samples[0].size())
+                    sample_in = samples[0] + samples[4]/torch.sqrt(torch.tensor(2)) * torch.randn(samples[0].size())
                     sample_ELBO = samples[0]
                 sample_in = sample_in.to(device)
                 sample_ELBO = sample_ELBO.to(device)
@@ -162,7 +162,7 @@ def training_gen_NN(CSI,model_type,setup,lr, cov_type,model, loader,dataloader_v
                         optimizer.param_groups[0]['lr'] = optimizer.param_groups[0]['lr']/5
                         lr_adaption = True
 
-                if (i > 300) & (lr_adaption == True):
+                if (i > 200) & (lr_adaption == True):
                     x_range = torch.arange(15)
                     x = torch.ones(15, 2)
                     x[:, 0] = x_range

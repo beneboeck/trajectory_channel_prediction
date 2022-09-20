@@ -561,12 +561,13 @@ class HMVAE(nn.Module):
         return out, z, eps, mu_inf, logvar_inf
 
 class my_VAE(nn.Module):
-    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,LB_var_dec,UB_var_dec,BN,device):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var,device):
         super().__init__()
         rand_matrix = torch.randn(32, 32)
         self.device = device
         self.prepro = prepro
         self.BN = BN
+        self.reg_output_var = reg_output_var
         self.LB_pre_dec = torch.log(torch.tensor(1 / UB_var_dec)).item()
         self.UB_pre_dec = torch.log(torch.tensor(1 / LB_var_dec)).item()
         self.F = torch.zeros((32, 32), dtype=torch.cfloat).to(self.device)
@@ -710,9 +711,8 @@ class my_VAE(nn.Module):
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
 
-            log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
-
-
+            if self.reg_output_var:
+                log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             mu_out = torch.zeros(batchsize,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag

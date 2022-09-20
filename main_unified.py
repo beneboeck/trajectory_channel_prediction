@@ -15,9 +15,9 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 1000
+G_EPOCHS = 7
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 16
@@ -92,11 +92,11 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
 if MODEL_TYPE == 'Single':
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN = network_architecture_search_VAE()
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_VAE()
     #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro, LB_var_dec, UB_var_dec, BN = 56,0,3,128,7,'Toeplitz','None',0.0002,0.7394,False
-    setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
+    setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,reg_output_var]
     print('Single Setup')
-    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN)
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
     glob_file.write(f'conv_layer: {conv_layer}\n')
     glob_file.write(f'total_layer: {total_layer}\n')
@@ -107,6 +107,7 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
     glob_file.write(f'BN: {BN:.4f}\n')
+    glob_file.write(f'reg_output_var: {reg_output_var}\n')
 
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN = network_architecture_search_TraVAE()
@@ -127,29 +128,29 @@ if MODEL_TYPE == 'TraSingle':
 
 #################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
 
-H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
-H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
-H_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val.npy','r')
-pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
-pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
-pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
+H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
+H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
+H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
+#pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
+#pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
+#pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
 
-H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
-H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
-H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
+#H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
+#H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
+#H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-H = np.concatenate((H_train,H_test,H_val),axis=0)
-H = H = H/np.sqrt(np.mean(np.sum(np.abs(H)**2,axis=(1,2)))) * np.sqrt(32)
+#H = np.concatenate((H_train,H_test,H_val),axis=0)
+#H = H = H/np.sqrt(np.mean(np.sum(np.abs(H)**2,axis=(1,2)))) * np.sqrt(32)
 
-def shuffle_along_axis(a, axis):
-    idx = np.random.rand(*a.shape).argsort(axis=axis)
-    return np.take_along_axis(a,idx,axis=axis)
+#def shuffle_along_axis(a, axis):
+#    idx = np.random.rand(*a.shape).argsort(axis=axis)
+#    return np.take_along_axis(a,idx,axis=axis)
 
-H = shuffle_along_axis(H,axis=0)
+#H = shuffle_along_axis(H,axis=0)
 
-H_train = H[:40000,:,:,:]
-H_test = H[40000:45000,:,:,:]
-H_val = H[45000:,:,:,:]
+#H_train = H[:40000,:,:,:]
+#H_test = H[40000:45000,:,:,:]
+#H_val = H[45000:,:,:,:]
 
 #H_train = H_train = H_train/np.sqrt(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2)))) * np.sqrt(32)
 #H_val = H_val = H_train/np.sqrt(np.mean(np.sum(np.abs(H_val)**2,axis=(1,2)))) * np.sqrt(32)
@@ -159,17 +160,21 @@ H_val = H[45000:,:,:,:]
 #H_test_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_test.npy','r')
 #H_val_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_eval.npy','r')
 
-#H_train = np.zeros((100000,2,32,1))
-#H_train[:,0,:,0] = np.real(H_train_c)
-#H_train[:,1,:,0] = np.imag(H_train_c)
+#H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
+#H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
+#H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
 
-#H_val = np.zeros((10000,2,32,1))
-#H_val[:,0,:,0] = np.real(H_val_c)
-#H_val[:,1,:,0] = np.imag(H_val_c)
+H_train = np.zeros((100000,2,32,1))
+H_train[:,0,:,0] = np.real(H_train_c[:,:,0])
+H_train[:,1,:,0] = np.imag(H_train_c[:,:,0])
 
-#H_test = np.zeros((10000,2,32,1))
-#H_test[:,0,:,0] = np.real(H_test_c)
-#H_test[:,1,:,0] = np.imag(H_test_c)
+H_val = np.zeros((10000,2,32,1))
+H_val[:,0,:,0] = np.real(H_val_c[:,:,0])
+H_val[:,1,:,0] = np.imag(H_val_c[:,:,0])
+
+H_test = np.zeros((10000,2,32,1))
+H_test[:,0,:,0] = np.real(H_test_c[:,:,0])
+H_test[:,1,:,0] = np.imag(H_test_c[:,:,0])
 
 print('....')
 print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
@@ -181,15 +186,15 @@ H_val_dft = apply_DFT(H_val)
 H_train_dft = apply_DFT(H_train)
 
 
-x_train = np.mean(np.sum(H_train[:,:,:,-1]**2,axis=(1,2)))
+x_train = np.sum(H_train[:,:,:,-1]**2,axis=(1,2))
 SNR_eff = 10**(SNR_db/10)
-sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
-x_test = np.mean(np.sum(H_test[:,:,:,-1]**2,axis=(1,2)))
+sig_n_train = np.sqrt(x_train/(32 * SNR_eff))[:,None,None,None]
+x_test = np.sum(H_test[:,:,:,-1]**2,axis=(1,2))
 SNR_eff = 10**(SNR_db/10)
-sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
-x_val = np.mean(np.sum(H_val[:,:,:,-1]**2,axis=(1,2)))
+sig_n_test = np.sqrt(x_test/(32 * SNR_eff))[:,None,None,None]
+x_val = np.sum(H_val[:,:,:,-1]**2,axis=(1,2))
 SNR_eff = 10**(SNR_db/10)
-sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
+sig_n_val = np.sqrt(x_val/(32 * SNR_eff))[:,None,None,None]
 
 n_H_train = H_train + sig_n_train/math.sqrt(2) * np.random.randn(*H_train.shape)
 n_H_test = H_test + sig_n_test/math.sqrt(2) * np.random.randn(*H_test.shape)
@@ -198,21 +203,23 @@ n_H_train_dft = H_train_dft + sig_n_train/math.sqrt(2) * np.random.randn(*H_trai
 n_H_test_dft = H_test_dft + sig_n_test/math.sqrt(2) * np.random.randn(*H_test_dft.shape)
 n_H_val_dft = H_val_dft + sig_n_val/math.sqrt(2) * np.random.randn(*H_val_dft.shape)
 
-dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft)
-dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft)
-dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
+dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft,sig_n_test)
+dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft,sig_n_train)
+dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft,sig_n_val)
 
 dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_test))
 dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
 dataloader_val = DataLoader(dataset_val,shuffle=True,batch_size= len(dataset_val))
 
+NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,dataset_train,sig_n_val)
+print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 
 
 ####################################################### CREATING THE MODELS & TRAINING #############################################
 if MODEL_TYPE == 'Trajectory':
     model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
 if MODEL_TYPE == 'Single':
-    model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,device).to(device)
+    model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var,device).to(device)
 if MODEL_TYPE == 'TraSingle':
     model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB_var_dec,UB_var_dec,BN, device).to(device)
     print('model generated')
@@ -250,30 +257,30 @@ SNR_db_list = [0,5,10,20]
 NMSE_est = []
 for SNR_db in SNR_db_list:
 
-    H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
-    H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
-    H_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val.npy','r')
-    pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
-    pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
-    pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
+  #  H_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test.npy','r')
+  #  H_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train.npy','r')
+  #  H_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val.npy','r')
+  #  pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
+  #  pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
+  #  pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
 
-    H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
-    H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
-    H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
+  #  H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
+  #  H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
+  #  H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
 
-    H_test_dft = apply_DFT(H_test)
-    H_val_dft = apply_DFT(H_val)
-    H_train_dft = apply_DFT(H_train)
+  #  H_test_dft = apply_DFT(H_test)
+  #  H_val_dft = apply_DFT(H_val)
+  #  H_train_dft = apply_DFT(H_train)
 
-    x_train = np.mean(np.sum(H_train[:,:,:,-1]**2,axis=(1,2)))
-    SNR_eff = 10**(SNR_db/10)
-    sig_n_train = math.sqrt(x_train/(32 * SNR_eff))
-    x_test = np.mean(np.sum(H_test[:,:,:,-1]**2,axis=(1,2)))
-    SNR_eff = 10**(SNR_db/10)
-    sig_n_test = math.sqrt(x_test/(32 * SNR_eff))
-    x_val = np.mean(np.sum(H_val[:,:,:,-1]**2,axis=(1,2)))
-    SNR_eff = 10**(SNR_db/10)
-    sig_n_val = math.sqrt(x_val/(32 * SNR_eff))
+    x_train = np.sum(H_train[:, :, :, -1] ** 2, axis=(1, 2))
+    SNR_eff = 10 ** (SNR_db / 10)
+    sig_n_train = np.sqrt(x_train / (32 * SNR_eff))[:, None, None, None]
+    x_test = np.sum(H_test[:, :, :, -1] ** 2, axis=(1, 2))
+    SNR_eff = 10 ** (SNR_db / 10)
+    sig_n_test = np.sqrt(x_test / (32 * SNR_eff))[:, None, None, None]
+    x_val = np.sum(H_val[:, :, :, -1] ** 2, axis=(1, 2))
+    SNR_eff = 10 ** (SNR_db / 10)
+    sig_n_val = np.sqrt(x_val / (32 * SNR_eff))[:, None, None, None]
 
     n_H_train = H_train + sig_n_train/math.sqrt(2) * np.random.randn(*H_train.shape)
     n_H_test = H_test + sig_n_test/math.sqrt(2) * np.random.randn(*H_test.shape)
@@ -282,9 +289,9 @@ for SNR_db in SNR_db_list:
     n_H_test_dft = H_test_dft + sig_n_test/math.sqrt(2) * np.random.randn(*H_test_dft.shape)
     n_H_val_dft = H_val_dft + sig_n_val/math.sqrt(2) * np.random.randn(*H_val_dft.shape)
 
-    dataset_test = ds.dataset(H_test,H_test_dft,n_H_test, n_H_test_dft)
-    dataset_train = ds.dataset(H_train,H_train_dft,n_H_train, n_H_train_dft)
-    dataset_val = ds.dataset(H_val,H_val_dft,n_H_val, n_H_val_dft)
+    dataset_test = ds.dataset(H_test, H_test_dft, n_H_test, n_H_test_dft, sig_n_test)
+    dataset_train = ds.dataset(H_train, H_train_dft, n_H_train, n_H_train_dft, sig_n_train)
+    dataset_val = ds.dataset(H_val, H_val_dft, n_H_val, n_H_val_dft, sig_n_val)
 
     dataloader_test = DataLoader(dataset_test,shuffle=True,batch_size= len(dataset_test))
     dataloader_train = DataLoader(dataset_train,shuffle=True,batch_size=BATCHSIZE)
@@ -306,7 +313,7 @@ if (MODEL_TYPE == 'Single') | (MODEL_TYPE == 'TraSingle'):
 csv_file.close()
 
 
-NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,sig_n_val)
+NMSE_LS,NMSE_sCov = ev.computing_LS_sample_covariance_estimator(dataset_val,dataset_train,sig_n_val)
 print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 log_file.write(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}\n')
 

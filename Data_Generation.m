@@ -5,28 +5,29 @@ clc
 
 %% (A) global variables
 
-no_runs = 120;                                     % Number of total simulations
-no_trajectories = 1000;                             % Number of simulated trajectories per simulation
+no_runs = 600;                                     % Number of total simulations
+no_trajectories = 200;                             % Number of simulated trajectories per simulation
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
-antennaHeight = 10;                                 % Antenna height of the bs station in [m]
+antennaHeight = 25;                                 % Antenna height of the bs station in [m]
 antennaSpacing = 1/2;                               % Antenna spacing in multiples of the wave length
-noV = 32;                                            % Number of vertical antenna elements
-noH = 1;                                            % Number of horizontal antenn elements
+noV = 1;                                            % Number of vertical antenna elements
+noH = 32;                                            % Number of horizontal antenn elements
 noAnBS = noV*noH;                                   % Total number of antennas at the BS
 
 %%% Parameters
-minRadius = 50;                                     % Minium distance of the trajectory's initial position to the BS (2D)
-maxRadius = 150;                                     % Maximum distance of the trajectory's initial position to the BS (2D)
-angleSpread = 45;                                   % Maximum angle spread between the trajectories' initial positions (2D)
+minRadius = 25;                                     % Minium distance of the trajectory's initial position to the BS (2D)
+maxRadius = 500;                                     % Maximum distance of the trajectory's initial position to the BS (2D)
+angleSpread = 120;                                   % Maximum angle spread between the trajectories' initial positions (2D)
 mtHeight = 1.5;                                     % Height of the MTs
 snapshotDensity = 0.5e-3;                           % Snapshot density in [s]
 durationTrajectory = 7.5e-3;                         % Duration of one Trajectory
 
-H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
-H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
-path_gains_total = zeros(no_runs * no_trajectories,durationTrajectory/snapshotDensity+1);
+%H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
+%H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
+%path_gains_total = zeros(no_runs * no_trajectories,durationTrajectory/snapshotDensity+1);
+Channel = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
 
 for o = [1:no_runs]
     disp('run')
@@ -71,14 +72,14 @@ for o = [1:no_runs]
     % global placement
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    for n=1:noV
-        for nn=1:noH
-            indeces = (n-1)*noH+nn;
-            l.tx_array.element_position(1,indeces) =  (nn)*antennaSpacing*lambda  - lambda/4 - noV/2*antennaSpacing*lambda;
-            l.tx_array.element_position(2,indeces) = 0;
-            l.tx_array.element_position(3,indeces) = (n)*antennaSpacing*lambda - lambda/4 - noH/2*antennaSpacing*lambda + antennaHeight;
-        end
-    end
+   % for n=1:noV
+   %     for nn=1:noH
+   %         indeces = (n-1)*noH+nn;
+   %         l.tx_array.element_position(1,indeces) =  (nn)*antennaSpacing*lambda  - lambda/4 - noV/2*antennaSpacing*lambda;
+   %         l.tx_array.element_position(2,indeces) = 0;
+   %         l.tx_array.element_position(3,indeces) = (n)*antennaSpacing*lambda - lambda/4 - noH/2*antennaSpacing*lambda + antennaHeight;
+   %     end
+   % end
 
 
     % C.2) mobile terminals
@@ -112,8 +113,21 @@ for o = [1:no_runs]
         initial_positions(i,1) = mtRadius(i) * cos(mtPhase(i)*(2*pi)/(360));
         initial_positions(i,2) = mtRadius(i) * sin(mtPhase(i)*(2*pi)/(360));
         initial_positions(i,3) = mtHeight;
-        l.rx_track(i).scenario{1} = '3GPP_38.901_UMi_NLOS';
+        %l.rx_track(i).scenario{1} = '3GPP_38.901_UMi_NLOS';
     end
+
+    l.set_scenario('3GPP_38.901_UMa', [], [], 0.8);
+
+    %nlos_n = 0;
+    %los_n = 0;
+
+    %for i = 1:no_trajectories
+    %    if strfind(l.rx_track(i).scenario{1}, 'NLOS')
+    %        nlos_n = nlos_n + 1;
+    %    else
+    %        los_n = los_n + 1;
+    %    end
+    %end
 
 %ab = l.rx_track(3).positions;
 
@@ -131,7 +145,7 @@ for o = [1:no_runs]
 %l.visualize([],[],0);
 %hold on
 
-%[map,x_coords,y_coords] = l.power_map('3GPP_3D_UMi_NLOS','quick',0.5,-10,160,-125,125,0);
+%[map,x_coords,y_coords] = l.power_map('3GPP_38.901_UMa_NLOS','quick',1,-50,700,-600,600,0);
 %xlim([-5,170]);
 %ylim([-50,50]);
 %P = 10*log10( sum(cat(3,map{:}),3));
@@ -188,16 +202,17 @@ for o = [1:no_runs]
     C = l.get_channels;
 
     H = zeros(no_trajectories,noAnBS,noSnapshots);
-    path_gains = zeros(no_trajectories,noSnapshots);
+    %path_gains = zeros(no_trajectories,1);
     for i = 1:no_trajectories 
-        if mod(i,100) == 0
+        if mod(i,1000) == 0
             disp('step2')
             i
         end
         H(i,:,:) = squeeze(C(i).fr(bandwidth,1));
-        for j = 1:noSnapshots
-            path_gains(i,j) = C(i).par.pg(j);
-        end
+        %for j = 1:noSnapshots
+        %    path_gains(i,j) = C(i).par.pg(j);
+        %end
+        H(i,:,:) = H(i,:,:)/(sqrt(10^(0.1 * C(i).par.pg_parset)));
     end
     % comment: additional saves: PG_normalization_factor + initial_positions
     %if o == 1
@@ -212,36 +227,38 @@ for o = [1:no_runs]
     %ylabel('BS antennas','FontSize',18)
 
     %% (E) textfile 
+    Channel((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = H;
 
-    H_real((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = real(H);
-    H_imag((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = imag(H);
-    path_gains_total((o-1) * no_trajectories + 1: o * no_trajectories,:) = path_gains;
+    %H_real((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = real(H);
+    %H_imag((o-1) * no_trajectories + 1: o * no_trajectories,:,:) = imag(H);
+    %path_gains_total((o-1) * no_trajectories + 1: o * no_trajectories,:) = path_gains;
 end
 
 
-H_real_train = H_real(1:0.8 * no_runs * no_trajectories,:,:);
-H_real_val = H_real(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:,:);
-H_real_test = H_real(0.9 * no_runs * no_trajectories + 1:end,:,:);
+%H_real_train = H_real(1:0.8 * no_runs * no_trajectories,:,:);
+%H_real_val = H_real(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:,:);
+%H_real_test = H_real(0.9 * no_runs * no_trajectories + 1:end,:,:);
 
-H_imag_train = H_imag(1:0.8 * no_runs * no_trajectories,:,:);
-H_imag_val = H_imag(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:,:);
-H_imag_test = H_imag(0.9 * no_runs * no_trajectories + 1:end,:,:);
+%H_imag_train = H_imag(1:0.8 * no_runs * no_trajectories,:,:);
+%H_imag_val = H_imag(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:,:);
+%H_imag_test = H_imag(0.9 * no_runs * no_trajectories + 1:end,:,:);
 
-path_gains_train = path_gains_total(1:0.8 * no_runs * no_trajectories,:);
-path_gains_val = path_gains_total(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:);
-path_gains_test = path_gains_total(0.9 * no_runs * no_trajectories + 1:end,:);
+%path_gains_train = path_gains_total(1:0.8 * no_runs * no_trajectories,:);
+%path_gains_val = path_gains_total(0.8 * no_runs * no_trajectories + 1:0.9 * no_runs * no_trajectories,:);
+%path_gains_test = path_gains_total(0.9 * no_runs * no_trajectories + 1:end,:);
 
+H_real = real(Channel);
+H_imag = imag(Channel);
 
+%save('../Simulations//trajectory_channel_prediction/data/H50_1000.mat','Channel','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200.mat','H_real','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag50_1000.mat','H_imag','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_real600_200.mat','H_real','-v7.3');
-%save('../Simulations//trajectory_channel_prediction/data/H_real_val500_100.mat','H_real_val','-v7.3');
-%save('../Simulations//trajectory_channel_prediction/data/H_real_test500_100.mat','H_real_test','-v7.3');
-
-save('../Simulations//trajectory_channel_prediction/data/H_imag600_200.mat','H_imag','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200.mat','H_imag','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/path_gains600_200.mat','path_gains_total','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/path_gains600_200.mat','path_gains_total','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/path_gains_val500_100.mat','path_gains_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/path_gains_test500_100.mat','path_gains_test','-v7.3');
 
