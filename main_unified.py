@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 700
 LEARNING_RATE = 6e-5
@@ -26,7 +26,7 @@ n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
-SNR_db = 5
+SNR_db = 10
 CSI = 'NOISY' # PERFECT, NOISY
 
 ################################################ CREATING FILES AND DIRECTORY #############################################################
