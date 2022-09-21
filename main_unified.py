@@ -17,16 +17,16 @@ import csv
 ################################################# GLOBAL PARAMETERS ############################################################
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 700
+G_EPOCHS = 7
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'Single' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
-SNR_db = 0
+SNR_db = 5
 CSI = 'NOISY' # PERFECT, NOISY
 
 ################################################ CREATING FILES AND DIRECTORY #############################################################
@@ -42,8 +42,8 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + '_' + '0dB_noise_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + '0dB_noise_NAS_file.txt','w')
+if not(exists(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','TPR','TPRinf','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
@@ -110,11 +110,11 @@ if MODEL_TYPE == 'Single':
     glob_file.write(f'reg_output_var: {reg_output_var}\n')
 
 if MODEL_TYPE == 'TraSingle':
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN = network_architecture_search_TraVAE()
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_TraVAE()
     #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,BN,LB_var_dec,UB_var_dec= 384,0,4,128,9,'DFT','None',False,0.0091,0.5261
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
-    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN)
+    print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
     glob_file.write(f'\nlatent Dim VAE: {LD_VAE}\n')
     glob_file.write(f'conv_layer: {conv_layer}\n')
     glob_file.write(f'total_layer: {total_layer}\n')
@@ -125,6 +125,7 @@ if MODEL_TYPE == 'TraSingle':
     glob_file.write(f'UB_var_dec: {UB_var_dec}\n')
     glob_file.write(f'BN: {BN}\n')
     glob_file.write(f'prepro: {prepro}\n')
+    glob_file.write(f'reg_output_var: {reg_output_var}\n')
 
 #################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
 
@@ -221,7 +222,7 @@ if MODEL_TYPE == 'Trajectory':
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var,device).to(device)
 if MODEL_TYPE == 'TraSingle':
-    model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB_var_dec,UB_var_dec,BN, device).to(device)
+    model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB_var_dec,UB_var_dec,BN,reg_output_var, device).to(device)
     print('model generated')
 
 risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(CSI,MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,sig_n_train,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
@@ -303,7 +304,7 @@ for SNR_db in SNR_db_list:
 
 
 
-csv_file = open(overall_path + MODEL_TYPE + '_' + '0dB_noise_NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,TPR1_val,TPR2_val,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])

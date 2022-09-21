@@ -781,7 +781,7 @@ class my_VAE(nn.Module):
             return mu_out,Gamma, mu, log_var
 
 class my_tra_VAE(nn.Module):
-    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,n_snapshots,LB_var_dec,UB_var_dec,BN,device):
+    def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,n_snapshots,LB_var_dec,UB_var_dec,BN,reg_output_var,device):
         super().__init__()
         rand_matrix = torch.randn(32, 32)
         self.device = device
@@ -807,6 +807,7 @@ class my_tra_VAE(nn.Module):
         self.out_channels = out_channels
         self.k_size = k_size
         self.n_snapshots = n_snapshots
+        self.reg_output_var = reg_output_var
 
         self.encoder = []
         in_channels = 2
@@ -942,7 +943,7 @@ class my_tra_VAE(nn.Module):
         out = self.encoder(x)
         out = nn.Flatten()(out)
         mu, log_var = self.fc_mu(out), self.fc_var(out)
-        log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
+        #log_var = (15 + 2.5) / 2 * nn.Tanh()(log_var) + (15 + 2.5) / 2 - 15
         return mu, log_var
 
     def reparameterize(self, log_var, mu):
@@ -961,7 +962,8 @@ class my_tra_VAE(nn.Module):
 
         if self.cov_type == 'DFT':
             mu_real,mu_imag,log_pre = out.chunk(3,dim=1)
-            log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
+            if self.reg_output_var:
+                log_pre = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(log_pre) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             mu_out = torch.zeros(bs,2,32).to(self.device)
             mu_out[:,0,:] = mu_real
             mu_out[:,1,:] = mu_imag

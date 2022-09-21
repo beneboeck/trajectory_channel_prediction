@@ -94,8 +94,8 @@ def network_architecture_search_TraVAE():
     LB_var_dec = round(np.random.uniform(low=0.0001, high=0.01), 4)
     UB_var_dec = round(np.random.uniform(low=0.5, high=1), 4)
     BN = np.random.choice([False, True]).item()
-    BN = False
-    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN
+    reg_output_var = np.random.choice([False, True]).item()
+    return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var
 
 def save_risk(risk_list,RR_list,KL_list,model_path,title):
     risk = np.array(risk_list)
