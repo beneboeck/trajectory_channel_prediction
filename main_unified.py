@@ -166,16 +166,16 @@ H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/
 #H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
 
 H_train = np.zeros((100000,2,32,16))
-H_train[:,0,:,0] = np.real(H_train_c)
-H_train[:,1,:,0] = np.imag(H_train_c)
+H_train[:,0,:,:] = np.real(H_train_c)
+H_train[:,1,:,:] = np.imag(H_train_c)
 
 H_val = np.zeros((10000,2,32,16))
-H_val[:,0,:,0] = np.real(H_val_c)
-H_val[:,1,:,0] = np.imag(H_val_c)
+H_val[:,0,:,:] = np.real(H_val_c)
+H_val[:,1,:,:] = np.imag(H_val_c)
 
 H_test = np.zeros((10000,2,32,16))
-H_test[:,0,:,0] = np.real(H_test_c)
-H_test[:,1,:,0] = np.imag(H_test_c)
+H_test[:,0,:,:] = np.real(H_test_c)
+H_test[:,1,:,:] = np.imag(H_test_c)
 
 print('....')
 print(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2))))
