@@ -6,7 +6,7 @@ clc
 %% (A) global variables
 
 no_runs = 600;                                     % Number of total simulations
-no_trajectories = 200;                             % Number of simulated trajectories per simulation
+no_trajectories = 10;                             % Number of simulated trajectories per simulation
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
@@ -118,16 +118,16 @@ for o = [1:no_runs]
 
     l.set_scenario('3GPP_38.901_UMa', [], [], 0.8);
 
-    %nlos_n = 0;
-    %los_n = 0;
+    nlos_n = 0;
+    los_n = 0;
 
-    %for i = 1:no_trajectories
-    %    if strfind(l.rx_track(i).scenario{1}, 'NLOS')
-    %        nlos_n = nlos_n + 1;
-    %    else
-    %        los_n = los_n + 1;
-    %    end
-    %end
+    for i = 1:no_trajectories
+        if strfind(l.rx_track(i).scenario{1}, 'NLOS')
+            nlos_n = nlos_n + 1;
+        else
+            los_n = los_n + 1;
+        end
+    end
 
 %ab = l.rx_track(3).positions;
 
@@ -251,10 +251,10 @@ H_real = real(Channel);
 H_imag = imag(Channel);
 
 %save('../Simulations//trajectory_channel_prediction/data/H50_1000.mat','Channel','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200.mat','H_real','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200.mat','H_real','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag50_1000.mat','H_imag','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200.mat','H_imag','-v7.3');
+%save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200.mat','H_imag','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
 
