@@ -26,7 +26,7 @@ n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
-SNR_db = 5
+SNR_db = 10
 CSI = 'NOISY' # PERFECT, NOISY
 
 ################################################ CREATING FILES AND DIRECTORY #############################################################
@@ -42,8 +42,8 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt','w')
+if not(exists(overall_path + MODEL_TYPE + '_' + '10dB_noise_NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + '_' + '10dB_noise_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','TPR','TPRinf','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
@@ -304,7 +304,7 @@ for SNR_db in SNR_db_list:
 
 
 
-csv_file = open(overall_path + MODEL_TYPE + '_' + '5dB_noise_NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + '10dB_noise_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,TPR1_val,TPR2_val,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
