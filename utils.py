@@ -61,8 +61,9 @@ def network_architecture_search():
         cnn_bool = False
     LB_var_dec = round(np.random.uniform(low = 0.0001, high = 0.01),4)
     UB_var_dec = round(np.random.uniform(low=0.5, high = 1),4)
+    reg_output_var = np.random.choice([False, True]).item()
 
-    return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec
+    return LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var
 
 def network_architecture_search_VAE():
     LD = np.random.choice([8,16,24,32,40]).item()

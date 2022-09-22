@@ -17,11 +17,11 @@ import csv
 ################################################# GLOBAL PARAMETERS ############################################################
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 900
+G_EPOCHS = 3
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -71,10 +71,10 @@ print('global var successful')
 
 ############################################### NETWORK ARCHITECTURE SEARCH #############################################
 if MODEL_TYPE == 'Trajectory':
-    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec = network_architecture_search()
+    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var = network_architecture_search()
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
-    print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec)
+    print(LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var)
     glob_file.write(f'Latent Dim: {LD}\n')
     glob_file.write(f'Memory: {memory}\n')
     glob_file.write(f'RNN Bool: {rnn_bool}\n')
@@ -91,6 +91,7 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'preopro: {prepro}\n')
     glob_file.write(f'LB_var_dec: {LB_var_dec:.4f}\n')
     glob_file.write(f'UB_var_dec: {UB_var_dec:.4f}\n')
+    glob_file.write(f'reg_output_var: {reg_output_var}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_VAE()
     #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro, LB_var_dec, UB_var_dec, BN = 56,0,3,128,7,'Toeplitz','None',0.0002,0.7394,False
@@ -218,7 +219,7 @@ print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 
 ####################################################### CREATING THE MODELS & TRAINING #############################################
 if MODEL_TYPE == 'Trajectory':
-    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device).to(device)
+    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var,device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var,device).to(device)
 if MODEL_TYPE == 'TraSingle':

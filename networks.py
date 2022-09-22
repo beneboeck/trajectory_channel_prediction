@@ -185,7 +185,7 @@ class Encoder(nn.Module):
         return mu, logvar, new_state
 
 class Decoder(nn.Module):
-    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,LB_pre_dec,UB_pre_dec,device):
+    def __init__(self,cov_type,ld,n_ant,memory,de_layer,de_width,BN,LB_pre_dec,UB_pre_dec,reg_output_var,device):
         super().__init__()
         self.cov_type = cov_type
         self.n_ant = n_ant
@@ -200,6 +200,8 @@ class Decoder(nn.Module):
         self.C_mask = torch.tril(rand_matrix,diagonal=-1)
         self.C_mask[self.C_mask != 0] = 1
         self.C_mask = self.C_mask[None,None,:,:].to(self.device)
+        self.reg_output_var = reg_output_var
+
 
         if (cov_type == 'DFT') | (cov_type == 'diagonal'):
             output_dim = 3 * n_ant
@@ -241,7 +243,8 @@ class Decoder(nn.Module):
             #logpre_out = (11-1.1) / 2 * nn.Tanh()(logpre_out) + (11 - 1.1) / 2 + 1.1
 
             # RANDOM SEARCH BOUNDS
-            logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
+            if self.reg_output_var:
+                logpre_out = (self.UB_pre_dec - self.LB_pre_dec) / 2 * nn.Tanh()(logpre_out) + (self.UB_pre_dec - self.LB_pre_dec) / 2 + self.LB_pre_dec
             return mu_out,logpre_out
 
         if self.cov_type == 'Toeplitz':
@@ -283,7 +286,7 @@ class Decoder(nn.Module):
             return mu_out, B, C
 
 class HMVAE(nn.Module):
-    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,device):
+    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var,device):
         super().__init__()
         # attributes
         self.memory = memory
@@ -297,10 +300,11 @@ class HMVAE(nn.Module):
         self.BN = BN
         self.LB_pre_dec = torch.log(torch.tensor(1/UB_var_dec)).item()
         self.UB_pre_dec = torch.log(torch.tensor(1/LB_var_dec)).item()
+        self.reg_output_var = reg_output_var
         print(f'lower and upper bound precision: {self.LB_pre_dec:.4f},{self.UB_pre_dec:.4f}')
 
         self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device) for i in range(snapshots)])
-        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.LB_pre_dec,self.UB_pre_dec,self.device) for i in range(snapshots)])
+        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.LB_pre_dec,self.UB_pre_dec,self.reg_output_var,self.device) for i in range(snapshots)])
         self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN,self.cov_type) for i in range(snapshots)])
 
     def reparameterize(self, log_var, mu):
