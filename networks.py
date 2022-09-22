@@ -824,17 +824,18 @@ class my_tra_VAE(nn.Module):
             if self.BN:
                 self.encoder.append(nn.BatchNorm2d(out_channels))
 
-            step = int(math.floor((int(32*16/(4**conv_layer) * self.out_channels - self.latent_dim)/(total_layer - conv_layer))))
             self.encoder.append(nn.Flatten())
-            in_channels = int(32*16/(4**conv_layer)) * self.out_channels
-            out_channel = in_channels - step
-            for i in range(total_layer-conv_layer):
-                self.encoder.append(nn.Linear(in_channels,out_channel))
-                self.encoder.append(nn.ReLU())
-                if self.BN:
-                    self.encoder.append(nn.BatchNorm1d(out_channel))
-                in_channels = out_channel
-                out_channel = out_channel - step
+            if total_layer > conv_layer:
+                step = int(math.floor((int(32*16/(4**conv_layer) * self.out_channels - self.latent_dim)/(total_layer - conv_layer))))
+                in_channels = int(32*16/(4**conv_layer)) * self.out_channels
+                out_channel = in_channels - step
+                for i in range(total_layer-conv_layer):
+                    self.encoder.append(nn.Linear(in_channels,out_channel))
+                    self.encoder.append(nn.ReLU())
+                    if self.BN:
+                        self.encoder.append(nn.BatchNorm1d(out_channel))
+                    in_channels = out_channel
+                    out_channel = out_channel - step
 
             self.fc_mu = nn.Linear(in_channels, self.latent_dim)
             self.fc_var = nn.Linear(in_channels, self.latent_dim)
