@@ -201,6 +201,52 @@ def channel_estimation(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE = np.mean(np.array(NMSE_list))
     return NMSE,mean_frob.item(),mean_mu_signal_energy.item(),Cov_part_LMMSE_energy.item(),NMSE_only_mu.item()
 
+def channel_estimation_snapshot(snapshot,CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
+    NMSE_list = []
+    for ind, samples in enumerate(dataloader_val):
+        estimated_snapshot = snapshot
+        if CSI == 'PERFECT':
+            if cov_type == 'DFT':
+                sample_in = samples[2]
+                sample_ELBO = sample_in
+                received_signal = samples[3].to(device)
+            else:
+                sample_in = samples[0]
+                sample_ELBO = sample_in
+                received_signal = samples[1].to(device)
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+        if CSI == 'NOISY':
+            if cov_type == 'DFT':
+                sample_in = samples[3]
+                sample_ELBO = samples[2]
+                received_signal = samples[3].to(device)
+            else:
+                sample_in = samples[1]
+                sample_ELBO = samples[0]
+                received_signal = samples[1].to(device)
+            sample_in = sample_in.to(device)
+            sample_ELBO = sample_ELBO.to(device)
+            sig_n = samples[4].to(device)
+
+        sample_oi = sample_ELBO[:,0,:,estimated_snapshot] + 1j * sample_ELBO[:,1,:,estimated_snapshot] # BS, N_ANT
+        received_signal_oi = received_signal[:,0,:,estimated_snapshot] + 1j * received_signal[:,1,:,estimated_snapshot]
+        mu_out,Cov_out = model.estimating(sample_in,estimated_snapshot) # BS,N_ANT complex; BS, N_ANT, N_ANT complex
+        mean_frob = torch.mean(torch.sum(torch.abs(Cov_out)**2,dim=(1,2)))
+        mean_mu_signal_energy = torch.mean(torch.sum(torch.abs(mu_out)**2,dim=1))
+        L,U = torch.linalg.eigh(Cov_out)
+        inv_matrix = U @ torch.diag_embed(1/(L + torch.squeeze(sig_n)[:,None] ** 2)).cfloat() @ U.mH
+        h_hat = mu_out + torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))
+        Cov_part_LMMSE_energy = torch.mean(torch.sum(torch.abs(torch.einsum('ijk,ik->ij', Cov_out @ inv_matrix, (received_signal_oi - mu_out))) ** 2, dim=1))
+        NMSE = torch.mean(torch.sum(torch.abs(sample_oi - h_hat) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
+        NMSE_only_mu = torch.mean(torch.sum(torch.abs(sample_oi - mu_out) ** 2, dim=1) / torch.sum(torch.abs(sample_oi) ** 2,dim=1)).detach().to('cpu')
+        NMSE_list.append(NMSE)
+
+    NMSE = np.mean(np.array(NMSE_list))
+    return NMSE,mean_frob.item(),mean_mu_signal_energy.item(),Cov_part_LMMSE_energy.item(),NMSE_only_mu.item()
+
+
+
 def channel_estimation_all(CSI,model,dataloader_val,sig_n,cov_type,dir_path,device):
     NMSE_list = []
     estimated_snapshot = -1

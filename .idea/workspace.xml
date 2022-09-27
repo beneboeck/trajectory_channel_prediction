@@ -124,7 +124,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="testing_the_variance_bounding" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="tracking_NMSE" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="trajectory_channel_prediction" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -136,7 +136,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/testing_the_variance_bounding.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tracking_NMSE.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -169,10 +169,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main_unified" />
+        <item itemvalue="Python.tracking_NMSE" />
         <item itemvalue="Python.evaluating_noisy_models" />
         <item itemvalue="Python.unifying_data" />
         <item itemvalue="Python.evaluating_genie_models" />
-        <item itemvalue="Python.testing_the_variance_bounding" />
       </list>
     </recent_temporary>
   </component>

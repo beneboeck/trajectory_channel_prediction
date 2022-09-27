@@ -1,0 +1,1 @@
+Time,LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,DecVarLB,DecVarUB,TPR,TPRinf,Risk_val,NMSE_0dB,NMSE_5dB,NMSE_10dB,NMSE_20dB

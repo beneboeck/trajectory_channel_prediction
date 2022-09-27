@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 600
 LEARNING_RATE = 6e-5
@@ -30,6 +30,7 @@ SNR_db = 5
 SNR_range = [-15,25]
 CSI = 'NOISY' # PERFECT, NOISY
 SNR_format = 'RANGE' # RANGE,NO
+RECURRENT = True
 
 ################################################ CREATING FILES AND DIRECTORY #############################################################
 now = datetime.datetime.now()
@@ -37,11 +38,11 @@ date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
 
-#overall_path = './'
-#dir_path = './time_' + time
+overall_path = './'
+dir_path = './time_' + time
 
-overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
-dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
+#overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
+#dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
 if not(exists(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt')):
@@ -67,6 +68,7 @@ glob_file.write(f'SNR_db: {SNR_db}\n')
 glob_file.write(f'n_iterations: {n_iterations}\n')
 glob_file.write(f'n_permutations: {n_permutations}\n\n')
 glob_file.write(f'SNR_format: {SNR_format}\n')
+glob_file.write(f'RECURRENT: {RECURRENT}\n')
 log_file.write('Date: ' +date +'\n')
 log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n\n')
@@ -134,14 +136,14 @@ if MODEL_TYPE == 'TraSingle':
 
 #################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
 
-H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
-H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
-H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
+#H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
+#H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
+#H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
 
 
-#H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
-#H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
-#H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
+H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
+H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
+H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
 
 H_train = np.zeros((100000,2,32,16))
 H_train[:,0,:,:] = np.real(H_train_c)
@@ -195,7 +197,10 @@ print(f'LS,sCov estimation NMSE: {NMSE_LS:.4f},{NMSE_sCov:.4f}')
 
 ####################################################### CREATING THE MODELS & TRAINING #############################################
 if MODEL_TYPE == 'Trajectory':
-    model = mg.HMVAE(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var,device).to(device)
+    if RECURRENT:
+        model = mg.HMVAE_recurrent(cov_type,LD,rnn_bool,32,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,SNAPSHOTS,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var,device).to(device)
+    else:
+        model = mg.HMVAE(cov_type, LD, rnn_bool, 32, memory, pr_layer, pr_width, en_layer, en_width, de_layer,de_width, SNAPSHOTS, BN, prepro, n_conv, cnn_bool, LB_var_dec, UB_var_dec,reg_output_var, device).to(device)
 if MODEL_TYPE == 'Single':
     model = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var,device).to(device)
 if MODEL_TYPE == 'TraSingle':

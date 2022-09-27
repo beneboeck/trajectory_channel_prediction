@@ -564,6 +564,285 @@ class HMVAE(nn.Module):
 
         return out, z, eps, mu_inf, logvar_inf
 
+class HMVAE_recurrent(nn.Module):
+    def __init__(self,cov_type,ld,rnn_bool,n_ant,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,snapshots,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var,device):
+        super().__init__()
+        # attributes
+        self.memory = memory
+        self.n_ant = n_ant
+        self.snapshots = snapshots
+        self.ld = ld
+        self.device = device
+        self.cov_type = cov_type
+        self.n_conv = n_conv
+        self.cnn_bool = cnn_bool
+        self.BN = BN
+        self.LB_pre_dec = torch.log(torch.tensor(1/UB_var_dec)).item()
+        self.UB_pre_dec = torch.log(torch.tensor(1/LB_var_dec)).item()
+        self.reg_output_var = reg_output_var
+        print(f'lower and upper bound precision: {self.LB_pre_dec:.4f},{self.UB_pre_dec:.4f}')
+
+        self.encoder = nn.ModuleList([Encoder(n_ant,ld,memory,rnn_bool,en_layer,en_width,BN,prepro,cov_type,n_conv,cnn_bool,self.device)])
+        self.decoder = nn.ModuleList([Decoder(cov_type,ld,n_ant,memory,de_layer,de_width,BN,self.LB_pre_dec,self.UB_pre_dec,self.reg_output_var,self.device)])
+        self.prior_model = nn.ModuleList([Prior(ld,rnn_bool,pr_layer,pr_width,BN,self.cov_type)])
+
+    def reparameterize(self, log_var, mu):
+            std = torch.exp(0.5 * log_var)
+            eps = torch.randn_like(std)
+            return mu + eps * std, eps
+
+    def feed_prior(self, z):
+            # z: [BS,latent_dim,snapshots]
+            batchsize = z.size(0)
+            z_init = torch.zeros(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
+            mu_prior = torch.zeros(z.size()).to(self.device)
+            logpre_prior = torch.zeros(z.size()).to(self.device)
+            hidden_state = torch.zeros(z.size()).to(self.device)
+            mu_prior[:, :, 0], logpre_prior[:, :, 0],hidden_state[:,:,0] = self.prior_model[0](z_init,z_init)
+            if torch.sum(mu_prior[:,:,0] != mu_prior[:,:,0]) > 0:
+                print('Nan in feed prior')
+                raise ValueError
+            for unit in range(1, self.snapshots):
+                z_input = z[:, :, unit - 1].clone()
+                h_input = hidden_state[:,:,unit-1].clone()
+                mu_prior[:, :, unit], logpre_prior[:, :, unit],hidden_state[:,:,unit] = self.prior_model[0](z_input, h_input)
+                if torch.sum(mu_prior[:, :, unit] != mu_prior[:, :, unit]) > 0:
+                    print('Nan in feed prior For loop')
+                    raise ValueError
+            # logpre_prior[logpre_prior > 6] = 6
+            return mu_prior, logpre_prior
+
+    def sample_from_prior(self, n_samples):
+            z_init = torch.zeros(n_samples, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
+            z = torch.zeros(n_samples, self.ld, self.snapshots).to(self.device)
+            hidden_state = torch.zeros(n_samples,self.ld,self.snapshots).to(self.device)
+            mu, logpre,hidden_state[:,:,0] = self.prior_model[0](z_init,z_init)
+            eps = torch.randn(n_samples, self.ld).to(self.device)
+            z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))  # at the moment I am really implementing log_pre not log_var
+            # z_sample = mu + eps * torch.exp(0.5 * logpre)
+            z[:, :, 0] = torch.squeeze(z_sample)
+
+            for unit in range(1, self.snapshots):
+                mu, logpre, hidden_state[:,:,unit] = self.prior_model[0](z[:, :, unit - 1],hidden_state[:,:,unit-1].clone())
+                if torch.sum(mu != mu) > 0:
+                    print('Nan in sample from prior')
+                    print(unit)
+                    raise ValueError
+                eps = torch.randn(n_samples, self.ld).to(self.device)
+                z_sample = mu + eps * 1 / torch.sqrt(torch.exp(logpre))
+                # z_sample = mu + eps * torch.exp(0.5 * logpre)
+                z[:, :, unit] = torch.squeeze(z_sample)
+
+            return z
+
+    def encode(self, x):
+
+        batchsize = x.size(0)
+        z = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        hidden_state = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        z_init = torch.ones(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
+        if self.memory > 0:
+            x_start = torch.ones(batchsize, 2, 32, self.memory).to(self.device)
+        mu_inf = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        logvar_inf = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        eps = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+
+        if self.memory > 0:
+            x_input = torch.cat((x_start, x[:, :, :, 0][:, :, :, None]), dim=3)
+        else:
+            x_input = x[:,:,:,:1]
+        mu_z, logvar_z,hidden_state[:,:,0] = self.encoder[0](x_input,z_init, z_init)
+        z_local, eps_local = self.reparameterize(logvar_z, mu_z)
+        z[:, :, 0] = z_local
+        eps[:, :, 0] = eps_local
+        mu_inf[:, :, 0] = mu_z
+        logvar_inf[:, :, 0] = logvar_z
+
+        for i in range(1, self.memory):
+            x_input = torch.cat((x_start[:, :, :, :self.memory - i], x[:, :, :, :i + 1]), dim=3)
+            z_input = z[:, :, i - 1].clone()
+            mu_z, logvar_z,hidden_state[:,:,i] = self.encoder[0](x_input, z_input,hidden_state[:,:,i-1].clone())
+            if torch.sum(mu_z != mu_z) > 0:
+                print('Nan in encode')
+                raise ValueError
+            # logpre_out_local[logpre_out_local > 9] = 9
+            z_local, eps_local = self.reparameterize(logvar_z, mu_z)
+            z[:, :, i] = z_local
+            eps[:, :, i] = eps_local
+            mu_inf[:, :, i] = mu_z
+            logvar_inf[:, :, i] = logvar_z
+
+        for unit in range(self.memory, self.snapshots):
+            z_input = z[:, :, unit - 1].clone()
+            x_input = x[:, :, :, unit - self.memory:unit + 1]
+            mu_z, logvar_z,hidden_state[:,:,unit] = self.encoder[0](x_input, z_input,hidden_state[:,:,unit-1].clone())
+            if torch.sum(mu_z != mu_z) > 0:
+                print('Nan in encode')
+                raise ValueError
+            z_local, eps_local = self.reparameterize(logvar_z, mu_z)
+            z[:, :, unit] = z_local
+            eps[:, :, unit] = eps_local
+            mu_inf[:, :, unit] = mu_z
+            logvar_inf[:, :, unit] = logvar_z
+        return z, eps, mu_inf, logvar_inf
+
+    def decode(self, z):
+            batchsize = z.size(0)
+            mu_out = torch.zeros(batchsize,2,self.n_ant,self.snapshots).to(self.device)
+            z_init = torch.ones(batchsize,self.ld, self.memory).to(self.device)
+            if self.cov_type == 'Toeplitz':
+                B_out = torch.zeros(batchsize, self.snapshots, self.n_ant, self.n_ant, dtype=torch.cfloat).to(self.device)
+                C_out = torch.zeros(batchsize, self.snapshots, self.n_ant, self.n_ant, dtype=torch.cfloat).to(self.device)
+            else:
+                logpre_out = torch.zeros(batchsize,self.n_ant,self.snapshots).to(self.device)
+
+            for i in range(self.memory):
+                z_input = torch.cat((z_init[:, :, :self.memory - i], z[:, :, :i + 1]), dim=2)
+                if self.cov_type == 'Toeplitz':
+                    mu_out_local, B_out_local, C_out_local = self.decoder[0](z_input)
+                    mu_out[:, :, :, i:(i + 1)], B_out[:, i:(i + 1), :, :], C_out[:, i:(i + 1), :,:] = mu_out_local, B_out_local, C_out_local
+                    if torch.sum(mu_out != mu_out) > 0:
+                        print('Nan in decode')
+                        raise ValueError
+                else:
+                    mu_out_local, logpre_local = self.decoder[0](z_input)
+                    mu_out[:, :, :, i:(i + 1)],logpre_out[:,:,i:i+1] = mu_out_local, logpre_local
+                # logpre_out_local[logpre_out_local > 9] = 9
+
+            for unit in range(self.memory, self.snapshots):
+                z_input = z[:, :, unit - self.memory:unit + 1].clone()
+                if self.cov_type == 'Toeplitz':
+                    mu_out_local, B_out_local, C_out_local = self.decoder[0](z_input)
+                    mu_out[:, :, :, unit :unit + 1] = mu_out_local
+                    B_out[:, unit:unit + 1, :, :] = B_out_local
+                    C_out[:, unit:unit + 1, :, :] = C_out_local
+                else:
+                    mu_out_local, logpre_local = self.decoder[0](z_input)
+                    mu_out[:, :, :, unit :unit + 1] = mu_out_local
+                    logpre_out[:,:,unit:unit + 1] = logpre_local
+                    # logpre_out_local[logpre_out_local > 9] = 9
+                if torch.sum(mu_out_local != mu_out_local) > 0:
+                    print('Nan in decode')
+                    raise ValueError
+            if self.cov_type == 'Toeplitz':
+                return mu_out,B_out,C_out
+            else:
+                return mu_out,logpre_out
+
+    def predicting(self,sample,knowledge):
+
+        # input: 1. complete sample # BS, 2, N_ANT, SNAPSHOTS, 2. KNOWLEDGE (number samples, which are assumed to be known)
+        # method: take the mean of the first K encoder units in the latent space, input the latest ones into the prior network and complete the chains by the produced means of the prior network,
+        #         then input the latent realizations into the decoder and take the means of the predicted snapshots as estimations
+        # output: 1. remaining (S-K) channel vectors # BS, 2, N_ANT, SNAPSHOTS - KNOWLEDGE , 2. ground truth (S-K) channel vectors # BS, 2, N_ANT, SNAPSHOTS - KNOWLEDGE
+
+        batchsize = sample.size(0)
+        z = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        hidden_state_inf = torch.zeros(batchsize, self.ld, knowledge).to(self.device)
+        hidden_state_prior = torch.zeros(batchsize,self.ld, self.snapshots).to(self.device)
+        z_init = torch.ones(batchsize, self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
+        if self.memory > 0:
+            x_start = torch.ones(batchsize, 2, 32, self.memory).to(self.device)
+            x_input = torch.cat((x_start, sample[:, :, :, :1]), dim=3)
+        else:
+            x_input = sample[:, :, :, :1]
+        mu_z, logvar_z, hidden_state_inf[:, :, 0] = self.encoder[0](x_input, z_init, z_init)
+        z[:, :, 0] = mu_z
+        for i in range(1, self.memory):
+            x_input = torch.cat((x_start[:, :, :, :self.memory - i], sample[:, :, :, :i + 1]), dim=3)
+            z_input = z[:, :, i - 1].clone()
+            mu_z, logvar_z, hidden_state_inf[:, :, i] = self.encoder[0](x_input, z_input,hidden_state_inf[:, :, i - 1].clone())
+            # logpre_out_local[logpre_out_local > 9] = 9
+            z[:, :, i] = mu_z
+        for unit in range(self.memory, knowledge):
+            z_input = z[:, :, unit - 1].clone()
+            x_input = sample[:, :, :, unit - self.memory:unit + 1]
+            mu_z, logvar_z, hidden_state_inf[:, :, unit] = self.encoder[0](x_input, z_input,hidden_state_inf[:, :, unit - 1].clone())
+            z[:, :, unit] = mu_z
+
+        # prior
+        z_input = z[:, :, knowledge - 1].clone()
+        _, _, hidden_state_prior[:, :, 0] = self.prior_model[0](z_init, z_init)
+        for unit in range(1,knowledge):
+            z_input = z[:,:,unit-1].clone()
+            _,_,hidden_state_prior[:,:,unit] = self.prior_model[0](z_input,hidden_state_prior[:,:,unit-1].clone())
+        for idx in range(knowledge, self.snapshots):
+            z_local, _, hidden_state_prior[:, :, idx] = self.prior_model[0](z_input, hidden_state_prior[:, :, idx - 1].clone())
+            z[:, :, idx] = z_local
+            z_input = z_local.clone()
+
+        # prediction
+        predicted_samples = torch.zeros(sample.size(0), 2, 32, self.snapshots - knowledge).to(self.device)
+        for idx in range(knowledge, self.snapshots):
+            x_local = self.decoder[0](z[:, :, idx - self.memory:idx + 1])[0]
+            predicted_samples[:, :, :, (idx - knowledge):(idx - knowledge + 1)] = x_local
+
+        ground_truth_samples = sample[:, :, :, knowledge:]
+
+        return predicted_samples,ground_truth_samples
+
+    def estimating(self,sample,estimated_snapshot):
+
+        # input: 1. complete sample # BS, 2, N_ANT, SNAPSHOTS, 2. estimated snapshot - number between 0 and SNAPSHOTS
+        # method: input the sample into the encoder and forward the means in the latent space from snapshot to snapshot, then use the decoder of the desired snapshot to produce an output distribution
+        # output: mean and covariance matrix of the snapshot of interest # BS,N_ANT complex valued, # BS,N_ANT,N_ANT complex valued
+
+        batchsize = sample.size(0)
+        z = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        hidden_state = torch.zeros(batchsize, self.ld, self.snapshots).to(self.device)
+        z_init = torch.ones(batchsize,self.ld).to(self.device)  # zeros instead of ones in the spirit of Glow
+        if self.memory > 0:
+            x_start = torch.ones(batchsize, 2, 32, self.memory).to(self.device)
+            x_input = torch.cat((x_start, sample[:, :, :, :1]), dim=3)
+        else:
+            x_input = sample[:, :, :, :1]
+        mu_z, logvar_z, hidden_state[:, :, 0] = self.encoder[0](x_input, z_init, z_init)
+        z[:, :, 0] = mu_z
+
+        for i in range(1, self.memory):
+            x_input = torch.cat((x_start[:, :, :, :self.memory - i], sample[:, :, :, :i + 1]), dim=3)
+            z_input = z[:, :, i - 1].clone()
+            mu_z, logvar_z, hidden_state[:, :, i] = self.encoder[0](x_input, z_input, hidden_state[:, :, i - 1].clone())
+            z[:, :, i] = mu_z
+
+        for unit in range(self.memory, self.snapshots):
+            z_input = z[:, :, unit - 1].clone()
+            x_input = sample[:, :, :, unit - self.memory:unit + 1]
+            mu_z, logvar_z, hidden_state[:, :, unit] = self.encoder[0](x_input, z_input,hidden_state[:, :, unit - 1].clone())
+            z[:, :, unit] = mu_z
+
+        #decoding
+        if self.cov_type == 'Toeplitz':
+            mu_out, B_out, C_out = self.decode(z)
+        else:
+            mu_out, logpre_out = self.decode(z)
+
+        if self.cov_type == 'Toeplitz':
+            alpha_0 = B_out[:, :, 0, 0]
+            if len(alpha_0.size()) == 2:
+                Gamma = 1 / alpha_0[:, :, None, None] * (torch.matmul(B_out, torch.conj(B_out).permute(0, 1, 3, 2)) - torch.matmul(C_out,torch.conj(C_out).permute(0,1,3,2)))
+            if len(alpha_0.size()) == 1:
+                Gamma = 1 / alpha_0[None, :, None, None] * (torch.matmul(B_out, torch.conj(B_out).permute(0, 1, 3, 2)) - torch.matmul(C_out,torch.conj(C_out).permute(0,1,3,2)))
+            Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)] = torch.real(Gamma[torch.abs(torch.imag(Gamma)) < 10 ** (-5)]) + 0j
+            L,U = torch.linalg.eigh(Gamma)
+            Cov_out = U @ torch.diag_embed(1/L).cfloat() @ U.mH
+
+        else:
+            Cov_out = torch.diag_embed(1 / (torch.exp(logpre_out.permute(0, 2, 1)))).cfloat()
+
+        mu_out = mu_out[:,0,:,:] + 1j * mu_out[:,1,:,:]
+
+        mu_out_interest = mu_out[:,:,estimated_snapshot]
+        Cov_out_interest = Cov_out[:,estimated_snapshot,:,:]
+
+        return mu_out_interest,Cov_out_interest
+
+    def forward(self, x):
+        z, eps, mu_inf, logvar_inf = self.encode(x)
+        out = self.decode(z)
+
+        return out, z, eps, mu_inf, logvar_inf
+
 class my_VAE(nn.Module):
     def __init__(self,cov_type,ld,conv_layer,total_layer,out_channels,k_size,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var,device):
         super().__init__()

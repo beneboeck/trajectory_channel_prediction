@@ -1,0 +1,10 @@
+Date: 2022-09-27
+Time: 14_42
+global variables successfully defined
+
+
+
+Start Training
+Risk: 386.070556640625, epoch: 0
+Evaluation - NMSE_prediction: 1.0056, NMSE_estimation: 0.2270, TPR1: 1.0000, TPR2: 1.0000 ,Risk: 433.7426
+mean_frob: 16.732,mean_mu_signal_energy: 0.142,Cov_part_LMMSE_energy: 18.798,NMSE_only_mu: 1.007
