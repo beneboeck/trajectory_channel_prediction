@@ -1,0 +1,7 @@
+Date: 2022-09-26
+Time: 18_47
+global variables successfully defined
+
+
+
+Start Training

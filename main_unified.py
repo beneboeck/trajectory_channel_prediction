@@ -15,19 +15,21 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 900
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Single' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
 normed = False
-SNR_db = 0
+SNR_db = 5
+SNR_range = [-15,25]
 CSI = 'NOISY' # PERFECT, NOISY
+SNR_format = 'RANGE' # RANGE,NO
 
 ################################################ CREATING FILES AND DIRECTORY #############################################################
 now = datetime.datetime.now()
@@ -42,8 +44,8 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + '_' + '0dB_noise_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + '0dB_noise_NAS_file.txt','w')
+if not(exists(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','TPR','TPRinf','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
@@ -64,6 +66,7 @@ glob_file.write(f'Learning Rate: {LEARNING_RATE}\n')
 glob_file.write(f'SNR_db: {SNR_db}\n')
 glob_file.write(f'n_iterations: {n_iterations}\n')
 glob_file.write(f'n_permutations: {n_permutations}\n\n')
+glob_file.write(f'SNR_format: {SNR_format}\n')
 log_file.write('Date: ' +date +'\n')
 log_file.write('Time: ' + time + '\n')
 log_file.write('global variables successfully defined\n\n')
@@ -94,7 +97,7 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'reg_output_var: {reg_output_var}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_VAE()
-    #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro, LB_var_dec, UB_var_dec, BN = 56,0,3,128,7,'Toeplitz','None',0.0002,0.7394,False
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = 24,3,3,128,9,'DFT','DFT',0.0076,0.7297,False,True
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,reg_output_var]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
@@ -133,34 +136,7 @@ if MODEL_TYPE == 'TraSingle':
 H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
 H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
 H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
-#pg_test = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_test.npy','r')
-#pg_train = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_train.npy','r')
-#pg_val = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/pg_val.npy','r')
 
-#H_test = H_test/np.sqrt(10**(0.1 * pg_test[:,None,None,0:1]))
-#H_val = H_val/np.sqrt(10**(0.1 * pg_val[:,None,None,0:1]))
-#H_train = H_train/np.sqrt(10**(0.1 * pg_train[:,None,None,0:1]))
-
-#H = np.concatenate((H_train,H_test,H_val),axis=0)
-#H = H = H/np.sqrt(np.mean(np.sum(np.abs(H)**2,axis=(1,2)))) * np.sqrt(32)
-
-#def shuffle_along_axis(a, axis):
-#    idx = np.random.rand(*a.shape).argsort(axis=axis)
-#    return np.take_along_axis(a,idx,axis=axis)
-
-#H = shuffle_along_axis(H,axis=0)
-
-#H_train = H[:40000,:,:,:]
-#H_test = H[40000:45000,:,:,:]
-#H_val = H[45000:,:,:,:]
-
-#H_train = H_train = H_train/np.sqrt(np.mean(np.sum(np.abs(H_train)**2,axis=(1,2)))) * np.sqrt(32)
-#H_val = H_val = H_train/np.sqrt(np.mean(np.sum(np.abs(H_val)**2,axis=(1,2)))) * np.sqrt(32)
-#H_test = H_test = H_train/np.sqrt(np.mean(np.sum(np.abs(H_test)**2,axis=(1,2)))) * np.sqrt(32)
-
-#H_train_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_train.npy','r')
-#H_test_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_test.npy','r')
-#H_val_c = np.load('../../MichaelsFilesVAEChannelEstimation/Quadriga/Quadriga/32rx/quadriga_eval.npy','r')
 
 #H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
 #H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
@@ -186,7 +162,6 @@ print(np.std(H_train))
 H_test_dft = apply_DFT(H_test)
 H_val_dft = apply_DFT(H_val)
 H_train_dft = apply_DFT(H_train)
-
 
 x_train = np.sum(H_train[:,:,:,-1]**2,axis=(1,2))
 SNR_eff = 10**(SNR_db/10)
@@ -226,7 +201,7 @@ if MODEL_TYPE == 'TraSingle':
     model = mg.my_tra_VAE(cov_type, LD_VAE, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB_var_dec,UB_var_dec,BN,reg_output_var, device).to(device)
     print('model generated')
 
-risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(CSI,MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,sig_n_train,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
+risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,eval_TPR2 = tr.training_gen_NN(SNR_format,SNR_range,CSI,MODEL_TYPE,setup,LEARNING_RATE,cov_type, model, dataloader_train,dataloader_val, G_EPOCHS, FREE_BITS_LAMBDA,sig_n_val,sig_n_train,device, log_file,dir_path,n_iterations, n_permutations, normed,bs_mmd, dataset_val, SNAPSHOTS)
 
 ################################################### EVALUATION OF THE MODELS #####################################################
 
@@ -305,7 +280,7 @@ for SNR_db in SNR_db_list:
 
 
 
-csv_file = open(overall_path + MODEL_TYPE + '_' + '0dB_noise_NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,TPR1_val,TPR2_val,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
