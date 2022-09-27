@@ -21,7 +21,7 @@ G_EPOCHS = 900
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'Single' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'TraSingle' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -115,7 +115,7 @@ if MODEL_TYPE == 'Single':
 
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_TraVAE()
-    #LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,BN,LB_var_dec,UB_var_dec= 384,0,4,128,9,'DFT','None',False,0.0091,0.5261
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = 64,0,4,64,7,'DFT','None',0.008,0.7708,False,False
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
