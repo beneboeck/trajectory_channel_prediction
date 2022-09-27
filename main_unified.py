@@ -100,7 +100,6 @@ if MODEL_TYPE == 'Trajectory':
     glob_file.write(f'reg_output_var: {reg_output_var}\n')
 if MODEL_TYPE == 'Single':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_VAE()
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = 24,3,3,128,9,'DFT','DFT',0.0076,0.7297,False,True
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,reg_output_var]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
