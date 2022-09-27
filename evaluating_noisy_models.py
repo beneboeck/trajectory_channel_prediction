@@ -46,6 +46,9 @@ path_DFT_TraVAE_5dB = '../trajectory_channel_prediction_data_analysis/HMVAE_DFT_
 path_DFT_TraVAE_10dB = '../trajectory_channel_prediction_data_analysis/HMVAE_DFT_paper/best_TraVAE_10dB/time_09_15_NMSE/model_dict'
 path_DFT_TraVAE_20dB = '../trajectory_channel_prediction_data_analysis/HMVAE_DFT_paper/best_TraVAE_20dB/time_10_16_NMSE/model_dict'
 
+path_DFT_VAE_RANGE = '../trajectory_channel_prediction_data_analysis/HMVAE_DFT_paper/best_VAE_RANGE/time_10_59/model_dict'
+path_TraVAE_RANGE = '../trajectory_channel_prediction_data_analysis/HMVAE_DFT_paper/best_TraVAE_RANGE/time_11_03/model_dict'
+
 
 # CREATING FILES AND DIRECTORY
 now = datetime.datetime.now()
@@ -93,6 +96,10 @@ LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN,
 model_DFT_20dB = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,reg_output_var,device).to(device)
 model_DFT_20dB.load_state_dict(torch.load(path_DFT_VAE_20dB,map_location=device))
 
+LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro,LB,UB,BN,reg_output_var = 24,3,3,128,9,'DFT','DFT',0.0076,0.7297,False,True
+model_DFT_RANGE = mg.my_VAE(cov_type,LD_VAE,conv_layer,total_layer,out_channel,k_size,prepro,LB,UB,BN,reg_output_var,device).to(device)
+model_DFT_RANGE.load_state_dict(torch.load(path_DFT_VAE_RANGE,map_location=device))
+
 
 cov_type,LD,conv_layer,total_layer,out_channel,k_size,LB,UB,BN,prepro,reg_output_var = 'DFT',256,0,4,128,7,0.0059,0.9278,False,'None',False
 model_Tra_0dB = mg.my_tra_VAE(cov_type, LD, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB,UB,BN,reg_output_var,device).to(device)
@@ -109,6 +116,10 @@ model_Tra_10dB.load_state_dict(torch.load(path_DFT_TraVAE_10dB,map_location=devi
 cov_type,LD,conv_layer,total_layer,out_channel,k_size,LB,UB,BN,prepro,reg_output_var = 'DFT',128,2,3,64,7,0.009,0.5052,False,'None',False
 model_Tra_20dB = mg.my_tra_VAE(cov_type, LD, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB,UB,BN,reg_output_var,device).to(device)
 model_Tra_20dB.load_state_dict(torch.load(path_DFT_TraVAE_20dB,map_location=device))
+
+cov_type,LD,conv_layer,total_layer,out_channel,k_size,LB,UB,BN,prepro,reg_output_var = 'DFT',64,0,4,64,7,0.008,0.7708,False,'None',False
+model_Tra_RANGE = mg.my_tra_VAE(cov_type, LD, conv_layer, total_layer, out_channel, k_size, prepro,SNAPSHOTS,LB,UB,BN,reg_output_var,device).to(device)
+model_Tra_RANGE.load_state_dict(torch.load(path_TraVAE_RANGE,map_location=device))
 
 
 cov_type,LD,rnn_bool,memory,pr_layer,pr_width,en_layer,en_width,de_layer,de_width,BN,prepro = 'DFT',24,False,8,2,9,3,6,4,6,False,'DFT'
@@ -147,6 +158,9 @@ model_HMVAE_5dB.eval()
 model_HMVAE_10dB.eval()
 model_HMVAE_20dB.eval()
 
+model_DFT_RANGE.eval()
+model_Tra_RANGE.eval()
+
 models_VAE = [model_DFT_5dB,model_DFT_5dB,model_DFT_5dB,model_DFT_5dB,model_DFT_5dB,model_DFT_5dB]
 models_Tra = [model_Tra_5dB,model_Tra_5dB,model_Tra_5dB,model_Tra_5dB,model_Tra_5dB,model_Tra_5dB]
 models_HMVAE = [model_HMVAE_5dB,model_HMVAE_5dB,model_HMVAE_5dB,model_HMVAE_5dB,model_HMVAE_5dB,model_HMVAE_5dB]
@@ -157,7 +171,7 @@ csv_writer.writerow(SNR_db_list)
 
 NMSE_VAE = []
 NMSE_Tra = []
-NMSE_HMVAE = []
+#NMSE_HMVAE = []
 NMSE_LS_list = []
 NMSE_sCov_list = []
 
@@ -213,9 +227,9 @@ for idx,SNR_db in enumerate(SNR_db_list):
     dataloader_train = DataLoader(dataset_train, shuffle=True, batch_size=BATCHSIZE)
     dataloader_val = DataLoader(dataset_val, shuffle=True, batch_size=len(dataset_val))
 
-    NMSE_VAE_one = ev.channel_estimation('NOISY',models_VAE[idx], dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
-    NMSE_Tra_one = ev.channel_estimation('NOISY',models_Tra[idx], dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
-    NMSE_HMVAE_one = ev.channel_estimation('NOISY',models_HMVAE[idx], dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
+    NMSE_VAE_one = ev.channel_estimation('NOISY',model_DFT_RANGE, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
+    NMSE_Tra_one = ev.channel_estimation('NOISY',model_Tra_RANGE, dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
+    #NMSE_HMVAE_one = ev.channel_estimation('NOISY',models_HMVAE[idx], dataloader_test, sig_n_test, 'DFT', dir_path, device)[0]
 
 
     #NMSE_LS_tot, NMSE_sCov_tot = ev.computing_LS_sample_covariance_estimator_all(dataset_test, sig_n_test)
@@ -223,7 +237,7 @@ for idx,SNR_db in enumerate(SNR_db_list):
 
     NMSE_VAE.append(NMSE_VAE_one)
     NMSE_Tra.append(NMSE_Tra_one)
-    NMSE_HMVAE.append(NMSE_HMVAE_one)
+    #NMSE_HMVAE.append(NMSE_HMVAE_one)
     NMSE_LS_list.append(NMSE_LS.item())
     NMSE_sCov_list.append(NMSE_sCov.item())
 
@@ -233,7 +247,7 @@ for idx,SNR_db in enumerate(SNR_db_list):
 
 csv_writer.writerow(NMSE_VAE)
 csv_writer.writerow(NMSE_Tra)
-csv_writer.writerow(NMSE_HMVAE)
+#csv_writer.writerow(NMSE_HMVAE)
 csv_writer.writerow(NMSE_LS_list)
 csv_writer.writerow(NMSE_sCov_list)
 csv_file.close()

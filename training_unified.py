@@ -85,7 +85,7 @@ def training_gen_NN(SNR_format,SNR_range,CSI,model_type,setup,lr, cov_type,model
                 sample_ELBO = sample_ELBO.to(device)
             if CSI == 'NOISY':
                 if SNR_format == 'RANGE':
-                    SNRs_train = (SNR_range[1] - SNR_range[0]) * torch.rand(samples[0].size(0)) + SNR_range[0] + (SNR_range[1] - SNR_range[0]) / 2
+                    SNRs_train = (SNR_range[1] - SNR_range[0])/2 * (2 * torch.rand(samples[0].size(0)) - 1) + SNR_range[0] + (SNR_range[1] - SNR_range[0]) / 2
                     x_train = torch.sum(samples[0][:, :, :, -1] ** 2, dim=(1, 2))
                     SNR_eff = 10 ** (SNRs_train / 10)
                     sig_n_train = torch.sqrt(x_train / (32 * SNR_eff))[:, None, None, None]
