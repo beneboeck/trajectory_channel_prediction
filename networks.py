@@ -1168,7 +1168,8 @@ class my_tra_VAE(nn.Module):
             in_channels = self.out_channels
             #out_channel = self.out_channels + step
             out_channel = self.out_channels - step
-            total_dim = (32/2**conv_layer)
+            #total_dim = (32/2**conv_layer)
+            total_dim = (32/(2**conv_layer))
             for i in range(conv_layer - 1):
                 self.decoder.append(nn.ConvTranspose1d(in_channels, out_channel, k_size, 2))
                 self.decoder.append(nn.ReLU())
