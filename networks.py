@@ -1119,9 +1119,12 @@ class my_tra_VAE(nn.Module):
                         self.encoder.append(nn.BatchNorm1d(out_channel))
                     in_channels = out_channel
                     out_channel = out_channel - step
-
-            self.fc_mu = nn.Linear(in_channels, self.latent_dim)
-            self.fc_var = nn.Linear(in_channels, self.latent_dim)
+            if total_layer > conv_layer:
+                self.fc_mu = nn.Linear(in_channels, self.latent_dim)
+                self.fc_var = nn.Linear(in_channels, self.latent_dim)
+            else:
+                self.fc_mu = nn.Linear(int(32 * 16 / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
+                self.fc_var = nn.Linear(int(32 * 16 / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
         else:
             in_linear = 64 * self.n_snapshots
             self.encoder.append(nn.Flatten())
