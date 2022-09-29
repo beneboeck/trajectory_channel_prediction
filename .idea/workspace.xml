@@ -39,7 +39,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$/networks.py" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
-  <component name="RunManager" selected="Python.evaluating_noisy_models">
+  <component name="RunManager" selected="Python.main_unified">
     <configuration name="evaluating_genie_models" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="trajectory_channel_prediction" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -168,8 +168,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.evaluating_noisy_models" />
         <item itemvalue="Python.main_unified" />
+        <item itemvalue="Python.evaluating_noisy_models" />
         <item itemvalue="Python.tracking_NMSE" />
         <item itemvalue="Python.unifying_data" />
         <item itemvalue="Python.evaluating_genie_models" />

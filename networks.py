@@ -1127,19 +1127,22 @@ class my_tra_VAE(nn.Module):
                 self.fc_var = nn.Linear(int(32 * 16 / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
         else:
             in_linear = 64 * self.n_snapshots
+            step = int((in_linear - self.latent_dim)/self.total_layer)
             self.encoder.append(nn.Flatten())
-            self.encoder.append(nn.Linear(int(in_linear),int(out_channels/16 * in_linear)))
+            self.encoder.append(nn.Linear(int(in_linear),in_linear - step))
             self.encoder.append(nn.ReLU())
             if self.BN:
-                self.encoder.append(nn.BatchNorm1d(int(out_channels/16 * in_linear)))
+                self.encoder.append(nn.BatchNorm1d(int(in_linear - step)))
+            in_linear = in_linear - step
             for i in range(1,total_layer - conv_layer - 1):
-                self.encoder.append(nn.Linear(int(out_channels / 16 * in_linear),int( out_channels / 16 * in_linear)))
+                self.encoder.append(nn.Linear(in_linear,in_linear - step))
                 self.encoder.append(nn.ReLU())
                 if self.BN:
-                    self.encoder.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
+                    self.encoder.append(nn.BatchNorm1d(int(in_linear - step)))
+                in_linear = in_linear - step
 
-            self.fc_mu = nn.Linear(int(out_channels / 16 * in_linear), self.latent_dim)
-            self.fc_var = nn.Linear(int(out_channels / 16 * in_linear), self.latent_dim)
+            self.fc_mu = nn.Linear(in_linear, self.latent_dim)
+            self.fc_var = nn.Linear(in_linear, self.latent_dim)
         self.encoder = nn.Sequential(*self.encoder)
 
 
@@ -1160,9 +1163,8 @@ class my_tra_VAE(nn.Module):
             if self.BN:
                 self.decoder_lin.append(nn.BatchNorm1d(int(32 / (2 ** conv_layer) * self.out_channels)))
         if conv_layer > 0:
+            self.decoder_between = nn.Linear(self.latent_dim,int(32 / (2 ** conv_layer) * self.out_channels))
             self.decoder = []
-            if conv_layer == total_layer:
-                self.decoder.append(nn.Linear(self.latent_dim,int(32 / (2 ** conv_layer) * self.out_channels)))
             #step = int((32 / (2 ** conv_layer) * self.out_channels - 32 * 4)/conv_layer)
             step = int((self.out_channels - 4)/conv_layer)
             in_channels = self.out_channels
@@ -1187,14 +1189,15 @@ class my_tra_VAE(nn.Module):
             total_dim = int((total_dim - 1) * 2 + (k_size - 1) + 1)
             self.decoder = nn.Sequential(*self.decoder)
         else:
+            step = int((32 * 4 - self.latent_dim) / self.total_layer)
             in_channels = self.latent_dim
             for i in range(1,total_layer - 1):
-                self.decoder_lin.append(nn.Linear(in_channels, int(out_channels / 16 * in_linear)))
+                self.decoder_lin.append(nn.Linear(in_channels, in_channels + step))
                 self.decoder_lin.append(nn.ReLU())
                 if self.BN:
-                    self.decoder_lin.append(nn.BatchNorm1d(int(out_channels / 16 * in_linear)))
-                in_channels =  int(out_channels / 16 * in_linear)
-            self.decoder_lin.append(nn.Linear(int(out_channels / 16 * in_linear), 4 * 32))
+                    self.decoder_lin.append(nn.BatchNorm1d(in_channels + step))
+                in_channels = in_channels + step
+            self.decoder_lin.append(nn.Linear(in_channels, 4 * 32))
             self.decoder_lin.append(nn.ReLU())
             if self.BN:
                 self.decoder_lin.append(nn.BatchNorm1d(4 * 32))
@@ -1249,6 +1252,8 @@ class my_tra_VAE(nn.Module):
         bs = z.size(0)
         out = self.decoder_lin(z)
         if self.conv_layer > 0:
+            if self.conv_layer == self.total_layer:
+                out = self.decoder_between(out)
             out = out.view(bs,self.out_channels,-1)
             out = self.decoder(out)
         out = nn.Flatten()(out)

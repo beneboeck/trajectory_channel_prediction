@@ -15,7 +15,7 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 600
 LEARNING_RATE = 6e-5
@@ -38,11 +38,11 @@ date = str(now)[:10]
 time = str(now)[11:16]
 time = time[:2] + '_' + time[3:]
 
-#overall_path = './'
-#dir_path = './time_' + time
+overall_path = './'
+dir_path = './time_' + time
 
-overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
-dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
+#overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
+#dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
 if not(exists(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt')):
@@ -117,7 +117,7 @@ if MODEL_TYPE == 'Single':
 
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_TraVAE()
-    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro, LB_var_dec, UB_var_dec, BN, reg_output_var = 128,3,3,128,9,'DFT',None,0.0052,0.6841,True,True
+    LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type, prepro, LB_var_dec, UB_var_dec, BN, reg_output_var = 128,0,3,128,9,'DFT',None,0.0052,0.6841,True,True
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
@@ -135,14 +135,14 @@ if MODEL_TYPE == 'TraSingle':
 
 #################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
 
-H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
-H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
-H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
+#H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
+#H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
+#H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
 
 
-#H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
-#H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
-#H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
+H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
+H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
+H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
 
 H_train = np.zeros((100000,2,32,16))
 H_train[:,0,:,:] = np.real(H_train_c)
