@@ -6,7 +6,7 @@ clc
 %% (A) global variables
 
 no_runs = 600;                                     % Number of total simulations
-no_trajectories = 10;                             % Number of simulated trajectories per simulation
+no_trajectories = 200;                             % Number of simulated trajectories per simulation
 centerFrequency = 2.1e9;                           % Center frequency
 bandwidth = 1e6;                                    % Bandwidth in Hz
 lambda = 3e8/centerFrequency;                       % Corresponding wavelength
@@ -22,7 +22,7 @@ maxRadius = 500;                                     % Maximum distance of the t
 angleSpread = 120;                                   % Maximum angle spread between the trajectories' initial positions (2D)
 mtHeight = 1.5;                                     % Height of the MTs
 snapshotDensity = 0.5e-3;                           % Snapshot density in [s]
-durationTrajectory = 7.5e-3;                         % Duration of one Trajectory
+durationTrajectory = 3.5e-3;                         % Duration of one Trajectory
 
 %H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
 %H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
@@ -251,10 +251,10 @@ H_real = real(Channel);
 H_imag = imag(Channel);
 
 %save('../Simulations//trajectory_channel_prediction/data/H50_1000.mat','Channel','-v7.3');
-%save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200.mat','H_real','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200_8snapshots.mat','H_real','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag50_1000.mat','H_imag','-v7.3');
 
-%save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200.mat','H_imag','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200_8snapshots.mat','H_imag','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
 
