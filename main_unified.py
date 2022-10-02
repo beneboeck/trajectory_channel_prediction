@@ -17,7 +17,7 @@ import csv
 ################################################# GLOBAL PARAMETERS ############################################################
 device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
-G_EPOCHS = 600
+G_EPOCHS = 2
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 8
@@ -236,9 +236,9 @@ if MODEL_TYPE == 'Trajectory':
         m_sigma_squared_prior, std_sigma_squared_prior, m_sigma_squared_inf, std_sigma_squared_inf, m_sigma_squared_out, std_sigma_squared_out = output_stats_val
         m_alpha_0 = float('nan')
         n_bound_hits = float('nan')
-    NMSE_test = ev.channel_prediction(CSI, setup, model, dataloader_test, 15, dir_path, device, 'testing')
+    NMSE_test = ev.channel_prediction(CSI, setup, model, dataloader_test, 7, dir_path, device, 'testing')
     TPR1, TPR2 = ev.computing_MMD(CSI, setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_test,SNAPSHOTS, dir_path, device)
-    NMSE_val = ev.channel_prediction(CSI, setup, model, dataloader_val, 15, dir_path, device, 'testing')
+    NMSE_val = ev.channel_prediction(CSI, setup, model, dataloader_val, 7, dir_path, device, 'testing')
     TPR1_val, TPR2_val = ev.computing_MMD(CSI, setup, model, n_iterations, n_permutations, normed, bs_mmd, dataset_val,SNAPSHOTS, dir_path, device)
 
 SNR_db_list = [0,5,10,20]
