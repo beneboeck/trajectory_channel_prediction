@@ -15,13 +15,13 @@ from os.path import exists
 import csv
 
 ################################################# GLOBAL PARAMETERS ############################################################
-device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
 BATCHSIZE = 50
 G_EPOCHS = 600
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
 SNAPSHOTS = 16
-MODEL_TYPE = 'Single' #Trajectory,Single,TraSingle
+MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
 bs_mmd = 1000
@@ -77,6 +77,7 @@ print('global var successful')
 ############################################### NETWORK ARCHITECTURE SEARCH #############################################
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var = network_architecture_search()
+    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var = 32, 12, False, 3, 6, 3, 3, 4, 6,'DFT', False, 'DFT',2,True, 0.0084, 0.8965,True
     rnn_bool = False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
