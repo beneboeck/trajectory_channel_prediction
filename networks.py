@@ -1109,8 +1109,8 @@ class my_tra_VAE(nn.Module):
 
             self.encoder.append(nn.Flatten())
             if total_layer > conv_layer:
-                step = int(math.floor((int(32*16/(4**conv_layer) * self.out_channels - self.latent_dim)/(total_layer - conv_layer))))
-                in_channels = int(32*16/(4**conv_layer)) * self.out_channels
+                step = int(math.floor((int(32*self.n_snapshots/(4**conv_layer) * self.out_channels - self.latent_dim)/(total_layer - conv_layer))))
+                in_channels = int(32*self.n_snapshots/(4**conv_layer)) * self.out_channels
                 out_channel = in_channels - step
                 for i in range(total_layer-conv_layer):
                     self.encoder.append(nn.Linear(in_channels,out_channel))
@@ -1123,8 +1123,8 @@ class my_tra_VAE(nn.Module):
                 self.fc_mu = nn.Linear(in_channels, self.latent_dim)
                 self.fc_var = nn.Linear(in_channels, self.latent_dim)
             else:
-                self.fc_mu = nn.Linear(int(32 * 16 / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
-                self.fc_var = nn.Linear(int(32 * 16 / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
+                self.fc_mu = nn.Linear(int(32 * self.n_snapshots / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
+                self.fc_var = nn.Linear(int(32 * self.n_snapshots / (4 ** conv_layer)) * self.out_channels, self.latent_dim)
         else:
             in_linear = 64 * self.n_snapshots
             step = int((in_linear - self.latent_dim)/self.total_layer)

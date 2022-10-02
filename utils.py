@@ -41,7 +41,8 @@ def apply_IDFT(sample_set):
 
 def network_architecture_search():
     LD = np.random.choice([16,24,32,40]).item()
-    memory = np.random.choice(range(3,10)).item()
+    #memory = np.random.choice(range(3,10)).item()
+    memory = np.random.choice(range(3, 7)).item() # for SNAPSHOTS = 8
     rnn_bool = np.random.choice([False,True]).item()
     BN = np.random.choice([False]).item()
     en_layer = np.random.choice([2,3]).item()
@@ -84,7 +85,8 @@ def network_architecture_search_VAE():
     return LD,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var
 
 def network_architecture_search_TraVAE():
-    LD = np.random.choice([16*8,16*16,16*24]).item()
+    #LD = np.random.choice([16*8,16*16,16*24]).item()
+    LD = np.random.choice([8 * 8, 8 * 16, 8 * 24]).item() # for SNAPSHOTS = 8
     conv_layer = np.random.choice([0,1,2,3]).item()
     total_layer = np.random.choice([3,4,5]).item()
     out_channel = np.random.choice([128,196]).item()

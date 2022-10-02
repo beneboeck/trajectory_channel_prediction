@@ -20,7 +20,7 @@ BATCHSIZE = 50
 G_EPOCHS = 600
 LEARNING_RATE = 6e-5
 FREE_BITS_LAMBDA = torch.tensor(0.1).to(device)
-SNAPSHOTS = 16
+SNAPSHOTS = 8
 MODEL_TYPE = 'Trajectory' #Trajectory,Single,TraSingle
 n_iterations = 75
 n_permutations = 300
@@ -45,8 +45,8 @@ overall_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/'
 dir_path = '/home/ga42kab/lrz-nashome/trajectory_channel_prediction/models/time_' + time
 os.mkdir (dir_path)
 
-if not(exists(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt')):
-    csvfile = open(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt','w')
+if not(exists(overall_path + MODEL_TYPE + '_' + '8_SNAPS_RANGE_noise_NAS_file.txt')):
+    csvfile = open(overall_path + MODEL_TYPE + '_' + '8_SNAPS_RANGE_noise_NAS_file.txt','w')
     csv_writer = csv.writer(csvfile)
     if MODEL_TYPE == 'Trajectory':
         csv_writer.writerow(['Time','LD', 'memory', 'rnn_bool', 'en_layer', 'en_width', 'pr_layer', 'pr_width', 'de_layer', 'de_width', 'cov_type', 'BN', 'prepro','DecVarLB','DecVarUB','TPR','TPRinf','Risk_val','NMSE_0dB','NMSE_5dB','NMSE_10dB','NMSE_20dB'])
@@ -77,7 +77,7 @@ print('global var successful')
 ############################################### NETWORK ARCHITECTURE SEARCH #############################################
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var = network_architecture_search()
-    LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var = 32, 12, False, 3, 6, 3, 3, 4, 6,'DFT', False, 'DFT',2,True, 0.0084, 0.8965,True
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro, n_conv, cnn_bool, LB_var_dec, UB_var_dec, reg_output_var = 32,7,False,3,6,3,3,4,6,'DFT',False,'DFT',2,True,0.0084,0.8965,True
     rnn_bool = False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
@@ -135,24 +135,30 @@ if MODEL_TYPE == 'TraSingle':
 
 #################################################################### LOADING AND PREPARING DATA FOR TRAINING #################################################
 
-H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
-H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
-H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
+if SNAPSHOTS == 16:
+    H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200.npy','r')
+    H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200.npy','r')
+    H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200.npy','r')
+
+if SNAPSHOTS == 8:
+    H_test_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_test_Uma_mixed_IO_600_200_8snapshots.npy','r')
+    H_train_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_train_Uma_mixed_IO_600_200_8snapshots.npy','r')
+    H_val_c = np.load('/home/ga42kab/lrz-nashome/trajectory_channel_prediction/data/my_quadriga/H_val_Uma_mixed_IO_600_200_8snapshots.npy','r')
 
 
 #H_train_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200.npy','r')
 #H_test_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200.npy','r')
 #H_val_c = np.load('../../Projects/Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200.npy','r')
 
-H_train = np.zeros((100000,2,32,16))
+H_train = np.zeros((100000,2,32,SNAPSHOTS))
 H_train[:,0,:,:] = np.real(H_train_c)
 H_train[:,1,:,:] = np.imag(H_train_c)
 
-H_val = np.zeros((10000,2,32,16))
+H_val = np.zeros((10000,2,32,SNAPSHOTS))
 H_val[:,0,:,:] = np.real(H_val_c)
 H_val[:,1,:,:] = np.imag(H_val_c)
 
-H_test = np.zeros((10000,2,32,16))
+H_test = np.zeros((10000,2,32,SNAPSHOTS))
 H_test[:,0,:,:] = np.real(H_test_c)
 H_test[:,1,:,:] = np.imag(H_test_c)
 
@@ -285,7 +291,7 @@ for SNR_db in SNR_db_list:
 
 
 
-csv_file = open(overall_path + MODEL_TYPE + '_' + 'RANGE_noise_NAS_file.txt','a')
+csv_file = open(overall_path + MODEL_TYPE + '_' + '8_SNAPS_RANGE_noise_NAS_file.txt','a')
 csv_writer = csv.writer(csv_file)
 if MODEL_TYPE == 'Trajectory':
     csv_writer.writerow([time,LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro,LB_var_dec,UB_var_dec,TPR1_val,TPR2_val,round(Risk_val.item(),3),round(NMSE_est[0],5),round(NMSE_est[1],5),round(NMSE_est[2],5),round(NMSE_est[3],5)])
