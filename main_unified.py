@@ -118,6 +118,8 @@ if MODEL_TYPE == 'Single':
 if MODEL_TYPE == 'TraSingle':
     LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var = network_architecture_search_TraVAE()
     BN = False
+    total_layer = 3
+    conv_layer = 3
     setup = [LD_VAE, conv_layer, total_layer, out_channel, k_size, cov_type,prepro]
     print('Single Setup')
     print(LD_VAE,conv_layer,total_layer,out_channel,k_size,cov_type,prepro,LB_var_dec,UB_var_dec,BN,reg_output_var)
