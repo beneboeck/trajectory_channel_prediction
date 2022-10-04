@@ -77,6 +77,7 @@ print('global var successful')
 ############################################### NETWORK ARCHITECTURE SEARCH #############################################
 if MODEL_TYPE == 'Trajectory':
     LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool,LB_var_dec,UB_var_dec,reg_output_var = network_architecture_search()
+    LD, memory, rnn_bool, en_layer, en_width, pr_layer, pr_width, de_layer, de_width, cov_type, BN, prepro, n_conv, cnn_bool, LB_var_dec, UB_var_dec, reg_output_var = 32,7,False,3,6,3,3,4,6,'DFT',False,'DFT',2,True,0.0084,0.8965,True
     rnn_bool = False
     setup = [LD,memory,rnn_bool,en_layer,en_width,pr_layer,pr_width,de_layer,de_width,cov_type,BN,prepro,n_conv,cnn_bool]
     print('Trajectory Setup')
@@ -219,13 +220,13 @@ risk_list,KL_list,RR_list,eval_risk,eval_NMSE, eval_NMSE_estimation, eval_TPR1,e
 ################################################### EVALUATION OF THE MODELS #####################################################
 
 model.eval()
-save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
+#save_risk(risk_list,RR_list,KL_list,dir_path,'Risks')
 
-save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
-save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE prediction')
-save_risk_single(eval_NMSE_estimation,dir_path,'Evaluation - NMSE estimation')
-save_risk_single(eval_TPR1,dir_path,'Evaluation - TPR1 prior')
-save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
+#save_risk_single(eval_risk,dir_path,'Evaluation - ELBO')
+#save_risk_single(eval_NMSE,dir_path,'Evaluation - NMSE prediction')
+#save_risk_single(eval_NMSE_estimation,dir_path,'Evaluation - NMSE estimation')
+#save_risk_single(eval_TPR1,dir_path,'Evaluation - TPR1 prior')
+#save_risk_single(eval_TPR2,dir_path,'Evaluation - TPR2 - inference')
 
 torch.save(model.state_dict(),dir_path + '/model_dict')
 
