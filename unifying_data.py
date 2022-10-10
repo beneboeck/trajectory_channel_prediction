@@ -21,8 +21,8 @@ import numpy as np
 #     return H,path_gain
 
 
-imag_data = h5py.File('../Simulations/trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200_8snapshots.mat', 'r')
-real_data = h5py.File('../Simulations/trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200_8snapshots.mat', 'r')
+imag_data = h5py.File('../Simulations/trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200_8snapshots_2ms.mat', 'r')
+real_data = h5py.File('../Simulations/trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200_8snapshots_2ms.mat', 'r')
 
 #path_gain = h5py.File('../Simulations/trajectory_channel_prediction/data/path_gains120_1000.mat', 'r')
 H_imag = np.array(imag_data['H_imag'])
@@ -79,9 +79,9 @@ H_test = H[110000:,:,:]
 #pg_val = np.array(pg_val)
 #pg_test = np.array(pg_test)
 
-np.save('../Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200_8snapshots',H_train)
-np.save('../Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200_8snapshots',H_test)
-np.save('../Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200_8snapshots',H_val)
+np.save('../Simulations/trajectory_channel_prediction/data/H_train_Uma_mixed_IO_600_200_8snapshots_2ms',H_train)
+np.save('../Simulations/trajectory_channel_prediction/data/H_test_Uma_mixed_IO_600_200_8snapshots_2ms',H_test)
+np.save('../Simulations/trajectory_channel_prediction/data/H_val_Uma_mixed_IO_600_200_8snapshots_2ms',H_val)
 #np.save('../Simulations/trajectory_channel_prediction/data/pg_train',pg_train)
 #np.save('../Simulations/trajectory_channel_prediction/data/pg_test',pg_test)
 #np.save('../Simulations/trajectory_channel_prediction/data/pg_val',pg_val)

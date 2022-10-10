@@ -21,8 +21,10 @@ minRadius = 25;                                     % Minium distance of the tra
 maxRadius = 500;                                     % Maximum distance of the trajectory's initial position to the BS (2D)
 angleSpread = 120;                                   % Maximum angle spread between the trajectories' initial positions (2D)
 mtHeight = 1.5;                                     % Height of the MTs
-snapshotDensity = 0.5e-3;                           % Snapshot density in [s]
-durationTrajectory = 3.5e-3;                         % Duration of one Trajectory
+%snapshotDensity = 0.5e-3;                          % Snapshot density in [s]
+snapshotDensity = 2e-3;
+%durationTrajectory = 3.5e-3;                         % Duration of one Trajectory
+durationTrajectory = 14e-3;
 
 %H_real = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
 %H_imag = zeros(no_runs * no_trajectories,noAnBS,durationTrajectory/snapshotDensity+1);
@@ -251,10 +253,10 @@ H_real = real(Channel);
 H_imag = imag(Channel);
 
 %save('../Simulations//trajectory_channel_prediction/data/H50_1000.mat','Channel','-v7.3');
-save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200_8snapshots.mat','H_real','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H_real_Uma_mixed_IO_600_200_8snapshots_2ms.mat','H_real','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag50_1000.mat','H_imag','-v7.3');
 
-save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200_8snapshots.mat','H_imag','-v7.3');
+save('../Simulations//trajectory_channel_prediction/data/H_imag_Uma_mixed_IO_600_200_8snapshots_2ms.mat','H_imag','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_val500_100.mat','H_imag_val','-v7.3');
 %save('../Simulations//trajectory_channel_prediction/data/H_imag_test500_100.mat','H_imag_test','-v7.3');
 
